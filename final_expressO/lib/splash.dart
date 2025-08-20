@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 
 class Splash extends StatefulWidget {
@@ -16,7 +17,7 @@ class _SplashState extends State<Splash> {
 
     // Delay for 3 seconds then navigate to HomeScreen
     Timer(const Duration(seconds: 1), () {
-      Navigator.pushNamed(context, '/login');
+      Navigator.pushNamed(context, '/tioWelcome');
     });
   }
 
@@ -25,18 +26,16 @@ class _SplashState extends State<Splash> {
     return Scaffold(
       body: Center(
           child: Container(
-
-        color: const Color.fromARGB(255, 29, 29, 29),
-        child: SizedBox.expand(
+        color: AppColors.primaryVariant,
+        child: const SizedBox.expand(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(
-                height: 100,
-                child: Image.asset('assets/logoipsum.png')),
-              const Text('Barangay Nexus',style: TextStyle(color: Colors.white),)
-            
+              Text(
+                'Express-O',
+                style: TextStyle(color: Colors.white),
+              )
             ],
           ),
         ),

@@ -168,7 +168,6 @@ Future<Map<String, dynamic>?> getCreds(String email) async {
 
 Future<bool> checkName(
   String fn,
-  String mn,
   String ln,
 ) async {
   try {
@@ -176,7 +175,6 @@ Future<bool> checkName(
         .collection(
             '/barangayNexus/users/loginCredentials') // Replace with your collection name
         .where('fname', isEqualTo: fn)
-        .where('mname', isEqualTo: mn)
         .where('lname', isEqualTo: ln)
         .limit(1) // Limits to one result to optimize performance
         .get();
@@ -193,12 +191,7 @@ Future<String> signUpUser({
   required String email,
   required dynamic password,
   required String firstname,
-  required String middlename,
   required String lastname,
-  required String subdiv,
-  required String street,
-  required String housenum,
-  required String barangay,
   required String gender,
 }) async {
   try {
@@ -217,12 +210,7 @@ Future<String> signUpUser({
       'email': email,
       // 'password': password,
       'firstname': firstname,
-      'middlename': middlename,
       'lastname': lastname,
-      'subdiv': subdiv,
-      'street': street,
-      'housenum': housenum,
-      'barangay': barangay,
       'gender': gender,
       'createdAt': FieldValue.serverTimestamp(),
     });

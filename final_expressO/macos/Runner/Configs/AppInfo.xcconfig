@@ -8,7 +8,7 @@
 PRODUCT_NAME = firebase_nexus
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.firebaseNexus
+PRODUCT_BUNDLE_IDENTIFIER = com.example.expressO
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_nexus/FirebaseOperations/FirebaseuserService.dart';
 import 'package:firebase_nexus/FirebaseOperations/firebaseLogin.dart';
+import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 
 class ShowProfile extends StatefulWidget {
@@ -37,7 +38,7 @@ class _ShowProfileState extends State<ShowProfile> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0, // Align the leading icon to the left
-        backgroundColor: const Color(0xFF006644),
+        backgroundColor: AppColors.secondary,
         title: const Text(
           'Profile',
           style: TextStyle(
@@ -59,7 +60,7 @@ class _ShowProfileState extends State<ShowProfile> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                       Container(
-                        color: const Color(0xFF006644),
+                        color: AppColors.primaryVariant,
                         padding:
                             const EdgeInsets.only(left: 25, right: 15, top: 20),
                         width: double.infinity,

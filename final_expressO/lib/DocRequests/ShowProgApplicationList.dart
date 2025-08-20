@@ -103,7 +103,7 @@ class _ShowProgApplicationListState extends State<ShowProgApplicationList> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             // Your custom logic here
             print("Back button pressed");

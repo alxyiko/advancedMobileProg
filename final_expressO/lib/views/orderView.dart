@@ -1,3 +1,4 @@
+import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,13 @@ class DummyOrderPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dummy List Page'),
+        backgroundColor: AppColors.secondary,
+        title: const Text(
+          "Your Orders",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.normal, color: Colors.white),
+        ),
+        centerTitle: true,
       ),
       body: ListView.builder(
         itemCount: 10, // Dummy length

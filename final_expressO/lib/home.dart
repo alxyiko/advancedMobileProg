@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   bool completedReg = true;
   bool loaded = false;
 
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
 
   // fetchAnnouncements();
 
@@ -522,7 +522,7 @@ class _HomePageState extends State<HomePage> {
                                   fetchUserData();
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                         content: Text(
                                             'Currently reloading the page, wait!')),
                                   );
@@ -530,7 +530,7 @@ class _HomePageState extends State<HomePage> {
                               },
                               child: Text(
                                 loaded ? "Reload Page" : "Reloading Page",
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Color.fromARGB(255, 58, 162,
                                         44)), // Ensures text is visible
                               ),

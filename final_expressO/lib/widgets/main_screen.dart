@@ -16,8 +16,8 @@ class MainScreen extends StatelessWidget {
 
     final pages = [
       const DummyHome(),
-      const DummyOrderPage(),
       const DummyCartPage(),
+      const DummyOrderPage(),
       const ShowProfile(),
     ];
 

@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:firebase_nexus/FirebaseOperations/firebaseLogin.dart';
-import 'package:firebase_nexus/main.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_nexus/FirebaseOperations/FirebaseuserService.dart';
 import 'package:image_picker/image_picker.dart';

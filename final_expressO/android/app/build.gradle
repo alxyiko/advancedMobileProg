@@ -10,8 +10,8 @@ plugins {
 }
 
 android {
-    namespace = "com.example.firebaseNexus"
-    compileSdk = flutter.compileSdkVersion
+    namespace = "com.example.expressO"
+    compileSdk = 35
     ndkVersion = "25.1.8937393"
 
     compileOptions {
@@ -25,12 +25,12 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.firebaseNexus"
+        applicationId = "com.example.expressO"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdkVersion 23         
-        targetSdk = 34
-        compileSdk = 34
+        targetSdk = 35
+        compileSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

@@ -66,7 +66,7 @@ class DefaultFirebaseOptions {
     projectId: 'final-project---test',
     databaseURL: 'https://final-project---test-default-rtdb.firebaseio.com',
     storageBucket: 'final-project---test.appspot.com',
-    iosBundleId: 'com.example.firebaseNexus',
+    iosBundleId: 'com.example.expressO',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -76,7 +76,7 @@ class DefaultFirebaseOptions {
     projectId: 'final-project---test',
     databaseURL: 'https://final-project---test-default-rtdb.firebaseio.com',
     storageBucket: 'final-project---test.appspot.com',
-    iosBundleId: 'com.example.firebaseNexus',
+    iosBundleId: 'com.example.expressO',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

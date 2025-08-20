@@ -1,4 +1,3 @@
-import 'package:firebase_nexus/RegisterPages/PicStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';

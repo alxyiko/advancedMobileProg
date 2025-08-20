@@ -1,3 +1,4 @@
+import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 
 class DummyHome extends StatelessWidget {
@@ -7,7 +8,12 @@ class DummyHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
+        backgroundColor: AppColors.secondary,
+        title: const Text(
+          "Home",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.normal, color: Colors.white),
+        ),
         centerTitle: true,
       ),
       body: Column(

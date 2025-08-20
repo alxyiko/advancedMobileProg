@@ -1,3 +1,4 @@
+import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/navigation_provider.dart';
@@ -12,7 +13,7 @@ class AppBottomNav extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: navProvider.selectedIndex,
       onTap: (index) => navProvider.setIndex(index),
-      selectedItemColor: const Color(0xFF006644),
+      selectedItemColor: AppColors.secondaryVariant,
       unselectedItemColor: Colors.grey,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),

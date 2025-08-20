@@ -1,6 +1,5 @@
 import 'package:firebase_nexus/FirebaseOperations/firebaseLogin.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 
 class PostGoogleRegister extends StatefulWidget {
   const PostGoogleRegister({super.key});
@@ -120,7 +119,6 @@ class PostGoogleRegisterState extends State<PostGoogleRegister> {
     if (_formKey.currentState!.validate()) {
       bool nameExists = await checkName(
         _firstnameController.text.trim(),
-        _middlenameController.text.trim(),
         _lastnameController.text.trim(),
       );
 

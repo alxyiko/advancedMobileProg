@@ -161,7 +161,7 @@ class _MyAppState extends State<MyApp> {
       case '/':
         return const Splash();
       case '/login':
-        return const Login();
+        return const MainScreen();
       case '/register':
         return const Register();
       case '/postGegister':

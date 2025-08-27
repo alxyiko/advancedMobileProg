@@ -9,17 +9,54 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
 
-    return BottomNavigationBar(
-      currentIndex: navProvider.selectedIndex,
-      onTap: (index) => navProvider.setIndex(index),
-      selectedItemColor: const Color(0xFF006644),
-      unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Cart'),
-        BottomNavigationBarItem(icon: Icon(Icons.coffee), label: 'Orders'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_2), label: 'Profile'),
-      ],
+    return Container(
+      height: 70, 
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF), // 🔹 Unselected background color
+      ),
+      child: BottomNavigationBar(
+        backgroundColor:
+            Colors.transparent, // transparent, handled by container
+        elevation: 0, // remove shadow
+        currentIndex: navProvider.selectedIndex,
+        onTap: (index) => navProvider.setIndex(index),
+        selectedItemColor: const Color(0xFF603B17), // Selected item color
+        unselectedItemColor:
+            const Color(0xFF603B17).withOpacity(0.5), // Lighter unselected
+        type: BottomNavigationBarType.fixed, // Prevent shifting
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(
+              navProvider.selectedIndex == 0 ? Icons.home : Icons.home_outlined,
+            ),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              navProvider.selectedIndex == 1
+                  ? Icons.shopping_cart
+                  : Icons.shopping_cart_outlined,
+            ),
+            label: 'Cart',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              navProvider.selectedIndex == 2
+                  ? Icons.coffee
+                  : Icons.coffee_outlined,
+            ),
+            label: 'Orders',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              navProvider.selectedIndex == 3
+                  ? Icons.person
+                  : Icons.person_outline,
+            ),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }

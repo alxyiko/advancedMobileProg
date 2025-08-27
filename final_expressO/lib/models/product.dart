@@ -31,6 +31,27 @@ class Product {
     );
   }
 
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      price: (json['price'] as num).toDouble(),
+      tags: List<String>.from(json['tags'] ?? [])
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+    );
+  }
+
   // Optional: convert to JSON string
-  String toJson() => toMap().toString();
+  // String toJson() => toMap().toString();
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'id': id,
+      'name': name,
+      'price': price,
+      'tags': tags,
+    };
+  }
 }

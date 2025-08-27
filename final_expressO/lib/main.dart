@@ -1,4 +1,3 @@
-import 'package:firebase_nexus/PostGoogleRegister.dart';
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
@@ -35,13 +34,10 @@ void main() async {
   print(dotenv.env['SUPABASE_URL']);
   print(dotenv.env['SUPABASE_ANON_KEY']);
 
-  runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => NavigationProvider()),
-      ],
-      child: MyApp(
-          // mainUser: rootUser
-          )));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => NavigationProvider()),
+    Provider<SupabaseHelper>(create: (_) => SupabaseHelper()),
+  ], child: MyApp()));
 }
 
 class MyRouteObserver extends NavigatorObserver {
@@ -149,22 +145,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _routeGuard(String? routeName) {
-    // if (routeName == '/home' && mainUser == null) {
-    //   print('mainUser');
-    //   print(mainUser);
-    //   return const Login();
-    // }
-    // if ((routeName != '/login' && routeName != '/register' && routeName != '/home') && mainUser != null) {
-    //   print('User detected in the route guard!');
-    //   print(mainUser);
-    //   if (Firebaseuserservice.userData?['barangay'] == ' ') {
-    //     return const PostGoogleRegister();
-    //   }
-    // }
-    // if ((routeName == '/login' || routeName == '/register') && mainUser != null) {
-    //   return const HomePage();
-    // }
-
     switch (routeName) {
       case '/':
         return const Splash();
@@ -176,8 +156,6 @@ class _MyAppState extends State<MyApp> {
         return const Login();
       case '/register':
         return const Register();
-      case '/postGegister':
-        return const PostGoogleRegister();
       case '/home':
         return const MainScreen();
       case '/profile':

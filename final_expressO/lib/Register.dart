@@ -1,4 +1,3 @@
-import 'package:firebase_nexus/FirebaseOperations/firebaseLogin.dart';
 import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -50,31 +49,7 @@ class RegisterState extends State<Register> {
     String message = '';
 
     if (_formKey.currentState!.validate()) {
-      bool nameExists = await checkName(
-        _firstnameController.text.trim(),
-        _lastnameController.text.trim(),
-      );
-
-      if (nameExists) {
-        message = 'This name already has an account!';
-        return;
-      }
-
-      if (await checkUserExists(_emailController.text)) {
-        message = 'This email already has an account!';
-        return;
-      }
-
-      String messagea = await signUpUser(
-          email: _emailController.text,
-          password: _passwordController.text,
-          firstname: _firstnameController.text,
-          lastname: _lastnameController.text,
-          gender: gender as String);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(messagea)),
-      );
-      Navigator.pushNamed(context, '/login');
+    
       return;
     } else {
       message = 'Please try again!';

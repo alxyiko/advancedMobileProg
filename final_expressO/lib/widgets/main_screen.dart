@@ -1,6 +1,8 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:firebase_nexus/views/cartView.dart';
+import 'package:firebase_nexus/views/dummyCart.dart';
+import 'package:firebase_nexus/views/dummyCartSupa.dart';
 import 'package:firebase_nexus/views/dummyHome.dart';
 import 'package:firebase_nexus/views/orderView.dart';
 import 'package:firebase_nexus/widgets/app_bottom_nav.dart.dart';
@@ -16,8 +18,10 @@ class MainScreen extends StatelessWidget {
 
     final pages = [
       const DummyHome(),
-      const DummyCartPage(),
-      const DummyOrderPage(),
+      // const SQLitePage(),
+      // const SupaPage(),
+      const SQLitePage(),
+      const SupaPage(),
       const ShowProfile(),
     ];
 

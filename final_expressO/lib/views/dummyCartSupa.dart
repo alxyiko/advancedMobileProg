@@ -4,21 +4,57 @@ import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
-import '../helpers/database_helper.dart';
 
-class SQLitePage extends StatefulWidget {
-  const SQLitePage({super.key});
-
+class SupaPage extends StatefulWidget {
+  const SupaPage({super.key});
 
   @override
-  State<SQLitePage> createState() => _SQLitePageState();
+  State<SupaPage> createState() => _SupaPageState();
 }
 
-class _SQLitePageState extends State<SQLitePage> {
+class _SupaPageState extends State<SupaPage> {
+  late Future<List<Product>> _futureProducts;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureProducts = _fetchProducts();
+  }
+
+  Future<List<Product>> _fetchProducts() async {
+    final db = context.read<SupabaseHelper>();
+    final rows = await db.getAll("products");
+    return rows.map((row) => Product.fromJson(row)).toList();
+  }
+
+  Future<void> _addDummyProduct() async {
+    final db = context.read<SupabaseHelper>();
+
+    final dummy = Product(
+      name: "Item ${DateTime.now().millisecondsSinceEpoch}",
+      price: 199.99,
+      tags: ["dummy", "cart"],
+    );
+
+    await db.insert("products", dummy.toJson());
+
+    setState(() {
+      _futureProducts = _fetchProducts();
+    });
+  }
+
+  Future<void> _deleteProduct(int id) async {
+    final db = context.read<SupabaseHelper>();
+    await db.delete("products", "id", id);
+
+    setState(() {
+      _futureProducts = _fetchProducts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
-    // int dummyId = 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,7 +70,7 @@ class _SQLitePageState extends State<SQLitePage> {
         centerTitle: true,
       ),
       body: FutureBuilder<List<Product>>(
-        future: DatabaseHelper().getProducts(),
+        future: _futureProducts,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -61,12 +97,7 @@ class _SQLitePageState extends State<SQLitePage> {
                 isThreeLine: true,
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    // print(product.id);
-                    await DatabaseHelper().deleteProduct(product.id);
-                    // Refresh UI
-                    setState(() {}); // 🔥 triggers FutureBuilder to run again
-                  },
+                  onPressed: () => _deleteProduct(product.id!),
                 ),
               );
             },
@@ -75,20 +106,7 @@ class _SQLitePageState extends State<SQLitePage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.secondary,
-        onPressed: () async {
-          // Insert a dummy product to test
-          // dummyId += 1;
-          // print(dummyId);
-          final dummy = Product(
-            // id: dummyId,
-            name: "Item ${DateTime.now().millisecondsSinceEpoch}",
-            price: 199.99,
-            tags: ["dummy", "cart"],
-          );
-          await DatabaseHelper().insertProduct(dummy);
-          // Refresh UI
-          (context as Element).reassemble();
-        },
+        onPressed: _addDummyProduct,
         child: const Icon(Icons.add),
       ),
     );

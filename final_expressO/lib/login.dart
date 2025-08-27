@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/gestures.dart';
-import 'FirebaseOperations/firebaseLogin.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
@@ -49,75 +48,6 @@ class _LoginState extends State<Login> {
     Navigator.pushNamed(context, '/home');
   }
 
-  Future<void> _validateAndSubmit() async {
-    String snacc = '';
-
-    if (_formKey.currentState!.validate()) {
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false, // Prevent dismissing by tapping outside
-        builder: (context) => const AlertDialog(
-          contentPadding: EdgeInsets.all(40),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 50, // Adjust width
-                height: 50, // Adjust height
-                child: CircularProgressIndicator(),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Please wait',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              SizedBox(height: 10),
-              Text("This will only take a moment..."), // Loading message
-            ],
-          ),
-        ),
-      );
-
-      // Perform login
-      final user =
-          await loginUser(_emailController.text, _passwordController.text);
-
-      Navigator.pop(context); // Close the loading dialog
-
-      if (user != null) {
-        loginNavigate(); // Navigate if login is successful
-        return;
-      } else {
-        snacc = 'Wrong email or password!';
-      }
-    } else {
-      snacc = 'Please try again!';
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(snacc)),
-    );
-  }
-
-  // Future<void> _validateAndSubmit() async {
-  //   String snacc = '';
-
-  //   if (_formKey.currentState!.validate()) {
-  //     if (await loginUser(_emailController.text, _passwordController.text) !=
-  //         null) {
-  //       loginNavigate();
-  //     } else {
-  //       snacc = 'Wrong email or password!';
-  //     }
-  //   } else {
-  //     snacc = 'Please try again!';
-  //   }
-
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(content: Text(snacc)),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +112,8 @@ class _LoginState extends State<Login> {
                                   prefixIcon: Icon(
                                     Icons.email_outlined,
                                     color: Color(0xFF797B81),
-                                    size: 22, // Change size here (default is 24)
+                                    size:
+                                        22, // Change size here (default is 24)
                                   ),
                                 ),
                                 validator: (value) {
@@ -242,7 +173,7 @@ class _LoginState extends State<Login> {
                                 width: double.infinity, // Takes full width
                                 height: 50,
                                 child: ElevatedButton(
-                                  onPressed: _validateAndSubmit,
+                                  onPressed: null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor:
                                         AppColors.primary, // Button background
@@ -262,9 +193,9 @@ class _LoginState extends State<Login> {
                         ),
                       ],
                     ),
-                
+
                     const SizedBox(height: 20),
-                
+
                     const Row(
                       children: [
                         Expanded(
@@ -291,104 +222,9 @@ class _LoginState extends State<Login> {
                         ),
                       ],
                     ),
-                
-                    const SizedBox(height: 20),
-                
-                    ElevatedButton(
-                      onPressed: () async {
-                        showDialog(
-                          context: context,
-                          barrierDismissible:
-                              false, // Prevent dismissing by tapping outside
-                          builder: (context) => const AlertDialog(
-                            contentPadding: EdgeInsets.all(40),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  width: 50, // Adjust width
-                                  height: 50, // Adjust height
-                                  child: CircularProgressIndicator(),
-                                ),
-                                SizedBox(height: 20),
-                                Text(
-                                  'Please wait',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 18),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                    "This will only take a moment..."), // Loading message
-                              ],
-                            ),
-                          ),
-                        );
-                
-                        userCreds = await signInWithGoogle();
-                        print(userCreds);
-                
-                        Navigator.pop(context);
-                
-                        if (userCreds != null) {
-                          loginNavigate();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Sorry, couldn\'t login using google...')),
-                          );
-                        }
-                
-                        // showDialog(
-                        //   context: context,
-                        //   builder: (BuildContext context) {
-                        //     return AlertDialog(
-                        //       title: Text("Sorry sir"),
-                        //       content: Text("Pending parin po yung Google Log in 🥺"),
-                        //       actions: [
-                        //         TextButton(
-                        //           onPressed: () {
-                        //             Navigator.pop(context); // Close the dialog
-                        //           },
-                        //           child: Text("OK"),
-                        //         ),
-                        //       ],
-                        //     );
-                        //   },
-                        // );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: const BorderSide(
-                            color: Color(0xFFCFCFCF),
-                            width: 1,
-                          ),
-                        ),
-                        elevation: 1,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/google_logo.webp',
-                            height: 24,
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            "Sign in with Google",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                
+
                     const SizedBox(height: 170),
-                
+
                     RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
@@ -411,22 +247,7 @@ class _LoginState extends State<Login> {
                         ],
                       ),
                     ),
-                
-                    // Row(
-                    //   children: [
-                    //     const Text('Don\'t have an account yet? '),
-                    //     TextButton(
-                    //         onPressed: () {
-                    //           Navigator.pushNamed(context, '/register');
-                    //         },
-                    //         child: const Text(
-                    //           'Sign up.',
-                    //           style: TextStyle(
-                    //               color: Colors.blue,
-                    //               fontWeight: FontWeight.bold),
-                    //         )),
-                    //   ],
-                    // )
+ 
                   ],
                 ),
               ),

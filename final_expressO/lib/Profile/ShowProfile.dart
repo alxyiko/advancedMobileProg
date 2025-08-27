@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_nexus/FirebaseOperations/FirebaseuserService.dart';
-import 'package:firebase_nexus/FirebaseOperations/firebaseLogin.dart';
+ 
+import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 
 class ShowProfile extends StatefulWidget {
@@ -17,27 +16,15 @@ class _ShowProfileState extends State<ShowProfile> {
   @override
   void initState() {
     super.initState();
-    fetchUserData();
   }
-
-  Future<void> fetchUserData() async {
-    if (userCreds?.user?.email != null) {
-      final data = await Firebaseuserservice.getUserDeets(
-          userCreds?.user?.uid as String);
-      // print(data);
-      setState(() {
-        userData = data;
-        isLoading = false;
-      });
-    }
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0, // Align the leading icon to the left
-        backgroundColor: const Color(0xFF006644),
+        backgroundColor: AppColors.secondary,
         title: const Text(
           'Profile',
           style: TextStyle(
@@ -59,7 +46,7 @@ class _ShowProfileState extends State<ShowProfile> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                       Container(
-                        color: const Color(0xFF006644),
+                        color: AppColors.primaryVariant,
                         padding:
                             const EdgeInsets.only(left: 25, right: 15, top: 20),
                         width: double.infinity,
@@ -145,37 +132,6 @@ class _ShowProfileState extends State<ShowProfile> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500)),
                             const SizedBox(height: 200),
-                            SizedBox(
-                              width: double
-                                  .infinity, // Makes the button full width
-                              child: ElevatedButton.icon(
-                                onPressed: () async {
-                                  // await FirebaseAuth.instance
-                                  //     .setPersistence(Persistence.NONE);
-                                  await FirebaseAuth.instance.signOut();
-                                  Navigator.pushReplacementNamed(
-                                      context, '/login');
-                                },
-                                icon: const Icon(
-                                  Icons.logout,
-                                  color: Colors.white,
-                                  size: 16,
-                                ), // Logout icon
-                                label: const Text(
-                                  "Logout",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red, // Button color
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),

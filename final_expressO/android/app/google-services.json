@@ -154,7 +154,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:236488359466:android:0a3a3c6babf8e4bec28d53",
         "android_client_info": {
-          "package_name": "com.example.firebaseNexus"
+          "package_name": "com.example.expressO"
         }
       },
       "oauth_client": [
@@ -162,7 +162,7 @@
           "client_id": "236488359466-0o2c3pldaasl1v41lcoaa3b4dkropj8q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.firebaseNexus",
+            "package_name": "com.example.expressO",
             "certificate_hash": "e2630b936282a2542bfbd7cfde80a18d1be0c8fa"
           }
         },
@@ -170,7 +170,7 @@
           "client_id": "236488359466-pl7nhpm8m3sdhgpuqo10krdd2ogr0qlo.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.firebaseNexus",
+            "package_name": "com.example.expressO",
             "certificate_hash": "b60e26867279c9a167aff25df4398719ae14d6b4"
           }
         },

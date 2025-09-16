@@ -61,7 +61,7 @@ final MyRouteObserver routeObserver = MyRouteObserver();
 
 class MyApp extends StatefulWidget {
   // User? mainUser; // Pass mainUser to MyApp
-  MyApp({
+  const MyApp({
     super.key,
     // required this.mainUser
   });
@@ -149,7 +149,7 @@ class _MyAppState extends State<MyApp> {
       case '/':
         return const Splash();
       case '/tioWelcome':
-        return WelcomeScreen();
+        return const WelcomeScreen();
       case '/tioLogin':
         return const LoginScreen();
       case '/login':

@@ -12,8 +12,8 @@ class AppBottomNav extends StatelessWidget {
 
     return Container(
       height: 70, 
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF), // 🔹 Unselected background color
+      decoration: const BoxDecoration(
+        color: Color(0xFFFFFFFF), // 🔹 Unselected background color
       ),
       child: BottomNavigationBar(
         backgroundColor:

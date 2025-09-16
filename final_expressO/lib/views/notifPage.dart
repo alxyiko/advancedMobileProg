@@ -241,8 +241,8 @@ class _NotifPageState extends State<NotifPage> {
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8F2E2),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F2E2),
                 shape: BoxShape.circle,
               ),
               child: const Center(

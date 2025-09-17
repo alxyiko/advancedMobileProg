@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
+import 'discountPages/discountList.dart';
 
 void main() {
   runApp(const AdminHome());
@@ -27,7 +28,7 @@ class AdminHome extends StatelessWidget {
         '/products': (c) => const PlaceholderPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
         '/orders': (c) => const PlaceholderPage(title: 'Orders'),
-        '/discounts': (c) => const PlaceholderPage(title: 'Discount Codes'),
+        '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
         '/profile': (c) => const PlaceholderPage(title: 'Profile'),

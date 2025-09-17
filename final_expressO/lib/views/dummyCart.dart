@@ -1,5 +1,4 @@
 import 'package:firebase_nexus/appColors.dart';
-import 'package:firebase_nexus/helpers/supabase_helper.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

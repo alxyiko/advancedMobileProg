@@ -37,7 +37,7 @@ class Product {
       name: json['name'] as String,
       price: (json['price'] as num).toDouble(),
       tags: List<String>.from(json['tags'] ?? [])
-              ?.map((e) => e.toString())
+              .map((e) => e.toString())
               .toList() ??
           [],
     );

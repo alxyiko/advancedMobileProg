@@ -4,14 +4,14 @@ import 'package:provider/provider.dart';
 import 'notifPage.dart';
 import 'orderDetails.dart';
 
-class DummyCartPage extends StatefulWidget {
-  const DummyCartPage({super.key});
+class NeilCart extends StatefulWidget {
+  const NeilCart({super.key});
 
   @override
-  State<DummyCartPage> createState() => _DummyCartPageState();
+  State<NeilCart> createState() => _NeilCartState();
 }
 
-class _DummyCartPageState extends State<DummyCartPage> {
+class _NeilCartState extends State<NeilCart> {
   int selectedIndex = 0;
 
   @override
@@ -114,13 +114,13 @@ class _DummyCartPageState extends State<DummyCartPage> {
                             ),
                           ],
                         ),
-                        child: TextField(
-                          style: const TextStyle(
+                        child: const TextField(
+                          style: TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 16,
                             color: Color(0xFF9E7A6E), // ✅ text color
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             filled: true, // ✅ enable background fill
                             fillColor:
                                 Color(0xFF503228), // ✅ same color as container
@@ -159,7 +159,7 @@ class _DummyCartPageState extends State<DummyCartPage> {
                       height: 48,
                       width: 48,
                       decoration: BoxDecoration(
-                        color: Color(0xFFE27D19),
+                        color: const Color(0xFFE27D19),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: IconButton(

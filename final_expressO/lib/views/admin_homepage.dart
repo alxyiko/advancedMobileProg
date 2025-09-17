@@ -8,7 +8,7 @@ void main() {
 }
 
 class AdminHomepage extends StatelessWidget {
-  const AdminHomepage({Key? key}) : super(key: key);
+  const AdminHomepage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +128,7 @@ class DummyData {
 }
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -149,7 +149,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final safePadding = 16.0;
+    const safePadding = 16.0;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -161,7 +161,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (snapshot.hasError) {
-                return Center(child: Text('Error: \${snapshot.error}'));
+                return const Center(child: Text('Error: \${snapshot.error}'));
               }
               final data = snapshot.data!;
 
@@ -201,10 +201,10 @@ class _DashboardPageState extends State<DashboardPage> {
         const Text('Hello, Admin',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         const Spacer(),
-        CircleAvatar(
+        const CircleAvatar(
           radius: 18,
-          backgroundColor: const Color(0xFFF08F2A),
-          child: const Text('AD',
+          backgroundColor: Color(0xFFF08F2A),
+          child: Text('AD',
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
@@ -262,7 +262,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildDonutChart(DashboardData data) {
     final total = data.donutSegments.fold<double>(0.0, (p, e) => p + e.value);
-    final showCenterText = true;
+    const showCenterText = true;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -381,7 +381,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w600)),
                           const SizedBox(height: 6),
-                          Text('\₱ ${data.stats.totalSales.toStringAsFixed(0)}',
+                          Text('₱ ${data.stats.totalSales.toStringAsFixed(0)}',
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
@@ -469,7 +469,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Expanded(
                 child: Text(ord.name,
                     style: const TextStyle(fontWeight: FontWeight.bold))),
-            Text('\₱ ${ord.price.toStringAsFixed(0)}',
+            Text('₱ ${ord.price.toStringAsFixed(0)}',
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: Color(0xFF5D3510))),
           ],

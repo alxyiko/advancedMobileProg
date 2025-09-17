@@ -114,23 +114,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 const SizedBox(height: 24), // space below the header
                 Container(
                   decoration: BoxDecoration(
-                    color: Color(0xFFFCFAF3),
+                    color: const Color(0xFFFCFAF3),
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
                         blurRadius: 3,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: 'Search...',
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         color: Color(0xFFD4D0C2),
                       ),
-                      prefixIcon: Padding(
+                      prefixIcon: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 15),
                         child: Icon(
                           Icons.search,
@@ -143,17 +143,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       filled: true,
                       fillColor:
-                          Color(0xFFFCFAF3), // Match container's background
+                          const Color(0xFFFCFAF3), // Match container's background
                     ),
                   ),
                 ),
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 Container(
                   height: 180,
                   width: double.infinity,
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Color(0xFF2D1D17),
+                    color: const Color(0xFF2D1D17),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -165,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               '30% Discount!',
                               style: TextStyle(
                                 fontSize: 20,
@@ -173,32 +173,32 @@ class _MyHomePageState extends State<MyHomePage> {
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Text(
+                            const SizedBox(height: 8),
+                            const Text(
                               'A more affordable fix just for you!',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFFE27D19),
+                                backgroundColor: const Color(0xFFE27D19),
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: Text('Order Now!'),
+                              child: const Text('Order Now!'),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
 
-                      Container(
+                      SizedBox(
                         height: 100,
                         width: 100,
                         child: Image.asset(
@@ -209,8 +209,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 30),
-                Text(
+                const SizedBox(height: 30),
+                const Text(
                   'Bestsellers',
                   style: TextStyle(
                     fontSize: 18,
@@ -218,8 +218,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Color(0xFF2D1D17),
                   ),
                 ),
-                SizedBox(height: 16),
-                Container(
+                const SizedBox(height: 16),
+                SizedBox(
                   height: 160, // adjust height as needed
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -227,8 +227,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       // Box 1
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.only(right: 8),
-                          padding: EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -236,7 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
                                 blurRadius: 4,
-                                offset: Offset(0, 2),
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -247,8 +247,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     'assets/images/cappuccino_img.png',
                                     fit: BoxFit.contain),
                               ),
-                              SizedBox(height: 8),
-                              Text(
+                              const SizedBox(height: 8),
+                              const Text(
                                 'Cappuccino',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
@@ -262,8 +262,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       // Box 2
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 4),
-                          padding: EdgeInsets.all(12),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -271,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
                                 blurRadius: 4,
-                                offset: Offset(0, 2),
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -282,8 +282,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     'assets/images/matcha_img.png',
                                     fit: BoxFit.contain),
                               ),
-                              SizedBox(height: 8),
-                              Text(
+                              const SizedBox(height: 8),
+                              const Text(
                                 'Matcha Latte',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
@@ -296,8 +296,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.only(left: 8),
-                          padding: EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -305,7 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
                                 blurRadius: 4,
-                                offset: Offset(0, 2),
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -316,8 +316,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     'assets/images/latte_img.png',
                                     fit: BoxFit.contain),
                               ),
-                              SizedBox(height: 8),
-                              Text(
+                              const SizedBox(height: 8),
+                              const Text(
                                 'Iced Latte',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
@@ -330,11 +330,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Categories',
                       style: TextStyle(
                         fontSize: 18,
@@ -346,7 +346,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       onTap: () {
                         // You can navigate or show a dialog here
                       },
-                      child: Text(
+                      child: const Text(
                         'See All →',
                         style: TextStyle(
                           fontSize: 14,
@@ -359,7 +359,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Container(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -372,7 +372,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 55),
+                const SizedBox(height: 55),
               ],
             ),
           ),
@@ -390,7 +390,7 @@ Widget _buildCategoryBox(String label, IconData icon) {
           height: 70,
           width: 70,
           decoration: BoxDecoration(
-            color: Color(0xFFE27D19),
+            color: const Color(0xFFE27D19),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
@@ -401,10 +401,10 @@ Widget _buildCategoryBox(String label, IconData icon) {
             ),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.w500,
             color: Color(0xFF2D1D17),
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'login.dart'; // adjust the path if in another folder
+// adjust the path if in another folder
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});

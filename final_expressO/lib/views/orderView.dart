@@ -135,12 +135,12 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                                         selectedItems[index] = value ?? false;
                                       });
                                     },
-                                    checkColor: Color(0xFFE27D19),
+                                    checkColor: const Color(0xFFE27D19),
                                     fillColor:
-                                        MaterialStateProperty.resolveWith(
+                                        WidgetStateProperty.resolveWith(
                                             (states) {
                                       if (states
-                                          .contains(MaterialState.selected)) {
+                                          .contains(WidgetState.selected)) {
                                         return Colors
                                             .white; // selected: checkbox fill is white
                                       }
@@ -233,12 +233,12 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                                 ),
 
                                 // COLUMN 2 — Details
-                                Expanded(
+                                const Expanded(
                                   flex: 3,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: const [
+                                    children: [
                                       Text(
                                         'Caramel Macchiato',
                                         style: TextStyle(
@@ -308,11 +308,11 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                                       ),
                                       // Minus Button (Gray if amount == 1)
                                       IconButton(
-                                        icon: Icon(
+                                        icon: const Icon(
                                           Icons.remove_circle,
                                           color: 1 == 1
                                               ? Colors.grey
-                                              : const Color(0xFF603B17),
+                                              : Color(0xFF603B17),
                                         ),
                                         onPressed: 1 == 1
                                             ? null

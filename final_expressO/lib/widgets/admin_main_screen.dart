@@ -1,11 +1,9 @@
-import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/adminPages/adminHome.dart';
 import 'package:firebase_nexus/adminPages/analyticsVIew.dart';
 import 'package:firebase_nexus/adminPages/orderView.dart';
 import 'package:firebase_nexus/adminPages/productsView.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:firebase_nexus/widgets/admin_bottom_nav..dart';
-import 'package:firebase_nexus/widgets/app_bottom_nav.dart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

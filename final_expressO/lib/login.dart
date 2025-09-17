@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/gestures.dart';

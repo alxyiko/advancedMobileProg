@@ -127,11 +127,16 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
 
-        textTheme: TextTheme(
-          bodyMedium:
-              GoogleFonts.rubik(fontSize: 14, color: AppColors.textPrimary),
-          titleLarge:
-              GoogleFonts.rubik(fontSize: 24, fontWeight: FontWeight.bold),
+        // textTheme: TextTheme(
+        //   bodyMedium:
+        //       GoogleFonts.rubik(fontSize: 14, color: AppColors.textPrimary),
+        //   titleLarge:
+        //       GoogleFonts.rubik(fontSize: 24, fontWeight: FontWeight.bold),
+        // ),
+        fontFamily: 'Quicksand', // <-- global font
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          titleLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
       initialRoute: '/',

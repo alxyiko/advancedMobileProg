@@ -4,6 +4,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
+import 'yourProduct.dart';
+import 'discountPages/discountList.dart';
+
 
 void main() {
   runApp(const AdminHome());

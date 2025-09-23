@@ -2,9 +2,9 @@ import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
+import 'yourProduct.dart';
 
 void main() {
   runApp(const AdminHome());
@@ -24,7 +24,7 @@ class AdminHome extends StatelessWidget {
       ),
       routes: {
         '/': (c) => const DashboardPage(),
-        '/products': (c) => const PlaceholderPage(title: 'Products'),
+        '/products': (c) => const YourProductPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
         '/orders': (c) => const PlaceholderPage(title: 'Orders'),
         '/discounts': (c) => const PlaceholderPage(title: 'Discount Codes'),
@@ -368,9 +368,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildShortcutsRow() {
     final items = [
-      _ShortcutItem(icon: Icons.person_outline, label: 'Customers'),
-      _ShortcutItem(icon: Icons.coffee_outlined, label: 'Products'),
-      _ShortcutItem(icon: Icons.receipt_long, label: 'Orders'),
+      _ShortcutItem(icon: Icons.person_outline, label: 'Customers', route: '/customers'),
+
+      _ShortcutItem(
+        icon: Icons.coffee_outlined,
+        label: 'Products',
+        route: '/products', // This will navigate to YourProductPage
+     ),
+
+      _ShortcutItem(icon: Icons.receipt_long, label: 'Orders', route: '/orders'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,8 +396,7 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6.0),
         child: GestureDetector(
-          onTap: () => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Tapped ${item.label}'))),
+          onTap: () => Navigator.of(context).pushNamed(item.route),
           child: Container(
             height: 84,
             decoration: BoxDecoration(
@@ -432,7 +437,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 height: 130,
                 decoration: BoxDecoration(
                     color: const Color(0xFFF08F2A),
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(10)),
                 child: Padding(
                   padding: const EdgeInsets.all(14.0),
                   child: Column(
@@ -553,7 +558,8 @@ class _DashboardPageState extends State<DashboardPage> {
 class _ShortcutItem {
   final IconData icon;
   final String label;
-  _ShortcutItem({required this.icon, required this.label});
+  final String route; // Add this line
+  _ShortcutItem({required this.icon, required this.label, required this.route});
 }
 
 /// ---------------------- Admin Drawer Widget (styled to match screenshot) ----------------------

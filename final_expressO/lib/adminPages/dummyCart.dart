@@ -3,7 +3,7 @@ import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
-import '../helpers/database_helper.dart';
+import '../helpers/local_database_helper.dart';
 
 class DummyCartPage extends StatefulWidget {
   const DummyCartPage({super.key});

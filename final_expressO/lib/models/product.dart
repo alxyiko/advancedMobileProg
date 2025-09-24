@@ -2,13 +2,13 @@ class Product {
   final int? id;
   final String name;
   final double price;
-  final List<String> tags;
+  final int quantity;
 
   Product({
     this.id,
     required this.name,
     required this.price,
-    required this.tags,
+    required this.quantity,
   });
 
   // Convert object to Map (useful for JSON / databases)
@@ -17,7 +17,7 @@ class Product {
       'id': id,
       'name': name,
       'price': price,
-      'tags': tags,
+      'quantity': quantity,
     };
   }
 
@@ -25,21 +25,18 @@ class Product {
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
       id: map['id'] as int,
+      quantity: map['quantity'] as int,
       name: map['name'] as String,
       price: (map['price'] as num).toDouble(),
-      tags: List<String>.from(map['tags'] ?? []),
     );
   }
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as int,
+      quantity: json['quantity'] as int,
       name: json['name'] as String,
       price: (json['price'] as num).toDouble(),
-      tags: List<String>.from(json['tags'] ?? [])
-              .map((e) => e.toString())
-              .toList() ??
-          [],
     );
   }
 
@@ -50,8 +47,8 @@ class Product {
     return {
       if (id != null) 'id': id,
       'name': name,
+      'quantity': quantity,
       'price': price,
-      'tags': tags,
     };
   }
 }

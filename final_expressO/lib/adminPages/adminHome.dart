@@ -2,10 +2,12 @@ import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
+<<<<<<< HEAD
 import 'analyticsVIew.dart';
+=======
+>>>>>>> f1bcfd21a78dfd1599025b0d6288c2cbd6137bba
 import 'discountPages/discountList.dart';
 
 void main() {
@@ -29,8 +31,13 @@ class AdminHome extends StatelessWidget {
         '/products': (c) => const PlaceholderPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
         '/orders': (c) => const PlaceholderPage(title: 'Orders'),
+<<<<<<< HEAD
         '/discounts': (c) => const DiscountListPage(),
         '/analytics': (c) => const AnalyticsVIew(),
+=======
+        '/discounts': (context) => const DiscountListPage(),
+        '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
+>>>>>>> f1bcfd21a78dfd1599025b0d6288c2cbd6137bba
         '/transactions': (c) => const adminTransactionHistory(),
         '/profile': (c) => const PlaceholderPage(title: 'Profile'),
       },

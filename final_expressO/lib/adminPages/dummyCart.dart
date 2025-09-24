@@ -33,7 +33,7 @@ class _DummyCartPageState extends State<DummyCartPage> {
         centerTitle: true,
       ),
       body: FutureBuilder<List<Product>>(
-        future: DatabaseHelper().getProducts(),
+        future: SQLFliteDatabaseHelper().getCart(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -62,7 +62,7 @@ class _DummyCartPageState extends State<DummyCartPage> {
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
                     // print(product.id);
-                    await DatabaseHelper().deleteProduct(product.id);
+                    await SQLFliteDatabaseHelper().deleteProduct(product.id);
                     // Refresh UI
                     setState(() {}); // 🔥 triggers FutureBuilder to run again
                   },
@@ -82,9 +82,9 @@ class _DummyCartPageState extends State<DummyCartPage> {
             // id: dummyId,
             name: "Item ${DateTime.now().millisecondsSinceEpoch}",
             price: 199.99,
-            tags: ["dummy", "cart"],
+            quantity:1,
           );
-          await DatabaseHelper().insertProduct(dummy);
+          await SQLFliteDatabaseHelper().insertProduct(dummy);
           // Refresh UI
           (context as Element).reassemble();
         },

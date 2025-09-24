@@ -18,7 +18,7 @@ class AdminMainScreen extends StatelessWidget {
       const AdminHome(),
       const AdminProducts(),
       const AdminOrderPages(),
-      const Analyticsview(),
+      const AnalyticsVIew(),
     ];
 
     return Scaffold(

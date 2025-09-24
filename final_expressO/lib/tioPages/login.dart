@@ -40,7 +40,7 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     const Text(
-                      'Log in',
+                      'Mama mo',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,

@@ -9,6 +9,8 @@ class AppColors {
   static const Color secondary = Color(0xFF2c1d16);
   static const Color secondaryVariant = Color.fromARGB(255, 87, 57, 43);
 
+  static const Color input = Color(0xFFC8A888);
+
   // Neutral shades
   static const Color background = Color(0xFFfcfaf3);
   static const Color surface = Color(0xFFfcfaf3);

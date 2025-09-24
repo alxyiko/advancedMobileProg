@@ -208,8 +208,7 @@ class _NotifPageState extends State<NotifPage> {
     bool isHighPriority = false,
   }) {
     final timeText = _timeAgoText(createdAt);
-    const double cardHeight =
-        140.0; 
+    const double cardHeight = 140.0;
 
     final cardBody = SizedBox(
       height: cardHeight,

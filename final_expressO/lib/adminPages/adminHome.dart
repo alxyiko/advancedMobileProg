@@ -2,7 +2,6 @@ import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
 import 'discountPages/discountList.dart';

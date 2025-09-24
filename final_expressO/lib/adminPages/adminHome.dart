@@ -5,7 +5,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
+<<<<<<< HEAD
+import 'analyticsVIew.dart';
+=======
+import 'discountPages/discountList.dart';
 
+>>>>>>> f2ed9da1669ffa9cc7041769e949c9769c8f66ee
 void main() {
   runApp(const AdminHome());
 }
@@ -27,8 +32,12 @@ class AdminHome extends StatelessWidget {
         '/products': (c) => const PlaceholderPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
         '/orders': (c) => const PlaceholderPage(title: 'Orders'),
-        '/discounts': (c) => const PlaceholderPage(title: 'Discount Codes'),
+<<<<<<< HEAD
+        '/analytics': (c) => const AnalyticsVIew(),
+=======
+        '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
+>>>>>>> f2ed9da1669ffa9cc7041769e949c9769c8f66ee
         '/transactions': (c) => const adminTransactionHistory(),
         '/profile': (c) => const PlaceholderPage(title: 'Profile'),
       },
@@ -579,7 +588,7 @@ class AdminDrawer extends StatelessWidget {
       required String route,
       bool highlight = false}) {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
-    final fg = highlight ? Colors.brown.shade800 : Colors.brown.shade400;
+    final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
     return InkWell(
       onTap: () => onNavigate(route),
       child: Container(
@@ -600,7 +609,7 @@ class AdminDrawer extends StatelessWidget {
                         highlight ? FontWeight.w600 : FontWeight.normal)),
             const Spacer(),
             if (highlight)
-              const Icon(Icons.chevron_right, size: 18, color: Colors.brown)
+              const Icon(Icons.chevron_right, size: 18, color:const Color(0xFFE27D19)),
           ],
         ),
       ),

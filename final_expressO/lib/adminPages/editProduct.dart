@@ -68,7 +68,7 @@ class _EditProductState extends State<EditProduct> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4B2E2B),
+        backgroundColor: const Color(0xFF4B2E19),
         title: const Text(
           "Edit Product",
           style: TextStyle(
@@ -96,7 +96,7 @@ class _EditProductState extends State<EditProduct> {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
-                color: Color(0xFF4B2E2B),
+                color: Color(0xFF4B2E19),
               ),
             ),
             const SizedBox(height: 16),
@@ -152,7 +152,7 @@ class _EditProductState extends State<EditProduct> {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
-                color: Color(0xFF4B2E2B),
+                color: Color(0xFF4B2E19),
               ),
             ),
             const SizedBox(height: 8),

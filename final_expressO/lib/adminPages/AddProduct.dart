@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class AppColors {
-  static const Color primaryBrown = Color(0xFF4B2E2B);
+  static const Color primaryBrown = Color(0xFF4B2E19);
   static const Color accentOrange = Color(0xFFF08F2A);
   static const Color background = Color(0xFFFAF6EE);
   static const Color lightGrey = Color(0xFFF5F5F5);
@@ -253,7 +253,7 @@ class _AddProductState extends State<AddProduct> {
                       child: const Text(
                         "Cancel",
                         style: TextStyle(
-                          color: AppColors.accentOrange,
+                          color: AppColors.primaryBrown,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),

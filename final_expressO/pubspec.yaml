@@ -77,6 +77,7 @@ flutter:
     - assets/
     - assets/smile.png
     - assets/images/
+    - assets/categoryimages/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

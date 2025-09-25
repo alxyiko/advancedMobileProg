@@ -19,6 +19,12 @@ import '../models/product.dart';  class OrderListPage extends StatefulWidget {
       with SingleTickerProviderStateMixin {
     late TabController _tabController;
     String _search = '';
+    
+    // Filter variables
+    List<String> _selectedStatuses = [];
+    DateTimeRange? _selectedDateRange;
+    double _minPrice = 0;
+    double _maxPrice = 1000;
 
     final tabs = ['All', 'For Approval', 'Processing', 'Completed', 'Cancelled', 'pastry'];
 
@@ -48,11 +54,171 @@ import '../models/product.dart';  class OrderListPage extends StatefulWidget {
       final tab = tabs[tabIndex];
       var items = all.where((o) {
         final matchSearch = _search.isEmpty || o.product.name.toLowerCase().contains(_search.toLowerCase()) || o.product.id.toString().contains(_search);
-        return matchSearch;
+        
+        // Apply additional filters if any are selected
+        final matchStatus = _selectedStatuses.isEmpty || _selectedStatuses.contains(o.status);
+        final matchPrice = o.product.price >= _minPrice && o.product.price <= _maxPrice;
+        
+        return matchSearch && matchStatus && matchPrice;
       }).toList();
 
       if (tab != 'All') items = items.where((o) => o.status.toLowerCase() == tab.toLowerCase()).toList();
       return items;
+    }
+
+    void _showFilterDialog() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: const Text('Filter Orders', style: TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w600)),
+                content: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Status Filter
+                      const Text('Order Status:', style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Quicksand')),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: ['For Approval', 'Processing', 'Completed', 'Cancelled', 'pastry'].map((status) {
+                          return FilterChip(
+                            label: Text(status, style: const TextStyle(fontSize: 12, fontFamily: 'Quicksand')),
+                            selected: _selectedStatuses.contains(status),
+                            onSelected: (selected) {
+                              setDialogState(() {
+                                if (selected) {
+                                  _selectedStatuses.add(status);
+                                } else {
+                                  _selectedStatuses.remove(status);
+                                }
+                              });
+                            },
+                            selectedColor: const Color(0xFFE27D19).withOpacity(0.2),
+                            checkmarkColor: const Color(0xFF8E4B0E),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Price Range Filter
+                      const Text('Price Range:', style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Quicksand')),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: _minPrice.toString(),
+                              decoration: const InputDecoration(
+                                labelText: 'Min Price',
+                                prefixText: '₱',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                final price = double.tryParse(value);
+                                if (price != null) {
+                                  setDialogState(() => _minPrice = price);
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: _maxPrice.toString(),
+                              decoration: const InputDecoration(
+                                labelText: 'Max Price',
+                                prefixText: '₱',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                final price = double.tryParse(value);
+                                if (price != null) {
+                                  setDialogState(() => _maxPrice = price);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Date Range Filter
+                      const Text('Date Range:', style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Quicksand')),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () async {
+                          final DateTimeRange? range = await showDateRangePicker(
+                            context: context,
+                            firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                            lastDate: DateTime.now(),
+                            initialDateRange: _selectedDateRange,
+                          );
+                          if (range != null) {
+                            setDialogState(() => _selectedDateRange = range);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.date_range, color: Color(0xFF8E4B0E)),
+                              const SizedBox(width: 8),
+                              Text(
+                                _selectedDateRange == null 
+                                  ? 'Select Date Range'
+                                  : '${_selectedDateRange!.start.day}/${_selectedDateRange!.start.month} - ${_selectedDateRange!.end.day}/${_selectedDateRange!.end.month}',
+                                style: const TextStyle(fontFamily: 'Quicksand'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      setDialogState(() {
+                        _selectedStatuses.clear();
+                        _selectedDateRange = null;
+                        _minPrice = 0;
+                        _maxPrice = 1000;
+                      });
+                    },
+                    child: const Text('Clear All', style: TextStyle(color: Colors.grey, fontFamily: 'Quicksand')),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontFamily: 'Quicksand')),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {}); // Refresh the main page with new filters
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE27D19),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Apply', style: TextStyle(fontFamily: 'Quicksand')),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
     }
 
     @override
@@ -123,13 +289,13 @@ import '../models/product.dart';  class OrderListPage extends StatefulWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(color: const Color(0xFFE27D19), borderRadius: BorderRadius.circular(10)),
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.tune, color: Colors.white),
+                      InkWell(
+                        onTap: _showFilterDialog,
+                        borderRadius: BorderRadius.circular(5),
+                        child: SvgPicture.asset(
+                          'assets/images/filter_icon.svg',
+                          width: 44,
+                          height: 44,
                         ),
                       )
                     ],
@@ -167,7 +333,7 @@ import '../models/product.dart';  class OrderListPage extends StatefulWidget {
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 20),
               itemBuilder: (context, index) {
                 final item = items[index];
                 return GestureDetector(
@@ -176,7 +342,14 @@ import '../models/product.dart';  class OrderListPage extends StatefulWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                          spreadRadius: 0,
+                        ),
+                      ],
                     ),
                     padding: const EdgeInsets.all(12),
                     child: Row(

@@ -1,10 +1,10 @@
 import 'package:firebase_nexus/appColors.dart';
-import 'package:firebase_nexus/helpers/supabase_helper.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../helpers/local_database_helper.dart';
+import 'orderDetailedView.dart';
 
 class SQLitePage extends StatefulWidget {
   const SQLitePage({super.key});
@@ -59,15 +59,41 @@ class _SQLitePageState extends State<SQLitePage> {
                   "₱${product.price.toStringAsFixed(2)}\nProvider value: ${navProvider.selectedIndex}",
                 ),
                 isThreeLine: true,
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    // print(product.id);
-                    await SQLFliteDatabaseHelper().deleteProduct(product.id);
-                    // Refresh UI
-                    setState(() {}); // 🔥 triggers FutureBuilder to run again
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.receipt_long, color: Colors.blue),
+                      tooltip: 'Order',
+                      onPressed: () {
+                        // Navigate to detailed order view for this product
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailedView(product: product),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        // print(product.id);
+                        await SQLFliteDatabaseHelper().deleteProduct(product.id);
+                        // Refresh UI
+                        setState(() {}); // 🔥 triggers FutureBuilder to run again
+                      },
+                    ),
+                  ],
                 ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderDetailedView(product: product),
+                    ),
+                  );
+                },
               );
             },
           );
@@ -87,7 +113,7 @@ class _SQLitePageState extends State<SQLitePage> {
           );
           await SQLFliteDatabaseHelper().insertProduct(dummy);
           // Refresh UI
-          (context as Element).reassemble();
+          setState(() {});
         },
         child: const Icon(Icons.add),
       ),

@@ -1,8 +1,7 @@
-  import 'package:flutter/material.dart';
-  import '../views/orderDetailedView.dart';
-  import '../models/product.dart';
-
-  class OrderListPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../views/orderDetailedView.dart';
+import '../models/product.dart';  class OrderListPage extends StatefulWidget {
     const OrderListPage({Key? key}) : super(key: key);
 
     @override
@@ -67,17 +66,35 @@
         data: themeWithQuicksand,
         child: Scaffold(
           appBar: AppBar(
-            backgroundColor: const Color(0xFF603B17),
+            backgroundColor: const Color(0xFF38241D),
             centerTitle: true,
-            title: const Text('Orders', style: TextStyle(color: Colors.white, fontFamily: 'Quicksand', fontWeight: FontWeight.w600)),
-            leading: IconButton(
-              icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-              onPressed: () => Navigator.of(context).pop(),
+            titleSpacing: 0,
+            toolbarHeight: 70,
+            title: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: const Text('Orders', style: TextStyle(color: Colors.white, fontFamily: 'Quicksand', fontWeight: FontWeight.w600)),
             ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(120),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            leading: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: IconButton(
+                icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0, top: 10),
+                child: SvgPicture.asset(
+                  'assets/images/store_icon.svg',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(180),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 25),
               child: Column(
                 children: [
                   Row(
@@ -87,7 +104,7 @@
                           height: 44,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF38241D),
+                            color: const Color(0xFF503228),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Row(
@@ -117,16 +134,19 @@
                       )
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 45),
                   Container(
-                    height: 40,
+                    height: 30,
                     alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 0),
                     child: TabBar(
                       isScrollable: true,
                       controller: _tabController,
-                      indicatorColor: const Color(0xFFE27D19),
+                      tabAlignment: TabAlignment.start,
+                      indicatorColor: Colors.transparent,
+                      dividerColor: Colors.transparent,
                       labelColor: Colors.white,
-                      unselectedLabelColor: const Color(0xFFD8CFC7),
+                      unselectedLabelColor: const Color(0xFF9C7E60),
                       labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Quicksand'),
                       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400, fontFamily: 'Quicksand'),
                       tabs: tabs.map((t) => Tab(text: t)).toList(),

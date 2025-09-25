@@ -24,7 +24,7 @@ class _SQLitePageState extends State<SQLitePage> {
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
         title: const Text(
-          "Your Cart",
+          "Your Cart",  
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,

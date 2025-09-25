@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
 import 'discountPages/discountList.dart';
+import 'orderList.dart';
 
 void main() {
   runApp(const AdminHome());
@@ -26,7 +27,7 @@ class AdminHome extends StatelessWidget {
         '/': (c) => const DashboardPage(),
         '/products': (c) => const PlaceholderPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
-        '/orders': (c) => const PlaceholderPage(title: 'Orders'),
+  '/orders': (c) => const OrderListPage(),
         '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
@@ -786,7 +787,7 @@ class PlaceholderPage extends StatelessWidget {
         title: Text(title),
         backgroundColor: const Color(0xFF5D3510),
       ),
-      body: Center(child: Text('This is the $title page (placeholder).')),
+      body: Center(child: Text('This is the emerut $title page (placeholder).')),
     );
   }
 }

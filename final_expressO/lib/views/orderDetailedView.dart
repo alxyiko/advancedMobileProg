@@ -227,11 +227,70 @@ class OrderDetailedView extends StatelessWidget {
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Cancel Order'),
-                        content: const Text('Are you sure you want to cancel this order?'),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        titlePadding: EdgeInsets.zero,
+                        title: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE27D19),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.report_problem, color: Colors.white, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Cancel Order',
+                                  style: TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        content: const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
+                          child: Text(
+                            'Are you sure you want to cancel this order? This action cannot be undone.',
+                            style: TextStyle(fontFamily: 'Quicksand', fontSize: 14),
+                          ),
+                        ),
+                        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        actionsAlignment: MainAxisAlignment.end,
                         actions: [
-                          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('No')),
-                          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Yes')),
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF2D1D17),
+                              side: const BorderSide(color: Color(0xFFBDB6AE)),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              textStyle: const TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w600),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('No'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              textStyle: const TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w700),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Yes, cancel'),
+                          ),
                         ],
                       ),
                     );

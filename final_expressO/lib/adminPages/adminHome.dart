@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
 import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
+import 'orderList.dart';
 
 
 void main() {
@@ -28,7 +29,7 @@ class AdminHome extends StatelessWidget {
         '/': (c) => const DashboardPage(),
         '/products': (c) => const YourProductPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
-        '/orders': (c) => const PlaceholderPage(title: 'Orders'),
+  '/orders': (c) => const OrderListPage(),
         '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
@@ -587,7 +588,7 @@ class AdminDrawer extends StatelessWidget {
       required String route,
       bool highlight = false}) {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
-    final fg = highlight ? Colors.brown.shade800 : Colors.brown.shade400;
+    final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
     return InkWell(
       onTap: () => onNavigate(route),
       child: Container(
@@ -608,7 +609,7 @@ class AdminDrawer extends StatelessWidget {
                         highlight ? FontWeight.w600 : FontWeight.normal)),
             const Spacer(),
             if (highlight)
-              const Icon(Icons.chevron_right, size: 18, color: Colors.brown)
+              const Icon(Icons.chevron_right, size: 18, color:const Color(0xFFE27D19)),
           ],
         ),
       ),
@@ -794,7 +795,7 @@ class PlaceholderPage extends StatelessWidget {
         title: Text(title),
         backgroundColor: const Color(0xFF5D3510),
       ),
-      body: Center(child: Text('This is the $title page (placeholder).')),
+      body: Center(child: Text('This is the emerut $title page (placeholder).')),
     );
   }
 }

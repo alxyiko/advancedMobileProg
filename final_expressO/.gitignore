@@ -9,14 +9,12 @@
 .history
 .svn/
 migrate_working_dir/
-
+*supabase-flutter/
 # IntelliJ related
 *.iml
 *.ipr
 *.iws
 .idea/
-
-*supabase-flutter/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -32,6 +30,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+*node_modules/
 
 # Symbolication related
 app.*.symbols

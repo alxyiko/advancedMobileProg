@@ -49,6 +49,7 @@ dependencies:
   sqflite: ^2.4.1
   supabase_flutter: ^2.8.0 
   flutter_dotenv: ^5.0.2
+  flutter_svg: ^1.1.1
  
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,8 @@ flutter:
     - assets/
     - assets/smile.png
     - assets/images/
+    - assets/categoryimages/
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

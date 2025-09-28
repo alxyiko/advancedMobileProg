@@ -3,7 +3,8 @@ import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
-import '../helpers/database_helper.dart';
+import '../views/orderDetailedView.dart';
+import '../helpers/local_database_helper.dart';
 
 class DummyCartPage extends StatefulWidget {
   const DummyCartPage({super.key});
@@ -33,7 +34,7 @@ class _DummyCartPageState extends State<DummyCartPage> {
         centerTitle: true,
       ),
       body: FutureBuilder<List<Product>>(
-        future: DatabaseHelper().getProducts(),
+        future: SQLFliteDatabaseHelper().getCart(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -58,14 +59,31 @@ class _DummyCartPageState extends State<DummyCartPage> {
                   "₱${product.price.toStringAsFixed(2)}\nProvider value: ${navProvider.selectedIndex}",
                 ),
                 isThreeLine: true,
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    // print(product.id);
-                    await DatabaseHelper().deleteProduct(product.id);
-                    // Refresh UI
-                    setState(() {}); // 🔥 triggers FutureBuilder to run again
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.receipt_long, color: Colors.blue),
+                      tooltip: 'Order',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailedView(product: product),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        // print(product.id);
+                        await SQLFliteDatabaseHelper().deleteProduct(product.id);
+                        // Refresh UI
+                        setState(() {}); // 🔥 triggers FutureBuilder to run again
+                      },
+                    ),
+                  ],
                 ),
               );
             },
@@ -82,11 +100,11 @@ class _DummyCartPageState extends State<DummyCartPage> {
             // id: dummyId,
             name: "Item ${DateTime.now().millisecondsSinceEpoch}",
             price: 199.99,
-            tags: ["dummy", "cart"],
+            quantity:1,
           );
-          await DatabaseHelper().insertProduct(dummy);
+          await SQLFliteDatabaseHelper().insertProduct(dummy);
           // Refresh UI
-          (context as Element).reassemble();
+          setState(() {});
         },
         child: const Icon(Icons.add),
       ),

@@ -1,7 +1,6 @@
-import 'package:firebase_nexus/appColors.dart';
-import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import '../models/product.dart';
+import 'orderDetailedView.dart';
 
 class DummyOrderPage extends StatefulWidget {
   const DummyOrderPage({super.key});
@@ -16,7 +15,8 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
 
   @override
   Widget build(BuildContext context) {
-    final navProvider = Provider.of<NavigationProvider>(context);
+  // navigation provider available if needed
+  // final navProvider = Provider.of<NavigationProvider>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
@@ -199,131 +199,148 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                       child: AnimatedPadding(
                         duration: const Duration(milliseconds: 650),
                         padding: EdgeInsets.only(left: isEditing ? 0 : 0),
-                        child: Card(
-                          color: const Color(0xFFFCFAF3),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 16, horizontal: 12),
-                            child: Row(
-                              children: [
-                                // COLUMN 1 — Image and Price
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        'assets/images/coffee_img.png',
-                                        height: 60,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      const Text(
-                                        '₱250',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
+                        child: InkWell(
+                          onTap: () {
+                            // Construct a Product from the displayed values and navigate
+                            final product = Product(
+                              id: null,
+                              name: 'Caramel Macchiato',
+                              price: 250.0,
+                              quantity: 3,
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OrderDetailedView(product: product),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            color: const Color(0xFFFCFAF3),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 16, horizontal: 12),
+                              child: Row(
+                                children: [
+                                  // COLUMN 1 — Image and Price
+                                  Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/coffee_img.png',
+                                          height: 60,
+                                          fit: BoxFit.cover,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          '₱250',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
 
-                                // COLUMN 2 — Details
-                                const Expanded(
-                                  flex: 3,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Caramel Macchiato',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
+                                  // COLUMN 2 — Details
+                                  const Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Caramel Macchiato',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Date',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Date',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        '09/05/25',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontSize: 14,
+                                        Text(
+                                          '09/05/25',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontSize: 14,
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Amount',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Amount',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        '3',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontSize: 14,
+                                        Text(
+                                          '3',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontSize: 14,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
 
-                                // COLUMN 3 — Add / Minus Buttons
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      // Add Button
-                                      IconButton(
-                                        icon: const Icon(Icons.add_circle,
-                                            color: Color(0xFF603B17)),
-                                        onPressed: () {
-                                          // increase logic here
-                                        },
-                                      ),
-                                      // Current Amount
-                                      const Text(
-                                        '1',
-                                        style: TextStyle(
-                                          fontFamily: 'Quicksand',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
+                                  // COLUMN 3 — Add / Minus Buttons
+                                  Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        // Add Button
+                                        IconButton(
+                                          icon: const Icon(Icons.add_circle,
+                                              color: Color(0xFF603B17)),
+                                          onPressed: () {
+                                            // increase logic here
+                                          },
                                         ),
-                                      ),
-                                      // Minus Button (Gray if amount == 1)
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.remove_circle,
-                                          color: 1 == 1
-                                              ? Colors.grey
-                                              : Color(0xFF603B17),
+                                        // Current Amount
+                                        const Text(
+                                          '1',
+                                          style: TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                        onPressed: 1 == 1
-                                            ? null
-                                            : () {
-                                                // decrease logic here
-                                              },
-                                      ),
-                                    ],
+                                        // Minus Button (Gray if amount == 1)
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.remove_circle,
+                                            color: 1 == 1
+                                                ? Colors.grey
+                                                : Color(0xFF603B17),
+                                          ),
+                                          onPressed: 1 == 1
+                                              ? null
+                                              : () {
+                                                  // decrease logic here
+                                                },
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),

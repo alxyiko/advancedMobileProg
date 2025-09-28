@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../views/orderDetailedView.dart';
-import '../models/product.dart';  class OrderListPage extends StatefulWidget {
+import '../models/product.dart';
+import 'adminOrderDetailedPage.dart';  class OrderListPage extends StatefulWidget {
     const OrderListPage({Key? key}) : super(key: key);
 
     @override
@@ -952,7 +952,7 @@ import '../models/product.dart';  class OrderListPage extends StatefulWidget {
               itemBuilder: (context, index) {
                 final item = items[index];
                 return GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrderDetailedView(product: item.product))),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AdminOrderDetailedPage(product: item.product, orderStatus: item.status))),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,

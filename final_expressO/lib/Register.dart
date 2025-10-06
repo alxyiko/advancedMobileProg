@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/appColors.dart';
+import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 
@@ -12,21 +13,13 @@ class Register extends StatefulWidget {
 class RegisterState extends State<Register> {
   @override
   void initState() {
-    // final user = FirebaseAuth.instance.currentUser?.uid;
-    // homeRoute = routeObserver.currentRoute;
-    // setUserData();
-    // print('user');
-    // // print(user);
-    // if (user != null){
-    //   Navigator.pushNamed(context, '/home');
-    // }
-
     super.initState();
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _firstnameController = TextEditingController();
   final TextEditingController _lastnameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneNumController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -34,9 +27,9 @@ class RegisterState extends State<Register> {
   final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
+  bool _isLoading = false;
 
   String? gender;
-  String? barangay;
 
   @override
   void dispose() {
@@ -46,18 +39,48 @@ class RegisterState extends State<Register> {
   }
 
   Future<void> _validateAndSubmit() async {
-    String message = '';
-
-    if (_formKey.currentState!.validate()) {
-    
+    // Run built-in field validators
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fix the highlighted fields.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
       return;
-    } else {
-      message = 'Please try again!';
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+    final uname = '${_firstnameController.text} ${_lastnameController.text}';
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final supabaseHelper = UserSupabaseHelper();
+
+    final result = await supabaseHelper.signUp(
+      email,
+      password,
+      _addressController.text,
+      uname,
+      _phoneNumController.text,
     );
+
+    setState(() => _isLoading = false);
+
+    if (result['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushNamed(context, '/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -102,6 +125,17 @@ class RegisterState extends State<Register> {
                     ),
                     validator: (value) => value == null || value.isEmpty
                         ? "Please enter last name!"
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: const InputDecoration(
+                      labelText: "Address",
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => value == null || value.isEmpty
+                        ? "Please enter your address!"
                         : null,
                   ),
                   const SizedBox(height: 12),
@@ -191,7 +225,20 @@ class RegisterState extends State<Register> {
                               BorderRadius.circular(8), // Rounded corners
                         ),
                       ),
-                      child: const Text('Sign Up'),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Sign Up',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 25),

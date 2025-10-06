@@ -4,19 +4,163 @@ import 'package:firebase_nexus/models/product.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserSupabaseHelper {
-  final SupabaseClient client = Supabase.instance.client;
+  final SupabaseClient _client = Supabase.instance.client;
   final mainhelper = SupabaseHelper();
   final sqlFlite = SQLFliteDatabaseHelper();
 
   Future<bool> isConnected() async {
     try {
-      final response = await client.from('Products').select().limit(1);
+      final response = await _client.from('Products').select().limit(1);
       return response.isNotEmpty;
     } catch (e) {
       print("Connection error: $e");
       return false;
     }
   }
+
+// 🔹 Sign in (check Users table manually)
+  Future<Map<String, dynamic>> signIn(String email, String password) async {
+    try {
+      final response = await _client
+          .from('Users')
+          .select()
+          .eq('email', email)
+          .eq('password', password)
+          .maybeSingle(); // returns null if not found
+
+      if (response == null) {
+        return {
+          'success': false,
+          'message': 'Invalid Credentials',
+        };
+      }
+
+      return {
+        'success': true,
+        'message': 'User logged in successfully!',
+        'data': response,
+      };
+    } catch (e) {
+      print('Sign-in error: $e');
+      return {
+        'success': false,
+        'message': 'Something went wrong on our end, try again later.',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> signUp(
+    String email,
+    String password,
+    String address,
+    String uname,
+    String pnum,
+  ) async {
+    try {
+      // Check if user already exists
+      final existingUser = await _client
+          .from('Users')
+          .select('id')
+          .or('email.eq.$email,phone_number.eq.$pnum')
+          .maybeSingle();
+
+      if (existingUser != null) {
+        return {
+          'success': false,
+          'message': 'Email or phone number already in use',
+        };
+      }
+
+      // Insert new user
+      final response = await _client
+          .from('Users')
+          .insert({
+            'email': email,
+            'password': password,
+            'address': address,
+            'role': 0,
+            'username': uname,
+            'phone_number': pnum,
+          })
+          .select()
+          .single();
+
+      print('User created: ${response['username']}');
+
+      return {
+        'success': true,
+        'message': 'Account created successfully!',
+        'data': response,
+      };
+    } catch (e) {
+      print('Sign-up error: $e');
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred.',
+      };
+    }
+  }
+
+  // // 🔹 Sign in with email and password
+  // Future<AuthResponse?> signIn(String email, String password) async {
+  //   try {
+  //     final response = await _client.auth.signInWithPassword(
+  //       email: email,
+  //       password: password,
+  //     );
+  //     return response; // contains session + user info
+  //   } on AuthException catch (e) {
+  //     print('Auth error: ${e.message}');
+  //     return null;
+  //   } catch (e) {
+  //     print('Unexpected error: $e');
+  //     return null;
+  //   }
+  // }
+
+  // // 🔹 Sign up a new user
+  // Future<AuthResponse?> signUp(String email, String password, String address, String uname, String pnum) async {
+  //   try {
+  //     final response = await _client.auth.signUp(
+  //       email: email,
+  //       password: password,
+  //     );
+
+  //     if (response.user != null) {
+
+  //       await insert('Users', {
+  //         'email': response.user!.email,
+  //         'password': password,
+  //         'address': address,
+  //         'role': 0,
+  //         'username': uname,
+  //         'phone_number': pnum,
+  //       });
+
+  //     }
+
+  //     return response;
+
+  //   } on AuthException catch (e) {
+  //     print('Auth error: ${e.message}');
+  //     return null;
+  //   } catch (e) {
+  //     print('Unexpected error: $e');
+  //     return null;
+  //   }
+  // }
+
+  // 🔹 Sign out the current user
+  Future<void> signOut() async {
+    try {
+      await _client.auth.signOut();
+    } catch (e) {
+      print('Sign out error: $e');
+    }
+  }
+
+  // 🔹 Get the current user (if logged in)
+  User? get currentUser => _client.auth.currentUser;
 
   Future<List<Map<String, dynamic>>> getProducts() async {
     return await mainhelper.getAll('Products');
@@ -26,13 +170,11 @@ class UserSupabaseHelper {
     return sqlFlite.getCart();
   }
 
-  
-
   Future<Map<String, dynamic>?> getById(
       String table, String idColumn, dynamic id) async {
     try {
       final response =
-          await client.from(table).select().eq(idColumn, id).maybeSingle();
+          await _client.from(table).select().eq(idColumn, id).maybeSingle();
       return response;
     } catch (e) {
       print("GetById error: $e");
@@ -43,7 +185,7 @@ class UserSupabaseHelper {
   Future<Map<String, dynamic>?> insert(
       String table, Map<String, dynamic> data) async {
     try {
-      final response = await client.from(table).insert(data).select().single();
+      final response = await _client.from(table).insert(data).select().single();
       return response;
     } catch (e) {
       print("Insert error: $e");
@@ -54,7 +196,7 @@ class UserSupabaseHelper {
   Future<Map<String, dynamic>?> update(String table, String idColumn,
       dynamic id, Map<String, dynamic> data) async {
     try {
-      final response = await client
+      final response = await _client
           .from(table)
           .update(data)
           .eq(idColumn, id)
@@ -69,7 +211,7 @@ class UserSupabaseHelper {
 
   Future<bool> delete(String table, String idColumn, dynamic id) async {
     try {
-      await client.from(table).delete().eq(idColumn, id);
+      await _client.from(table).delete().eq(idColumn, id);
       return true;
     } catch (e) {
       print("Delete error: $e");
@@ -83,7 +225,7 @@ class UserSupabaseHelper {
     void Function(Map<String, dynamic> payload)? onUpdate,
     void Function(Map<String, dynamic> payload)? onDelete,
   }) {
-    final channel = client.channel('public:$table');
+    final channel = _client.channel('public:$table');
 
     channel
         .onPostgresChanges(
@@ -116,6 +258,6 @@ class UserSupabaseHelper {
   }
 
   void unsubscribe(RealtimeChannel channel) {
-    client.removeChannel(channel);
+    _client.removeChannel(channel);
   }
 }

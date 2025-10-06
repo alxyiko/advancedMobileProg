@@ -1,9 +1,55 @@
+import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/gestures.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    setState(() => _isLoading = true);
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final supabaseHelper = UserSupabaseHelper();
+
+    final result = await supabaseHelper.signIn(email, password);
+
+    setState(() => _isLoading = false);
+
+    if (result['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pushNamed(context, '/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,19 +74,10 @@ class LoginScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Logo
-                    // SizedBox(
-                    //   height: 100,
-                    //   width: 100,
-                    //   child: Image.asset(
-                    //     'assets/images/welcome.png',
-                    //     fit: BoxFit.cover,
-                    //   ),
-                    // ),
                     const SizedBox(height: 20),
 
                     const Text(
-                      'Mama mo',
+                      'Log in',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -50,11 +87,13 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 30),
 
                     _buildInputField(
+                      controller: _emailController,
                       label: 'Email',
                       icon: Icons.email_outlined,
                     ),
                     const SizedBox(height: 20),
                     _buildInputField(
+                      controller: _passwordController,
                       label: 'Password',
                       icon: Icons.lock_outlined,
                       isPassword: true,
@@ -72,13 +111,21 @@ class LoginScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        onPressed: () {
-                          // Handle login action
-                        },
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
+                        onPressed: _isLoading ? null : _handleLogin,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Login',
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -140,6 +187,7 @@ class LoginScreen extends StatelessWidget {
     required String label,
     required IconData icon,
     bool isPassword = false,
+    required TextEditingController controller,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -159,6 +207,7 @@ class LoginScreen extends StatelessWidget {
         ],
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         decoration: InputDecoration(
           labelText: label,

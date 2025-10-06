@@ -1,6 +1,7 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/tioPages/login.dart';
 import 'package:firebase_nexus/tioPages/main.dart';
 import 'package:firebase_nexus/widgets/admin_main_screen.dart';
@@ -36,6 +37,7 @@ void main() async {
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (_) => NavigationProvider()),
+    ChangeNotifierProvider(create: (_) => UserProvider()),
     Provider<SupabaseHelper>(create: (_) => SupabaseHelper()),
   ], child: MyApp()));
 }

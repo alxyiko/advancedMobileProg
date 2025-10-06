@@ -7,8 +7,6 @@ class NavigationProvider extends ChangeNotifier {
 
   void setIndex(int index) {
     _selectedIndex = index;
-
-
     notifyListeners();
   }
 }

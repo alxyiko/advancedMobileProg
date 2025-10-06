@@ -1,12 +1,15 @@
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
 import 'package:firebase_nexus/models/product.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserSupabaseHelper {
   final SupabaseClient _client = Supabase.instance.client;
   final mainhelper = SupabaseHelper();
   final sqlFlite = SQLFliteDatabaseHelper();
+  final userProvider = UserProvider();
+  Map<String, dynamic>? currentUser; // <-- store signed-in user
 
   Future<bool> isConnected() async {
     try {
@@ -34,7 +37,10 @@ class UserSupabaseHelper {
           'message': 'Invalid Credentials',
         };
       }
+      await userProvider.setUser(response);
 
+      print(currentUser);
+      print(response);
       return {
         'success': true,
         'message': 'User logged in successfully!',
@@ -86,6 +92,8 @@ class UserSupabaseHelper {
           .single();
 
       print('User created: ${response['username']}');
+
+      await userProvider.setUser(response);
 
       return {
         'success': true,
@@ -160,7 +168,7 @@ class UserSupabaseHelper {
   }
 
   // 🔹 Get the current user (if logged in)
-  User? get currentUser => _client.auth.currentUser;
+  // User? get currentUser => _client.auth.currentUser;
 
   Future<List<Map<String, dynamic>>> getProducts() async {
     return await mainhelper.getAll('Products');

@@ -6,6 +6,7 @@ import 'package:firebase_nexus/views/dummyCart.dart';
 import 'package:firebase_nexus/views/dummyCartSupa.dart';
 import 'package:firebase_nexus/views/dummyHome.dart';
 import 'package:firebase_nexus/views/orderView.dart';
+import 'package:firebase_nexus/views/userProfile.dart';
 import 'package:firebase_nexus/widgets/app_bottom_nav.dart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class MainScreen extends StatelessWidget {
       // const SQLitePage(),
       // const SupaPage(),
  
-      const ShowProfile(),
+      const UserProfilePage(),
     ];
 
     return Scaffold(

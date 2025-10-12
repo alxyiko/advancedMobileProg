@@ -40,7 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pushNamed(context, '/home');
+
+      print(result['data']['role']);
+
+      if (result['data']['role'] == 1) {
+        Navigator.pushNamed(context, '/adminHome');
+      } else {
+        Navigator.pushNamed(context, '/home');
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

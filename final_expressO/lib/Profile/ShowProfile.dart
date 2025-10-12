@@ -21,7 +21,7 @@ class _ShowProfileState extends State<ShowProfile> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     // Clear user in provider + shared preferences
-    await userProvider.clearUser();
+    await userProvider.clearUser(context);
 
     // Navigate to login (replace with your actual login route)
     if (mounted) {
@@ -33,14 +33,16 @@ class _ShowProfileState extends State<ShowProfile> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
 
-    if (!userProvider.isLoaded) {
-      userProvider.loadUser();
+    if (!userProvider.isLoaded || userProvider.user == null) {
+      userProvider.loadUser(context);
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     final user = userProvider.user;
+
+    print(user);
 
     return Scaffold(
       appBar: AppBar(

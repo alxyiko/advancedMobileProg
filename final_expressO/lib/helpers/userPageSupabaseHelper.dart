@@ -21,30 +21,40 @@ class UserSupabaseHelper {
     }
   }
 
-// 🔹 Sign in (check Users table manually)
   Future<Map<String, dynamic>> signIn(String email, String password) async {
     try {
-      final response = await _client
-          .from('Users')
-          .select()
-          .eq('email', email)
-          .eq('password', password)
-          .maybeSingle(); // returns null if not found
+      // 🔹 Stage 1: Quick DB validation
+      final existingUser =
+          await _client.from('Users').select().eq('email', email).maybeSingle();
 
-      if (response == null) {
+      if (existingUser == null) {
+        return {'success': false, 'message': 'Email not found'};
+      }
+
+      if (existingUser['password'] != password) {
+        return {'success': false, 'message': 'Invalid password'};
+      }
+
+      // 🔹 Stage 2: Actual Supabase Auth
+      final authResponse = await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (authResponse.user == null) {
         return {
           'success': false,
-          'message': 'Invalid Credentials',
+          'message': 'Failed to sign in with Supabase Auth',
         };
       }
-      await userProvider.setUser(response);
 
-      print(currentUser);
-      print(response);
+      // 🔹 Stage 3: Cache and return user data
+
+      await userProvider.setUser(existingUser);
       return {
         'success': true,
         'message': 'User logged in successfully!',
-        'data': response,
+        'data': existingUser,
       };
     } catch (e) {
       print('Sign-in error: $e');
@@ -63,7 +73,7 @@ class UserSupabaseHelper {
     String pnum,
   ) async {
     try {
-      // Check if user already exists
+      // 🔹 Stage 1: Validate first
       final existingUser = await _client
           .from('Users')
           .select('id')
@@ -77,7 +87,20 @@ class UserSupabaseHelper {
         };
       }
 
-      // Insert new user
+      // 🔹 Stage 2: Register in Auth
+      final authResponse = await _client.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (authResponse.user == null) {
+        return {
+          'success': false,
+          'message': 'Failed to register with Supabase Auth',
+        };
+      }
+
+      // 🔹 Stage 3: Create user record in custom table
       final response = await _client
           .from('Users')
           .insert({
@@ -91,8 +114,7 @@ class UserSupabaseHelper {
           .select()
           .single();
 
-      print('User created: ${response['username']}');
-
+      print(response);
       await userProvider.setUser(response);
 
       return {

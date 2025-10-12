@@ -1,28 +1,11 @@
 import 'package:firebase_nexus/appColors.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'admin_homepage.dart';
 
-class DummyHome extends StatelessWidget {
-  const DummyHome({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-        fontFamily: 'Quicksand',
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -39,6 +22,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (!userProvider.isLoaded || userProvider.user == null) {
+      userProvider.loadUser(context);
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final user = userProvider.user;
+
+    print(user);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
       body: SafeArea(
@@ -58,16 +54,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding: const EdgeInsets.only(
                           left: 8.0), // ✅ left padding for text
                       child: RichText(
-                        text: const TextSpan(
-                          style: TextStyle(
+                        text: TextSpan(
+                          style: const TextStyle(
                             fontSize: 20,
                             color: Color(0xFF2D1D17),
                           ),
                           children: [
-                            TextSpan(text: "Hello, "),
+                            const TextSpan(text: "Hello, "),
                             TextSpan(
-                              text: "Username!",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              text: user!['username'],
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -84,14 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             );
                           },
-                          icon: const Icon(
-                            Icons.shopping_cart_outlined,
-                            color: Color(0xFF2D1D17),
-                            size: 22, // ✅ smaller size
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {},
                           icon: const Icon(
                             Icons.shopping_cart_outlined,
                             color: Color(0xFF2D1D17),
@@ -142,8 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor:
-                          const Color(0xFFFCFAF3), // Match container's background
+                      fillColor: const Color(
+                          0xFFFCFAF3), // Match container's background
                     ),
                   ),
                 ),

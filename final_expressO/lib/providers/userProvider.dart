@@ -10,11 +10,13 @@ class UserProvider extends ChangeNotifier {
   bool get isLoggedIn => _user != null;
   bool get isLoaded => _isLoaded;
 
-  Future<void> loadUser() async {
+  Future<void> loadUser(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString('user');
     if (userJson != null) {
       _user = jsonDecode(userJson);
+    } else {
+      Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (route) => false);
     }
     _isLoaded = true;
     notifyListeners();
@@ -24,13 +26,17 @@ class UserProvider extends ChangeNotifier {
     _user = user;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user', jsonEncode(user));
+    // _isLoaded = true;
     notifyListeners();
   }
 
-  Future<void> clearUser() async {
+  Future<void> clearUser(BuildContext context) async {
     _user = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
     notifyListeners();
+
+    // 👇 Push login screen and remove all previous routes
+    Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (route) => false);
   }
 }

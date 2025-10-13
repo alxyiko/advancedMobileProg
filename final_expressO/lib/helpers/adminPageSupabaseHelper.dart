@@ -15,11 +15,19 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAll(String table) async {
+  Future<List<Map<String, dynamic>>> getAll(
+    String table ) async {
     try {
-      final response = await client.from(table).select();
+      var query = client.from(table).select();
 
-      print("functname: get all");
+      // // If a search term and column are provided, apply a filter
+      // if (searchTerm != null && searchColumn != null) {
+      //   query = query.ilike(searchColumn, '%$searchTerm%');
+      // }
+
+      final response = await query;
+
+      print("functname: getAll");
       print(response);
 
       return List<Map<String, dynamic>>.from(response);

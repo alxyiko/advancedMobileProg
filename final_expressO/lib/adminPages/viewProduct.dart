@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class ViewProductPage extends StatelessWidget {
   final Map<String, dynamic> productData;
 
-  const ViewProductPage({Key? key, required this.productData}) : super(key: key);
+  const ViewProductPage({Key? key, required this.productData})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,8 @@ class ViewProductPage extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF4B2E19)),
+                    icon:
+                        const Icon(Icons.arrow_back, color: Color(0xFF4B2E19)),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -36,7 +38,7 @@ class ViewProductPage extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Product Image
             Container(
               width: double.infinity,
@@ -61,15 +63,16 @@ class ViewProductPage extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: Colors.grey[200],
-                      child: const Icon(Icons.coffee, size: 80, color: Color(0xFF4B2E19)),
+                      child: const Icon(Icons.coffee,
+                          size: 80, color: Color(0xFF4B2E19)),
                     );
                   },
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Product Details - Exact match to image design
             Expanded(
               child: Container(
@@ -107,7 +110,8 @@ class ViewProductPage extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 8),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE8F5E8),
                               borderRadius: BorderRadius.circular(15),
@@ -127,9 +131,9 @@ class ViewProductPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Product Name
                       Text(
                         productData['name'] as String,
@@ -140,12 +144,13 @@ class ViewProductPage extends StatelessWidget {
                           height: 1.2,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Category with coffee emoji (no dropdown arrow)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: const Color(0xFF4B2E19).withOpacity(0.05),
                           borderRadius: BorderRadius.circular(12),
@@ -166,9 +171,9 @@ class ViewProductPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Description (no title)
                       Text(
                         productData['desc'] as String,
@@ -179,18 +184,18 @@ class ViewProductPage extends StatelessWidget {
                         ),
                         textAlign: TextAlign.left,
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Divider
                       Container(
                         height: 1,
                         color: const Color(0xFF4B2E19).withOpacity(0.2),
                         margin: const EdgeInsets.symmetric(vertical: 8),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Stock and Sizes - Simple inline layout like image
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +211,8 @@ class ViewProductPage extends StatelessWidget {
                               children: [
                                 const TextSpan(text: 'Stock  '),
                                 TextSpan(
-                                  text: productData['stock']?.toString() ?? '20',
+                                  text:
+                                      productData['stock']?.toString() ?? '20',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
@@ -215,9 +221,9 @@ class ViewProductPage extends StatelessWidget {
                               ],
                             ),
                           ),
-                          
+
                           const SizedBox(height: 16),
-                          
+
                           // Sizes
                           RichText(
                             text: TextSpan(
@@ -229,7 +235,10 @@ class ViewProductPage extends StatelessWidget {
                               children: [
                                 const TextSpan(text: 'Sizes  '),
                                 TextSpan(
-                                  text: (productData['sizes'] as List<String>? ?? ['Small', 'Medium', 'Large']).join(', '),
+                                  text:
+                                      (productData['sizes'] as List<String>? ??
+                                              ['Small', 'Medium', 'Large'])
+                                          .join(', '),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.normal,
                                   ),

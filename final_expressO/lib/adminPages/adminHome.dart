@@ -8,6 +8,8 @@ import 'adminTransactionHistory.dart';
 import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
 import 'orderList.dart';
+import 'package:provider/provider.dart';
+import '../providers/userProvider.dart';
 
 void main() {
   runApp(const AdminHome());
@@ -34,6 +36,7 @@ class AdminHome extends StatelessWidget {
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
         '/profile': (c) => const PlaceholderPage(title: 'Profile'),
+        '/tioLogin': (c) => const PlaceholderPage(title: 'Login'),
       },
       initialRoute: '/',
     );
@@ -202,11 +205,24 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _performLogout() async {
-    // example backend call for logout
-    await BackendService.logout();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logged out (demo)')),
-    );
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+      // Clear user data (shared prefs + provider)
+      await userProvider.clearUser(context);
+
+      // Navigate to actual login route
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/tioLogin', (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -590,7 +606,9 @@ class AdminDrawer extends StatelessWidget {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
     final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
     return InkWell(
-      onTap: () => safeNavigate(context, route),
+      // onTap: () => safeNavigate(context, route),
+      onTap: () => onNavigate(route),
+
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),

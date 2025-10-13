@@ -1,6 +1,7 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/tioPages/login.dart';
 import 'package:firebase_nexus/tioPages/main.dart';
 import 'package:firebase_nexus/widgets/admin_main_screen.dart';
@@ -36,6 +37,7 @@ void main() async {
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (_) => NavigationProvider()),
+    ChangeNotifierProvider(create: (_) => UserProvider()),
     Provider<SupabaseHelper>(create: (_) => SupabaseHelper()),
   ], child: MyApp()));
 }
@@ -47,13 +49,14 @@ class MyRouteObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     currentRoute = route.settings.name;
-    print('Current route: ${route.settings.name}'); // Debugging
+    print(
+        'FunctName: DidPush Current route: ${route.settings.name}'); // Debugging
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     currentRoute = previousRoute?.settings.name;
-    print('Back to: ${route.settings.name}'); // Debugging
+    print('FunctName: DidPop Back to: ${route.settings.name}'); // Debugging
   }
 }
 
@@ -81,6 +84,14 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (!userProvider.isLoaded) {
+      // userProvider.loadUser(context);
+    }
+
+    final user = userProvider.user;
+
     return MaterialApp(
       navigatorObservers: [routeObserver],
       theme: ThemeData(
@@ -143,44 +154,116 @@ class _MyAppState extends State<MyApp> {
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           settings: settings,
-          builder: (context) => _routeGuard(settings.name),
+          builder: (context) => guardedRoute(context, settings.name),
         );
       },
     );
   }
 
-  Widget _routeGuard(String? routeName) {
-    switch (routeName) {
-      case '/':
-        return const Splash();
-      case '/tioWelcome':
-        return const WelcomeScreen();
-      case '/tioLogin':
-        return const LoginScreen();
-      case '/login':
-        return const MainScreen();
-      case '/register':
-        return const Register();
-      case '/home':
-        return const MainScreen();
-      case '/profile':
-        return const ShowProfile();
+  // Widget _routeGuard(
+  //     String? routeName, Map<String, dynamic>? user, bool isLoaded) {
+  //   final isPublicRoute =
+  //       ['/', '/tioWelcome', '/tioLogin', '/register'].contains(routeName);
 
-      //Admin pages
-      case '/adminHome':
-        return const AdminMainScreen();
+  //   if (isLoaded && user == null && !isPublicRoute) {
+  //     print(routeName);
+  //     print(isLoaded ? 'isLoaded' : 'not isLoaded');
+  //     print(user != null ? 'user' : 'not user');
+  //     print(!isPublicRoute ? '!isPublicRoute' : 'not !isPublicRoute');
+  //     return const LoginScreen();
+  //   }
 
-      case '/adminAnalytics':
-        return const AdminMainScreen();
+  //   switch (routeName) {
+  //     case '/':
+  //       return const Splash();
+  //     case '/tioWelcome':
+  //       return const WelcomeScreen();
+  //     case '/tioLogin':
+  //       return const LoginScreen();
+  //     case '/login':
+  //       return const MainScreen();
+  //     case '/register':
+  //       return const Register();
+  //     case '/home':
+  //       return const MainScreen();
+  //     case '/profile':
+  //       return const ShowProfile();
 
-      case '/adminProducts':
-        return const AdminMainScreen();
+  //     //Admin pages
+  //     case '/adminHome':
+  //       return const AdminMainScreen();
 
-      case '/adminOrders':
-        return const AdminMainScreen();
+  //     case '/adminAnalytics':
+  //       return const AdminMainScreen();
 
-      default:
-        return const Splash();
+  //     case '/adminProducts':
+  //       return const AdminMainScreen();
+
+  //     case '/adminOrders':
+  //       return const AdminMainScreen();
+
+  //     default:
+  //       return const Splash();
+  //   }
+  // }
+}
+
+final Map<String, WidgetBuilder> routes = {
+  '/': (_) => const Splash(),
+  '/tioWelcome': (_) => const WelcomeScreen(),
+  '/tioLogin': (_) => const LoginScreen(),
+  '/register': (_) => const Register(),
+  '/home': (_) => const MainScreen(),
+  '/profile': (_) => const ShowProfile(),
+  '/adminHome': (_) => const AdminMainScreen(),
+  '/adminAnalytics': (_) => const AdminMainScreen(),
+  '/adminProducts': (_) => const AdminMainScreen(),
+  '/adminOrders': (_) => const AdminMainScreen(),
+};
+
+Future<void> safeNavigate(BuildContext context, String route) async {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  final isPublicRoute =
+      ['/', '/tioWelcome', '/tioLogin', '/register'].contains(route);
+
+  await userProvider.loadUser(context);
+
+  if (!isPublicRoute && userProvider.user == null) {
+    print('functname: safeNavigate');
+    print('user: ${userProvider.user}');
+    Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (r) => false);
+  } else {
+    Navigator.pushNamed(context, route);
+  }
+}
+
+Widget guardedRoute(BuildContext context, String? routeName) {
+  final userProvider = Provider.of<UserProvider>(context, listen: true);
+  final user = userProvider.user;
+  final isPublicRoute =
+      ['/', '/tioWelcome', '/tioLogin', '/register'].contains(routeName);
+
+  if (!userProvider.isLoaded) {
+    userProvider.loadUser(context);
+  }
+
+  // Not logged in & not a public page → send to login
+  if (user == null && !isPublicRoute) {
+    print('triggered the not logged in guard!');
+    print("user: ${user} ");
+    return const LoginScreen();
+  }
+
+  // Logged in → if trying to go to login/welcome, redirect to home
+  if (user != null && isPublicRoute) {
+    if (user['role'] == 1) {
+      return AdminMainScreen();
+    } else {
+      return MainScreen();
     }
   }
+
+  // Normal case: return the actual page (or fallback)
+  final builder = routes[routeName] ?? (_) => const Splash();
+  return builder(context);
 }

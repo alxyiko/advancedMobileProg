@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/adminPages/AddProduct.dart';
+import 'package:firebase_nexus/adminPages/addProductFlow.dart';
 import 'package:firebase_nexus/adminPages/editProduct.dart';
 import 'package:firebase_nexus/adminPages/viewProduct.dart';
 import 'package:flutter/material.dart';
@@ -19,12 +20,14 @@ class _YourProductPageState extends State<YourProductPage> {
   final List<Map<String, dynamic>> allProducts = [
     {
       'name': 'Americano',
-      'desc': 'Strong black coffee made by forcing steam through finely ground coffee beans',
+      'desc':
+          'Strong black coffee made by forcing steam through finely ground coffee beans',
       'price': '₱ 110.00',
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://media.istockphoto.com/id/1430762697/photo/americano-coffee-cup-isolated-on-a-white-background.jpg?s=612x612&w=0&k=20&c=g1bRAshn2DMGDBUUwVr-Bl78TBnNBni8f8ILbK8O87E=',
+      'image':
+          'https://media.istockphoto.com/id/1430762697/photo/americano-coffee-cup-isolated-on-a-white-background.jpg?s=612x612&w=0&k=20&c=g1bRAshn2DMGDBUUwVr-Bl78TBnNBni8f8ILbK8O87E=',
       'category': 'Hot Coffee',
     },
     {
@@ -34,7 +37,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://t4.ftcdn.net/jpg/13/19/43/79/360_F_1319437943_nDYiP1Op6yRvFOchgDfE5UurwhxKiqTa.jpg',
+      'image':
+          'https://t4.ftcdn.net/jpg/13/19/43/79/360_F_1319437943_nDYiP1Op6yRvFOchgDfE5UurwhxKiqTa.jpg',
       'category': 'Hot Coffee',
     },
     {
@@ -44,7 +48,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://static.vecteezy.com/system/resources/previews/006/898/248/non_2x/hot-cappuccino-coffee-in-a-white-cup-isolated-on-white-background-free-photo.jpg',
+      'image':
+          'https://static.vecteezy.com/system/resources/previews/006/898/248/non_2x/hot-cappuccino-coffee-in-a-white-cup-isolated-on-white-background-free-photo.jpg',
       'category': 'Hot Coffee',
     },
     {
@@ -54,7 +59,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://static.wixstatic.com/media/ed1e06_ddc7f75c547b4c7684451a31d2970729~mv2.jpg/v1/fill/w_750,h_500,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ed1e06_ddc7f75c547b4c7684451a31d2970729~mv2.jpg',
+      'image':
+          'https://static.wixstatic.com/media/ed1e06_ddc7f75c547b4c7684451a31d2970729~mv2.jpg/v1/fill/w_750,h_500,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ed1e06_ddc7f75c547b4c7684451a31d2970729~mv2.jpg',
       'category': 'Hot Coffee',
     },
     {
@@ -64,17 +70,20 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://static.vecteezy.com/system/resources/previews/026/553/418/large_2x/peppermint-mocha-in-a-white-cup-isolated-on-white-background-free-photo.jpg',
+      'image':
+          'https://static.vecteezy.com/system/resources/previews/026/553/418/large_2x/peppermint-mocha-in-a-white-cup-isolated-on-white-background-free-photo.jpg',
       'category': 'Hot Coffee',
     },
     {
       'name': 'Espresso',
       'price': '₱ 100.00',
-      'desc': 'Concentrated coffee brewed by forcing hot water through finely-ground beans',
+      'desc':
+          'Concentrated coffee brewed by forcing hot water through finely-ground beans',
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://png.pngtree.com/thumb_back/fh260/background/20240722/pngtree-espresso-coffee-isolated-illustration-generative-ai-photo-image_16081220.jpg',
+      'image':
+          'null',
       'category': 'Hot Coffee',
     },
     {
@@ -84,7 +93,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://lh3.googleusercontent.com/ptN4PvpkUuViHmfAYlYuWxicJukzkc8y0NRgZneATzIRe6kFs0xPnbn5kFYmmBkdalTGH8Iwc6xqoFHo0wGnF813EtTqZ_Tf3RVfuM54',
+      'image':
+          'https://lh3.googleusercontent.com/ptN4PvpkUuViHmfAYlYuWxicJukzkc8y0NRgZneATzIRe6kFs0xPnbn5kFYmmBkdalTGH8Iwc6xqoFHo0wGnF813EtTqZ_Tf3RVfuM54',
       'category': 'Iced Coffee',
     },
     {
@@ -94,7 +104,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://www.shutterstock.com/image-photo/glass-iced-latte-on-white-600nw-2478087601.jpg',
+      'image':
+          'https://www.shutterstock.com/image-photo/glass-iced-latte-on-white-600nw-2478087601.jpg',
       'category': 'Iced Coffee',
     },
     {
@@ -104,7 +115,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://thumbs.dreamstime.com/b/iced-cappuccino-coffee-mixed-sweetened-condensed-milk-fresh-milk-topped-creamy-soft-milk-froth-cocoa-powder-196983132.jpg',
+      'image':
+          'https://thumbs.dreamstime.com/b/iced-cappuccino-coffee-mixed-sweetened-condensed-milk-fresh-milk-topped-creamy-soft-milk-froth-cocoa-powder-196983132.jpg',
       'category': 'Iced Coffee',
     },
     {
@@ -114,7 +126,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Inactive',
       'statusColor': Color(0xFFE0E0E0),
       'statusTextColor': Color(0xFF757575),
-      'image': 'https://thumbs.dreamstime.com/b/glass-ice-tea-lemon-white-background-fresh-cold-sliced-mint-isolated-34739219.jpg',
+      'image':
+          'https://thumbs.dreamstime.com/b/glass-ice-tea-lemon-white-background-fresh-cold-sliced-mint-isolated-34739219.jpg',
       'category': 'Tea',
     },
     {
@@ -124,7 +137,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Inactive',
       'statusColor': Color(0xFFE0E0E0),
       'statusTextColor': Color(0xFF757575),
-      'image': 'https://www.shutterstock.com/image-vector/butterfly-pea-flower-lemonade-tea-600nw-2210535173.jpg',
+      'image':
+          'https://www.shutterstock.com/image-vector/butterfly-pea-flower-lemonade-tea-600nw-2210535173.jpg',
       'category': 'Tea',
     },
     {
@@ -134,7 +148,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://t3.ftcdn.net/jpg/09/14/18/00/360_F_914180005_Xartj1IbbxF7wCczzTEHokUelWrXLSJ7.jpg',
+      'image':
+          'https://t3.ftcdn.net/jpg/09/14/18/00/360_F_914180005_Xartj1IbbxF7wCczzTEHokUelWrXLSJ7.jpg',
       'category': 'Non-Coffee',
     },
     {
@@ -144,7 +159,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Inactive',
       'statusColor': Color(0xFFE0E0E0),
       'statusTextColor': Color(0xFF757575),
-      'image': 'https://st2.depositphotos.com/1817018/7191/i/950/depositphotos_71913083-stock-photo-milk-shakes-vanilla-flavor-with.jpg',
+      'image':
+          'https://st2.depositphotos.com/1817018/7191/i/950/depositphotos_71913083-stock-photo-milk-shakes-vanilla-flavor-with.jpg',
       'category': 'Non-Coffee',
     },
     {
@@ -154,7 +170,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Inactive',
       'statusColor': Color(0xFFE0E0E0),
       'statusTextColor': Color(0xFF757575),
-      'image': 'https://st2.depositphotos.com/1008077/11643/i/950/depositphotos_116438620-stock-photo-croissant-with-white-background.jpg',
+      'image':
+          'https://st2.depositphotos.com/1008077/11643/i/950/depositphotos_116438620-stock-photo-croissant-with-white-background.jpg',
       'category': 'Pastries',
     },
     {
@@ -164,7 +181,8 @@ class _YourProductPageState extends State<YourProductPage> {
       'status': 'Active',
       'statusColor': Color(0xFFB6EAC7),
       'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQP7AlY1xuzv-cFAVgDYPKPHK3KWK2R7hLapA&s',
+      'image':
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQP7AlY1xuzv-cFAVgDYPKPHK3KWK2R7hLapA&s',
       'category': 'Pastries',
     },
   ];
@@ -180,12 +198,14 @@ class _YourProductPageState extends State<YourProductPage> {
 
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> filtered = allProducts;
-    
+
     // Apply category filter
     if (_selectedCategory != 'All') {
-      filtered = filtered.where((product) => product['category'] == _selectedCategory).toList();
+      filtered = filtered
+          .where((product) => product['category'] == _selectedCategory)
+          .toList();
     }
-    
+
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((product) {
@@ -195,7 +215,7 @@ class _YourProductPageState extends State<YourProductPage> {
         return name.contains(query) || desc.contains(query);
       }).toList();
     }
-    
+
     return filtered;
   }
 
@@ -258,7 +278,8 @@ class _YourProductPageState extends State<YourProductPage> {
                       fillColor: const Color(0xFF6B4F2A),
                       hintText: 'Search here...',
                       hintStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Colors.white70),
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -298,8 +319,8 @@ class _YourProductPageState extends State<YourProductPage> {
                       });
                     },
                     child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       child: Column(
                         children: [
                           Text(
@@ -363,8 +384,8 @@ class _YourProductPageState extends State<YourProductPage> {
                     ),
                   )
                 : ListView.builder(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     itemCount: filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = filteredProducts[index];
@@ -374,7 +395,8 @@ class _YourProductPageState extends State<YourProductPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ViewProductPage(productData: product),
+                              builder: (context) =>
+                                  ViewProductPage(productData: product),
                             ),
                           );
                         },
@@ -415,9 +437,11 @@ class _YourProductPageState extends State<YourProductPage> {
                               ),
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Price - not bold, normal weight
                                       Text(
@@ -445,13 +469,17 @@ class _YourProductPageState extends State<YourProductPage> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: product['statusColor'] as Color,
-                                              borderRadius: BorderRadius.circular(8),
+                                              color: product['statusColor']
+                                                  as Color,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               product['status'] as String,
                                               style: TextStyle(
-                                                color: product['statusTextColor'] as Color,
+                                                color:
+                                                    product['statusTextColor']
+                                                        as Color,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -490,7 +518,8 @@ class _YourProductPageState extends State<YourProductPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => EditProduct(productData: product),
+                                        builder: (context) =>
+                                            EditProduct(productData: product),
                                       ),
                                     );
                                   },
@@ -512,7 +541,7 @@ class _YourProductPageState extends State<YourProductPage> {
           // Navigate to the AddProduct screen
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddProduct()),
+            MaterialPageRoute(builder: (context) => const AddProductFlow()),
           );
         },
       ),

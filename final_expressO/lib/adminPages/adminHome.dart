@@ -1,3 +1,4 @@
+import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/main.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class AdminHome extends StatelessWidget {
         '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
-        '/profile': (c) => const PlaceholderPage(title: 'Profile'),
+        '/profile': (c) => const ShowProfile(),
       },
       initialRoute: '/',
     );
@@ -797,7 +798,7 @@ class PlaceholderPage extends StatelessWidget {
         backgroundColor: const Color(0xFF5D3510),
       ),
       body:
-          Center(child: Text('This is the emerut $title page (placeholder).')),
+          Center(child: Text('This is the emasdasdaderut $title page (placeholder).')),
     );
   }
 }

@@ -190,10 +190,12 @@ class DiscountListPage extends StatelessWidget {
         backgroundColor: AppColors.secondary,
         iconTheme:
             const IconThemeData(color: Colors.white), // back/menu icon white
-        title: const Text(
-          "Discount Codes",
-          style: TextStyle(fontSize: 16, color: Colors.white),
-        ),
+        title: const Text("Discount Codes",
+            style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Quicksand',
+                fontSize: 16,
+                fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
 

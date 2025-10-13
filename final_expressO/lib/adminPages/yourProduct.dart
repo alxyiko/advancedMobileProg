@@ -4,6 +4,8 @@ import 'package:firebase_nexus/adminPages/viewProduct.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import './adminHome.dart';
+
 class YourProductPage extends StatefulWidget {
   final String title;
   const YourProductPage({Key? key, required this.title}) : super(key: key);
@@ -875,56 +877,64 @@ class _YourProductPageState extends State<YourProductPage> {
     );
   }
 
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F6ED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
-        titleSpacing: 0,
-        toolbarHeight: 60,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: const Text('Products',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w600)),
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.only(top: 5),
-          child: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-            onPressed: () => Navigator.of(context).pop(),
+        toolbarHeight: 68, // slightly taller for breathing room
+        elevation: 0,
+        title: const Text(
+          'Products',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
               onTap: () => _showCategoriesPanel(context),
               child: const Icon(
                 Icons.sort_by_alpha,
                 size: 24,
-                color: Colors.white, // optional — match your theme
+                color: Colors.white,
               ),
             ),
           ),
         ],
+
+        // Search bar + category chips below AppBar
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(160),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 25),
+          preferredSize: const Size.fromHeight(120),
+          child: Container(
+            color: const Color(0xFF38241D),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
             child: Column(
               children: [
-                Container(
-                  color: const Color(0xFF38241D),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
+                // 🔍 Search bar + filter
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
                         child: TextField(
                           controller: _searchController,
                           decoration: InputDecoration(
@@ -932,10 +942,12 @@ class _YourProductPageState extends State<YourProductPage> {
                             fillColor: const Color(0xFF503228),
                             hintText: 'Search here...',
                             hintStyle: const TextStyle(color: Colors.white70),
-                            prefixIcon:
-                                const Icon(Icons.search, color: Colors.white70),
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 0),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.white70,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -944,73 +956,97 @@ class _YourProductPageState extends State<YourProductPage> {
                           style: const TextStyle(color: Colors.white),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE27D19),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.filter_alt_outlined,
-                              color: Color(0xFF4B2E19)),
-                          onPressed: () {},
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE27D19),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.filter_alt_outlined,
+                          color: Color(0xFF4B2E19),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'lagyan pa ba filter modal? tulad nung orderlist if clinick mo yung filter?',
+                                style: TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              backgroundColor: Color.fromARGB(255, 0, 0, 0),
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 15),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  color: const Color(0xFF38241D),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      children: categories.map((cat) {
-                        final isSelected = cat == _selectedCategory;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedCategory = cat;
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            child: Column(
-                              children: [
-                                Text(
-                                  cat,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? const Color(0xFFE27D19)
-                                        : Colors.white,
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
+
+                const SizedBox(height: 15),
+
+                // 🏷️ Category list
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: categories.map((cat) {
+                      final isSelected = cat == _selectedCategory;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedCategory = cat),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          child: Column(
+                            children: [
+                              Text(
+                                cat,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFFE27D19)
+                                      : Colors.white,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              if (isSelected)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  height: 3,
+                                  width: 24,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE27D19),
+                                    borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
-                                if (isSelected)
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 4),
-                                    height: 3,
-                                    width: 24,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE27D19),
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                            ],
                           ),
-                        );
-                      }).toList(),
-                    ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+      drawer: AdminDrawer(
+        profileFuture: fetchUserProfile(), // <-- your future method
+
+        selectedRoute: "/products", // mark this as active/highlighted
+        onNavigate: (route) {
+          Navigator.pushNamed(context, route);
+        },
       ),
       body: Column(
         children: [

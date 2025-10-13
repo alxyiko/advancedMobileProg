@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/adminPages/AddProduct.dart';
+import 'package:firebase_nexus/adminPages/addProductFlow.dart';
 import 'package:firebase_nexus/adminPages/editProduct.dart';
 import 'package:firebase_nexus/adminPages/viewProduct.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,8 @@ class _YourProductPageState extends State<YourProductPage> {
   final List<Map<String, dynamic>> allProducts = [
     {
       'name': 'Americano',
+      'desc':
+          'Strong black coffee made by forcing steam through finely ground coffee beans',
       'desc':
           'Strong black coffee made by forcing steam through finely ground coffee beans',
       'price': '₱ 110.00',
@@ -1239,7 +1242,7 @@ class _YourProductPageState extends State<YourProductPage> {
           // Navigate to the AddProduct screen
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddProduct()),
+            MaterialPageRoute(builder: (context) => const AddProductFlow()),
           );
         },
       ),

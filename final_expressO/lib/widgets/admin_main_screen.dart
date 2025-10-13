@@ -23,7 +23,7 @@ class AdminMainScreen extends StatelessWidget {
 
     return Scaffold(
       body: pages[navProvider.selectedIndex],
-      bottomNavigationBar: const AdminBottomNav(),
+      // bottomNavigationBar: const AdminBottomNav(),
     );
   }
 }

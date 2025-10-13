@@ -221,12 +221,16 @@ final Map<String, WidgetBuilder> routes = {
   '/adminOrders': (_) => const AdminMainScreen(),
 };
 
-void safeNavigate(BuildContext context, String route) {
+Future<void> safeNavigate(BuildContext context, String route) async {
   final userProvider = Provider.of<UserProvider>(context, listen: false);
   final isPublicRoute =
       ['/', '/tioWelcome', '/tioLogin', '/register'].contains(route);
 
+  await userProvider.loadUser(context);
+
   if (!isPublicRoute && userProvider.user == null) {
+    print('functname: safeNavigate');
+    print('user: ${userProvider.user}');
     Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (r) => false);
   } else {
     Navigator.pushNamed(context, route);
@@ -252,9 +256,11 @@ Widget guardedRoute(BuildContext context, String? routeName) {
 
   // Logged in → if trying to go to login/welcome, redirect to home
   if (user != null && isPublicRoute) {
-    print('triggered the logged in guard!');
-    print("user: ${user} ");
-    return const MainScreen();
+    if (user['role'] == 1) {
+      return AdminMainScreen();
+    } else {
+      return MainScreen();
+    }
   }
 
   // Normal case: return the actual page (or fallback)

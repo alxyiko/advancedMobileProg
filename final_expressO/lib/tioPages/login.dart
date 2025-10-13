@@ -1,4 +1,6 @@
 import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/main.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/gestures.dart';
@@ -28,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final supabaseHelper = UserSupabaseHelper();
+    final userProvider = UserProvider();
 
     final result = await supabaseHelper.signIn(email, password);
 
@@ -42,11 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       print(result['data']['role']);
-
+      await userProvider.loadUser(context);
       if (result['data']['role'] == 1) {
-        Navigator.pushNamed(context, '/adminHome');
+        await safeNavigate(context, '/adminHome');
       } else {
-        Navigator.pushNamed(context, '/home');
+        await safeNavigate(context, '/home');
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,8 +149,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/adminHome');
+                        onPressed: () async {
+                          await safeNavigate(context, '/adminHome');
                         },
                         child: const Text(
                           'Login as Admin',
@@ -172,8 +175,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: TextDecoration.underline,
                             ),
                             recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Navigator.pushNamed(context, '/register');
+                              ..onTap = () async {
+                                await safeNavigate(context, '/register');
                               },
                           ),
                         ],

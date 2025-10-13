@@ -16,6 +16,7 @@ class UserProvider extends ChangeNotifier {
     if (userJson != null) {
       _user = jsonDecode(userJson);
     } else {
+      print('functname: loaduser else');
       Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (route) => false);
     }
     _isLoaded = true;
@@ -26,7 +27,7 @@ class UserProvider extends ChangeNotifier {
     _user = user;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user', jsonEncode(user));
-    // _isLoaded = true;
+    _isLoaded = true;
     notifyListeners();
   }
 
@@ -35,6 +36,7 @@ class UserProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
     notifyListeners();
+    print('functname: clearuser ');
 
     // 👇 Push login screen and remove all previous routes
     Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (route) => false);

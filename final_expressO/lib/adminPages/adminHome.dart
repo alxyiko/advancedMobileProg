@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/appColors.dart';
+import 'package:firebase_nexus/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -7,7 +8,6 @@ import 'adminTransactionHistory.dart';
 import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
 import 'orderList.dart';
-
 
 void main() {
   runApp(const AdminHome());
@@ -29,7 +29,7 @@ class AdminHome extends StatelessWidget {
         '/': (c) => const DashboardPage(),
         '/products': (c) => const YourProductPage(title: 'Products'),
         '/categories': (c) => const PlaceholderPage(title: 'Categories'),
-  '/orders': (c) => const OrderListPage(),
+        '/orders': (c) => const OrderListPage(),
         '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
@@ -152,7 +152,7 @@ class DummyData {
     "totalOrders": 65,
     "stats": {"totalSales": 2500, "totalCustomers": 70},
     "pendingOrders": [
-      {"id": "ORD123", "name": "Ruel Escano", "itemsSummary": "Matcha Latte, Chocolate Croissant", "price": 240},
+      {"id": "ORD123", "name": "Ruel GG", "itemsSummary": "Matcha Latte, Chocolate Croissant", "price": 240},
       {"id": "ORD124", "name": "Anna Cruz", "itemsSummary": "Americano", "price": 120}
     ]
   }
@@ -371,15 +371,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildShortcutsRow() {
     final items = [
-      _ShortcutItem(icon: Icons.person_outline, label: 'Customers', route: '/customers'),
-
+      _ShortcutItem(
+          icon: Icons.person_outline, label: 'Customers', route: '/customers'),
       _ShortcutItem(
         icon: Icons.coffee_outlined,
         label: 'Products',
         route: '/products', // This will navigate to YourProductPage
-     ),
-
-      _ShortcutItem(icon: Icons.receipt_long, label: 'Orders', route: '/orders'),
+      ),
+      _ShortcutItem(
+          icon: Icons.receipt_long, label: 'Orders', route: '/orders'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,7 +590,7 @@ class AdminDrawer extends StatelessWidget {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
     final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
     return InkWell(
-      onTap: () => onNavigate(route),
+      onTap: () => safeNavigate(context, route),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -609,7 +609,8 @@ class AdminDrawer extends StatelessWidget {
                         highlight ? FontWeight.w600 : FontWeight.normal)),
             const Spacer(),
             if (highlight)
-              const Icon(Icons.chevron_right, size: 18, color:const Color(0xFFE27D19)),
+              const Icon(Icons.chevron_right,
+                  size: 18, color: const Color(0xFFE27D19)),
           ],
         ),
       ),
@@ -795,7 +796,8 @@ class PlaceholderPage extends StatelessWidget {
         title: Text(title),
         backgroundColor: const Color(0xFF5D3510),
       ),
-      body: Center(child: Text('This is the emerut $title page (placeholder).')),
+      body:
+          Center(child: Text('This is the emerut $title page (placeholder).')),
     );
   }
 }

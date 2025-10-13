@@ -139,25 +139,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE27D19),
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onPressed: () async {
-                          await safeNavigate(context, '/adminHome');
-                        },
-                        child: const Text(
-                          'Login as Admin',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
-                    ),
+                    // SizedBox(
+                    //   width: double.infinity,
+                    //   child: ElevatedButton(
+                    //     style: ElevatedButton.styleFrom(
+                    //       backgroundColor: const Color(0xFFE27D19),
+                    //       padding: const EdgeInsets.symmetric(vertical: 20),
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(15),
+                    //       ),
+                    //     ),
+                    //     onPressed: () async {
+                    //       await safeNavigate(context, '/adminHome');
+                    //     },
+                    //     child: const Text(
+                    //       'Login as Admin',
+                    //       style: TextStyle(fontSize: 18, color: Colors.white),
+                    //     ),
+                    //   ),
+                    // ),
                     // RichText
                     RichText(
                       text: TextSpan(

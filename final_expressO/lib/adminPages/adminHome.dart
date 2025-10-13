@@ -10,6 +10,7 @@ import 'discountPages/discountList.dart';
 import 'orderList.dart';
 import 'package:provider/provider.dart';
 import '../providers/userProvider.dart';
+import 'profileAdmin.dart';
 
 void main() {
   runApp(const AdminHome());
@@ -36,7 +37,6 @@ class AdminHome extends StatelessWidget {
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
         '/profile': (c) => const PlaceholderPage(title: 'Profile'),
-        '/tioLogin': (c) => const PlaceholderPage(title: 'Login'),
       },
       initialRoute: '/',
     );

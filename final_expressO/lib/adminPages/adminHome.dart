@@ -12,9 +12,17 @@ import 'orderList.dart';
 import 'package:provider/provider.dart';
 import '../providers/userProvider.dart';
 import 'profileAdmin.dart';
+import 'package:firebase_nexus/widgets/category_lateral.dart';
 
 void main() {
   runApp(const AdminHome());
+}
+
+void handleSaveCategory(Category category) {
+  // Example: print the info
+  print('Saved category: ${category.name}, iconIndex: ${category.iconIndex}');
+
+  // TODO: Save to your database here
 }
 
 class AdminHome extends StatelessWidget {
@@ -297,6 +305,12 @@ class _DashboardPageState extends State<DashboardPage> {
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
+        ElevatedButton(
+          onPressed: () {
+            showCategoryLateral(context, handleSaveCategory);
+          },
+          child: const Text('CATEGORIES'),
+        )
       ],
     );
   }

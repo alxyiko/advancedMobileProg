@@ -33,7 +33,7 @@ class _SupaPageState extends State<SupaPage> {
     final dummy = Product(
       name: "Item ${DateTime.now().millisecondsSinceEpoch}",
       price: 199.99,
-      quantity: 1, 
+      quantity: 1,
     );
 
     await db.insert("products", dummy.toJson());

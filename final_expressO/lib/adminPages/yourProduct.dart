@@ -8,6 +8,8 @@ import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import './adminHome.dart';
+
 class YourProductPage extends StatefulWidget {
   final String title;
   const YourProductPage({Key? key, required this.title}) : super(key: key);
@@ -1077,6 +1079,375 @@ class _YourProductPageState extends State<YourProductPage> {
           },
         );
       },
+    );
+  }
+
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F6ED),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF38241D),
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        toolbarHeight: 68, // slightly taller for breathing room
+        elevation: 0,
+        title: const Text(
+          'Products',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              onTap: () => _showCategoriesPanel(context),
+              child: const Icon(
+                Icons.sort_by_alpha,
+                size: 24,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+
+        // Search bar + category chips below AppBar
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(120),
+          child: Container(
+            color: const Color(0xFF38241D),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+            child: Column(
+              children: [
+                // 🔍 Search bar + filter
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFF503228),
+                            hintText: 'Search here...',
+                            hintStyle: const TextStyle(color: Colors.white70),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.white70,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE27D19),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.filter_alt_outlined,
+                          color: Color(0xFF4B2E19),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'lagyan pa ba filter modal? tulad nung orderlist if clinick mo yung filter?',
+                                style: TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              backgroundColor: Color.fromARGB(255, 0, 0, 0),
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 15),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 15),
+
+                // 🏷️ Category list
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: categories.map((cat) {
+                      final isSelected = cat == _selectedCategory;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedCategory = cat),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          child: Column(
+                            children: [
+                              Text(
+                                cat,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFFE27D19)
+                                      : Colors.white,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              if (isSelected)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  height: 3,
+                                  width: 24,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE27D19),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      drawer: AdminDrawer(
+        profileFuture: fetchUserProfile(), // <-- your future method
+
+        selectedRoute: "/products", // mark this as active/highlighted
+        onNavigate: (route) {
+          Navigator.pushNamed(context, route);
+        },
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: filteredProducts.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No products found',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Try a different search or category',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    itemCount: filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = filteredProducts[index];
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigate to ViewProductPage when the card is tapped
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ViewProductPage(productData: product),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    product['image'] as String,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.grey[300],
+                                        child: const Icon(Icons.error),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Price - not bold, normal weight
+                                      Text(
+                                        product['price'] as String,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.normal,
+                                          color: Color(0xFF4B2E19),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      // Product name and status on the same line
+                                      Row(
+                                        children: [
+                                          Text(
+                                            product['name'] as String,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF4B2E19),
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: product['statusColor']
+                                                  as Color,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              product['status'] as String,
+                                              style: TextStyle(
+                                                color:
+                                                    product['statusTextColor']
+                                                        as Color,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      // Description
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: Text(
+                                          product['desc'] as String,
+                                          style: const TextStyle(
+                                            color: Color(0xFF757575),
+                                            fontSize: 12,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    color: Color(0xFF4B2E19),
+                                    size: 24,
+                                  ),
+                                  onPressed: () {
+                                    // Navigate to EditProduct screen with product data
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            EditProduct(productData: product),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFE27D19),
+        child: const Icon(Icons.add, color: Colors.white, size: 32),
+        onPressed: () {
+          // Navigate to the AddProduct screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddProductFlow()),
+          );
+        },
+      ),
     );
   }
 }

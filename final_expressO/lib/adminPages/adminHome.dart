@@ -305,12 +305,6 @@ class _DashboardPageState extends State<DashboardPage> {
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
-        ElevatedButton(
-          onPressed: () {
-            showCategoryLateral(context, handleSaveCategory);
-          },
-          child: const Text('CATEGORIES'),
-        )
       ],
     );
   }
@@ -829,8 +823,8 @@ class PlaceholderPage extends StatelessWidget {
         title: Text(title),
         backgroundColor: const Color(0xFF5D3510),
       ),
-      body:
-          Center(child: Text('This is the emasdasdaderut $title page (placeholder).')),
+      body: Center(
+          child: Text('This is the emasdasdaderut $title page (placeholder).')),
     );
   }
 }

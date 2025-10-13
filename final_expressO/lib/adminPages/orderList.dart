@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../models/product.dart';
 import 'adminOrderDetailedPage.dart';
 
+import './adminHome.dart';
+
 class OrderListPage extends StatefulWidget {
   const OrderListPage({Key? key}) : super(key: key);
 
@@ -280,6 +282,17 @@ class _OrderListPageState extends State<OrderListPage>
     );
   }
 
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Apply Quicksand font family across this page
@@ -292,24 +305,18 @@ class _OrderListPageState extends State<OrderListPage>
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xFF38241D),
+          iconTheme: const IconThemeData(color: Colors.white),
           centerTitle: true,
           titleSpacing: 0,
           toolbarHeight: 60,
-          title: Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: const Text('Orders',
+          title: const Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: Text('Orders',
                 style: TextStyle(
                     color: Colors.white,
+                    fontSize: 16,
                     fontFamily: 'Quicksand',
                     fontWeight: FontWeight.w600)),
-          ),
-          leading: Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: IconButton(
-              icon:
-                  const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
           ),
           actions: [
             Padding(
@@ -325,31 +332,34 @@ class _OrderListPageState extends State<OrderListPage>
             ),
           ],
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(160),
+            preferredSize: const Size.fromHeight(130),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 25),
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 25),
               child: Column(
                 children: [
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xFF503228),
-                            hintText: 'Search here...',
-                            hintStyle: const TextStyle(color: Colors.white70),
-                            prefixIcon:
-                                const Icon(Icons.search, color: Colors.white70),
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                        child: SizedBox(
+                          height: 44, // 👈 adjust height here
+                          child: TextField(
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFF503228),
+                              hintText: 'Search here...',
+                              hintStyle: const TextStyle(color: Colors.white70),
+                              prefixIcon: const Icon(Icons.search,
+                                  color: Colors.white70),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
                             ),
+                            onChanged: (v) => setState(() => _search = v),
+                            style: const TextStyle(color: Colors.white),
                           ),
-                          onChanged: (v) => setState(() => _search = v),
-                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -388,6 +398,14 @@ class _OrderListPageState extends State<OrderListPage>
               ),
             ),
           ),
+        ),
+        drawer: AdminDrawer(
+          profileFuture: fetchUserProfile(), // <-- your future method
+
+          selectedRoute: "/orders", // mark this as active/highlighted
+          onNavigate: (route) {
+            Navigator.pushNamed(context, route);
+          },
         ),
         body: TabBarView(
           controller: _tabController,

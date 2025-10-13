@@ -4,7 +4,7 @@ import '../models/product.dart';
 
 class OrderDetailedView extends StatelessWidget {
   final Product product;
-  
+
   const OrderDetailedView({super.key, required this.product});
 
   @override
@@ -13,7 +13,7 @@ class OrderDetailedView extends StatelessWidget {
       backgroundColor: const Color(0xFFFAF6EA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFFAF6EA),
-        elevation: 0, 
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left),
           iconSize: 32,
@@ -24,7 +24,6 @@ class OrderDetailedView extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
           const Padding(
             padding: EdgeInsets.fromLTRB(24, 32, 24, 8),
             child: Text(
@@ -176,11 +175,12 @@ class OrderDetailedView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                       child: _OrderTimeline(
-                        currentStage: 2, 
+                        currentStage: 2,
                         stages: const [
                           {
                             'title': 'Order Placed',
-                            'subtitle': 'We have received your order on 16-Aug-2025'
+                            'subtitle':
+                                'We have received your order on 16-Aug-2025'
                           },
                           {
                             'title': 'Order Confirmed',
@@ -196,7 +196,8 @@ class OrderDetailedView extends StatelessWidget {
                           },
                           {
                             'title': 'Order Completed',
-                            'subtitle': 'Your Order is completed on 16-Aug-2025, 15:03 PM'
+                            'subtitle':
+                                'Your Order is completed on 16-Aug-2025, 15:03 PM'
                           },
                         ],
                       ),
@@ -216,12 +217,16 @@ class OrderDetailedView extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
                     minimumSize: const Size(160, 52),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    textStyle: const TextStyle(fontFamily: 'Quicksand', fontSize: 16, fontWeight: FontWeight.w700),
+                    textStyle: const TextStyle(
+                        fontFamily: 'Quicksand',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700),
                   ),
                   onPressed: () async {
                     final confirmed = await showDialog<bool>(
@@ -242,7 +247,8 @@ class OrderDetailedView extends StatelessWidget {
                                   color: const Color(0xFFE27D19),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.report_problem, color: Colors.white, size: 20),
+                                child: const Icon(Icons.report_problem,
+                                    color: Colors.white, size: 20),
                               ),
                               const SizedBox(width: 12),
                               const Expanded(
@@ -262,19 +268,25 @@ class OrderDetailedView extends StatelessWidget {
                           padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
                           child: Text(
                             'Are you sure you want to cancel this order? This action cannot be undone.',
-                            style: TextStyle(fontFamily: 'Quicksand', fontSize: 14),
+                            style: TextStyle(
+                                fontFamily: 'Quicksand', fontSize: 14),
                           ),
                         ),
-                        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        actionsPadding:
+                            const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         actionsAlignment: MainAxisAlignment.end,
                         actions: [
                           OutlinedButton(
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF2D1D17),
                               side: const BorderSide(color: Color(0xFFBDB6AE)),
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              textStyle: const TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w600),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              textStyle: const TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w600),
                             ),
                             onPressed: () => Navigator.of(context).pop(false),
                             child: const Text('No'),
@@ -284,9 +296,13 @@ class OrderDetailedView extends StatelessWidget {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              textStyle: const TextStyle(fontFamily: 'Quicksand', fontWeight: FontWeight.w700),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              textStyle: const TextStyle(
+                                  fontFamily: 'Quicksand',
+                                  fontWeight: FontWeight.w700),
                             ),
                             onPressed: () => Navigator.of(context).pop(true),
                             child: const Text('Yes, cancel'),
@@ -319,7 +335,9 @@ class _OrderTimeline extends StatelessWidget {
   final int currentStage;
   final List<Map<String, String>> stages;
 
-  const _OrderTimeline({Key? key, required this.currentStage, required this.stages}) : super(key: key);
+  const _OrderTimeline(
+      {Key? key, required this.currentStage, required this.stages})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +363,9 @@ class _OrderTimeline extends StatelessWidget {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      color: isActive ? const Color(0xFFE27D19) : const Color(0xFFDCD6D0),
+                      color: isActive
+                          ? const Color(0xFFE27D19)
+                          : const Color(0xFFDCD6D0),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -356,7 +376,9 @@ class _OrderTimeline extends StatelessWidget {
                       child: Container(
                         width: 2,
                         margin: const EdgeInsets.only(top: 8),
-                        color: (isActive && index < currentStage) ? const Color(0xFFE27D19) : const Color(0xFFDCD6D0),
+                        color: (isActive && index < currentStage)
+                            ? const Color(0xFFE27D19)
+                            : const Color(0xFFDCD6D0),
                       ),
                     ),
                 ],
@@ -372,12 +394,14 @@ class _OrderTimeline extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: isActive ? const Color(0xFFE27D19) : const Color(0xFFDCD6D0),
+                      color: isActive
+                          ? const Color(0xFFE27D19)
+                          : const Color(0xFFDCD6D0),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                        child: _svgForIndex(index),
-                      ),
+                      child: _svgForIndex(index),
+                    ),
                   ),
                 ],
               ),
@@ -425,13 +449,17 @@ class _OrderTimeline extends StatelessWidget {
   Widget _svgForIndex(int i) {
     switch (i) {
       case 0:
-        return SvgPicture.asset('assets/images/orderplacedicon.svg', width: 28, height: 28);
+        return SvgPicture.asset('assets/images/orderplacedicon.svg',
+            width: 28, height: 28);
       case 1:
-        return SvgPicture.asset('assets/images/orderconfirmed.svg', width: 36, height: 36);
+        return SvgPicture.asset('assets/images/orderconfirmed.svg',
+            width: 36, height: 36);
       case 2:
-        return SvgPicture.asset('assets/images/orderprocessed.svg', width: 32, height: 32);
+        return SvgPicture.asset('assets/images/orderprocessed.svg',
+            width: 32, height: 32);
       case 3:
-        return SvgPicture.asset('assets/images/readytoserve.svg', width: 32, height: 32);
+        return SvgPicture.asset('assets/images/readytoserve.svg',
+            width: 32, height: 32);
       case 4:
         // Use a white check mark icon for completed
         return const Icon(Icons.check, color: Colors.white, size: 28);

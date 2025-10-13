@@ -8,6 +8,7 @@ import 'adminTransactionHistory.dart';
 import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
 import 'orderList.dart';
+import 'profileAdmin.dart';
 
 void main() {
   runApp(const AdminHome());
@@ -33,7 +34,7 @@ class AdminHome extends StatelessWidget {
         '/discounts': (context) => const DiscountListPage(),
         '/analytics': (c) => const PlaceholderPage(title: 'Analytics'),
         '/transactions': (c) => const adminTransactionHistory(),
-        '/profile': (c) => const PlaceholderPage(title: 'Profile'),
+         '/profile': (c) => const AdminProfilePage(), 
       },
       initialRoute: '/',
     );

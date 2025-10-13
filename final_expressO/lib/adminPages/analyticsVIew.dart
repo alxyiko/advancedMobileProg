@@ -1,7 +1,11 @@
 import 'package:firebase_nexus/appColors.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../helpers/adminPageSupabaseHelper.dart';
 
 const brownDark = Color(0xFF3E2016);
 const lightBeige = Color(0xFFF6F0E6);
@@ -123,34 +127,265 @@ class _AnalyticsPageState extends State<AnalyticsPage>
   late TabController _tabController;
 
   // Replace with real fetched values
-  int totalOrders = 65;
-  double totalSales = 2500;
-  int totalCustomers = 70;
+  int totalOrders = 0;
+  double totalSales = 0;
+  int totalCustomers = 0;
 
-  // Sample category breakdown for successful orders
-  final List<_ChartData> _successChartData = [
-    _ChartData('Coffee', 40, const Color(0xFFE27D19)),
-    _ChartData('Pastry', 15, const Color(0xFFFFAF5F)),
-    _ChartData('Others', 10, const Color(0xFFB35900)),
+  // Chart / display data
+  List<_ChartData> _successChartData = [];
+  List<_ChartData> _failedChartData = [
+    _ChartData('Cancelled', 0, const Color(0xFFA42E1E)),
+    _ChartData('Rejected', 0, const Color(0xFFF0D0CB)),
   ];
 
-  // Sample failed orders breakdown
-  final List<_ChartData> _failedChartData = [
-    _ChartData('Cancelled', 3, const Color(0xFFA42E1E)),
-    _ChartData('Rejected', 2, const Color(0xFFF0D0CB)),
-  ];
+  // top-selling products
+  List<Map<String, dynamic>> topSellingProducts = [];
+
+  // helper + realtime channel
+  final AdminSupabaseHelper supa = AdminSupabaseHelper();
+  RealtimeChannel? _ordersChannel;
+  StreamSubscription<dynamic>? _channelSub;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // TODO: call fetchInitialData() to populate data from Supabase
+    // fetch initial data
+    fetchInitialData();
+
+    // subscribe to realtime changes on orders table
+    _subscribeToOrdersRealtime();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    if (_ordersChannel != null) {
+      supa.unsubscribe(_ordersChannel!);
+      _ordersChannel = null;
+    }
+    _channelSub?.cancel();
+    super.dispose();
+  }
+
+  /// Fetch orders, order_items and products and compute analytics.
   Future<void> fetchInitialData() async {
-    // final resp = await Supabase.instance.client.from('orders').select().execute();
-    // parse and setState(...)
+    try {
+      // 0) Quick: what client is used?
+      debugPrint('Supabase URL: ${dotenv.env['SUPABASE_URL']}');
+      debugPrint(
+          'Current session: ${Supabase.instance.client.auth.currentSession}');
+
+      // 1) fetch orders
+      debugPrint('🚀 Fetching orders...');
+      final ordersRaw = await supa.getAll('Orders');
+      debugPrint('✅ Orders fetched: ${ordersRaw.length}');
+      debugPrint(
+          'Sample order row: ${ordersRaw.isNotEmpty ? ordersRaw.first : 'none'}');
+
+      debugPrint('🚀 Fetching order_items...');
+      final itemsRaw = await supa.getAll('Order_items');
+      debugPrint('✅ Order_items fetched: ${itemsRaw.length}');
+      debugPrint(
+          'Sample item row: ${itemsRaw.isNotEmpty ? itemsRaw.first : 'none'}');
+
+      debugPrint('🚀 Fetching products...');
+      final productsRaw = await supa.getAll('Products');
+      debugPrint('✅ Products fetched: ${productsRaw.length}');
+      debugPrint(
+          'Sample product row: ${productsRaw.isNotEmpty ? productsRaw.first : 'none'}');
+
+      // Helper to safely read a key with many possible column-name variants
+      dynamic _read(Map m, List<String> keys) {
+        for (var k in keys) {
+          if (m.containsKey(k) && m[k] != null) return m[k];
+        }
+        return null;
+      }
+
+      // quickly build maps for product lookup using common id variants
+      final Map<dynamic, Map<String, dynamic>> productById = {
+        for (var p in productsRaw)
+          _read(p, ['id', 'ID', 'product_id', 'productID']): p
+      }..removeWhere((k, v) => k == null);
+
+      // parse orders into typed list
+      final List<OrderSummary> orders = ordersRaw.map((m) {
+        final id =
+            (_read(m, ['id', 'ID', 'order_id', 'orderID']) ?? '').toString();
+        final userId =
+            (_read(m, ['userID', 'user_id', 'userId', 'buyer_id', 'buyerID']) ??
+                    '')
+                .toString();
+        final status = (_read(m, ['status', 'order_status']) ?? '').toString();
+
+        // try to find a total/price column (fallbacks)
+        final dynamic totalRaw =
+            _read(m, ['total', 'total_price', 'price', 'order_total']);
+        final double total = totalRaw == null
+            ? 0.0
+            : (totalRaw is num
+                ? totalRaw.toDouble()
+                : double.tryParse(totalRaw.toString()) ?? 0.0);
+
+        // created at / ordered_at fallback
+        final createdVal =
+            _read(m, ['created_at', 'ordered_at', 'createdAt', 'createdAtUtc']);
+        DateTime createdAt;
+        if (createdVal is String) {
+          createdAt = DateTime.tryParse(createdVal) ?? DateTime.now();
+        } else if (createdVal is DateTime) {
+          createdAt = createdVal;
+        } else {
+          createdAt = DateTime.now();
+        }
+
+        return OrderSummary(
+          id: id,
+          userId: userId,
+          status: status,
+          total: total,
+          createdAt: createdAt,
+        );
+      }).toList();
+
+      // compute metrics for successful orders (adjust strings to your app's status)
+      final successOrders = orders
+          .where((o) =>
+              o.status.toLowerCase() == 'Successful' ||
+              o.status.toLowerCase() == 'completed' ||
+              o.status.toLowerCase() == 'paid')
+          .toList();
+      totalOrders = successOrders.length;
+      totalSales = successOrders.fold(0.0, (s, o) => s + (o.total));
+      totalCustomers = successOrders
+          .map((o) => o.userId)
+          .where((id) => id != '')
+          .toSet()
+          .length;
+
+      // compute failed counts
+      final failedOrders = orders
+          .where((o) =>
+              o.status.toLowerCase() == 'cancelled' ||
+              o.status.toLowerCase() == 'rejected' ||
+              o.status.toLowerCase() == 'failed')
+          .toList();
+      final cancelledCount = failedOrders
+          .where((o) => o.status.toLowerCase() == 'cancelled')
+          .length;
+      final rejectedCount = failedOrders
+          .where((o) => o.status.toLowerCase() == 'rejected')
+          .length;
+      _failedChartData = [
+        _ChartData('Cancelled', cancelledCount, const Color(0xFFA42E1E)),
+        _ChartData('Rejected', rejectedCount, const Color(0xFFF0D0CB)),
+      ];
+
+      // compute category breakdown and top-selling products by aggregating order_items
+      // Map product_id => sold quantity (only for successful orders)
+      final Set<String> successfulOrderIds =
+          successOrders.map((o) => o.id).toSet();
+
+      final Map<dynamic, int> salesByProduct = {};
+      for (var item in itemsRaw) {
+        final orderId =
+            _read(item, ['order_id', 'orderID', 'orderId'])?.toString();
+        if (orderId == null) continue;
+        if (!successfulOrderIds.contains(orderId))
+          continue; // count only successful orders
+
+        final pid =
+            _read(item, ['product_id', 'productID', 'ProductID', 'ProductId']);
+        if (pid == null) continue;
+        final qtyRaw = _read(item, ['quantity', 'qty', 'Quantity']) ?? 1;
+        final int qty =
+            (qtyRaw is int) ? qtyRaw : int.tryParse(qtyRaw.toString()) ?? 0;
+        salesByProduct[pid] = (salesByProduct[pid] ?? 0) + qty;
+      }
+
+      // Build category aggregation (product row may store category id or name)
+      final Map<String, int> salesByCategory = {};
+      salesByProduct.forEach((pid, qty) {
+        final prod = productById[pid];
+        // check product column variants for category / cat id
+        final categoryRaw = (prod != null)
+            ? _read(prod, [
+                'category',
+                'cat_id',
+                'catID',
+                'category_name',
+                'name',
+                'product_category'
+              ])
+            : null;
+
+        // If categoryRaw looks like an id, try to map to a name; else use string
+        final category =
+            categoryRaw == null ? 'Others' : categoryRaw.toString();
+        salesByCategory[category] = (salesByCategory[category] ?? 0) + qty;
+      });
+
+      // convert to _ChartData
+      final List<Color> palette = [
+        const Color(0xFFE27D19),
+        const Color(0xFFFFAF5F),
+        const Color(0xFFB35900),
+        const Color(0xFF8A4B00),
+        const Color(0xFF6A3F00)
+      ];
+      int pi = 0;
+      _successChartData = salesByCategory.entries.map((e) {
+        final c = palette[pi % palette.length];
+        pi++;
+        return _ChartData(e.key, e.value, c);
+      }).toList();
+
+      // top 5 products
+      final sortedProducts = salesByProduct.entries.toList()
+        ..sort((a, b) => (b.value).compareTo(a.value));
+      topSellingProducts = sortedProducts.take(5).map((entry) {
+        final prod = productById[entry.key] ?? {};
+        final image = _read(
+                prod, ['product_img', 'image_url', 'image', 'productImage']) ??
+            '';
+        final name =
+            _read(prod, ['product_name', 'name', 'productName']) ?? 'Unknown';
+        final category =
+            _read(prod, ['category', 'cat_id', 'catID']) ?? 'Unknown';
+
+        return {
+          'product_id': entry.key,
+          'name': name.toString(),
+          'category': category.toString(),
+          'sold': entry.value,
+          'image': image.toString(),
+        };
+      }).toList();
+
+      // refresh UI
+      setState(() {});
+    } catch (e, st) {
+      debugPrint('fetchInitialData error: $e\n$st');
+    }
+  }
+
+  /// Setup realtime subscription for orders table so analytics update live.
+  void _subscribeToOrdersRealtime() {
+    // create channel and handlers
+    _ordersChannel = supa.listenToTable(
+      'orders',
+      onInsert: (payload) {
+        fetchInitialData();
+      },
+      onUpdate: (payload) {
+        fetchInitialData();
+      },
+      onDelete: (payload) {
+        fetchInitialData();
+      },
+    );
   }
 
   @override
@@ -161,13 +396,12 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         backgroundColor: brownDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new,
-              color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text(
           'Analytics',
-          style: TextStyle(color: Colors.white), 
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
@@ -205,7 +439,6 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           ),
         ],
       ),
-     
     );
   }
 
@@ -262,8 +495,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 const SizedBox(height: 8),
                 // Legend row
                 Padding(
-                  padding:
-                      const EdgeInsets.only(bottom: 16.0),
+                  padding: const EdgeInsets.only(bottom: 16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: _successChartData
@@ -456,7 +688,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 ),
                 const SizedBox(height: 8),
                 Padding(
-                  padding: const EdgeInsets.all(12.0), 
+                  padding: const EdgeInsets.all(12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: _failedChartData
@@ -495,7 +727,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
 
   Widget _productListTile(Product p, {required int sold}) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10), 
+      margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE9E9E9), width: 1),
@@ -511,13 +743,12 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       child: Container(
-        padding: const EdgeInsets.all(8), 
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8), 
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-         
             Container(
               width: 44,
               height: 44,

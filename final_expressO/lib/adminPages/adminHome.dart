@@ -732,12 +732,12 @@ class AdminDrawer extends StatelessWidget {
                           label: 'Products',
                           route: '/products',
                           highlight: selectedRoute == '/products'),
-                      _navItem(
-                          context: context,
-                          icon: Icons.list_alt,
-                          label: 'Categories',
-                          route: '/categories',
-                          highlight: selectedRoute == '/categories'),
+                      // _navItem(
+                      //     context: context,
+                      //     icon: Icons.list_alt,
+                      //     label: 'Categories',
+                      //     route: '/categories',
+                      //     highlight: selectedRoute == '/categories'),
                       _navItem(
                           context: context,
                           icon: Icons.shopping_cart_outlined,

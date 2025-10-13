@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:firebase_nexus/adminPages/analyticsVIew.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminSupabaseHelper {
@@ -11,7 +14,7 @@ class AdminSupabaseHelper {
       print("Connection error: $e");
       return false;
     }
-  }    
+  }
 
   Future<List<Map<String, dynamic>>> getAll(String table) async {
     try {
@@ -38,8 +41,7 @@ class AdminSupabaseHelper {
   Future<Map<String, dynamic>?> insert(
       String table, Map<String, dynamic> data) async {
     try {
-      final response =
-          await client.from(table).insert(data).select().single();
+      final response = await client.from(table).insert(data).select().single();
       return response;
     } catch (e) {
       print("Insert error: $e");
@@ -47,10 +49,67 @@ class AdminSupabaseHelper {
     }
   }
 
-  
+  Future<String?> uploadProductImage(File file, String productID) async {
+    final filePath = 'files/$productID.png'; // folder + filename
 
-  Future<Map<String, dynamic>?> update(String table, String idColumn, dynamic id,
-      Map<String, dynamic> data) async {
+    try {
+      final response = await client.storage
+          .from('product_images') // 👈 bucket name
+          .upload(filePath, file);
+
+      // Get a public URL if the bucket is public
+      final publicUrl =
+          client.storage.from('product_images').getPublicUrl(filePath);
+
+      return publicUrl; // return the URL so you can store it in DB
+    } on StorageException catch (e) {
+      print('Storage error: ${e.message}');
+      return null;
+    } catch (e) {
+      print('Unknown error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> addNewProduct(
+    String name,
+    String desc,
+    String category,
+    String stock,
+    String cost,
+    String cost,
+
+    
+    , File file) async {
+    try {
+
+        final response = await insert('Products', {product})
+
+
+
+
+
+
+
+
+
+
+
+      return {
+        'success': true,
+        'message': 'User logged in successfully!',
+      };
+    } catch (e) {
+      print('Sign-in error: $e');
+      return {
+        'success': false,
+        'message': 'Something went wrong on our end, try again later.',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>?> update(String table, String idColumn,
+      dynamic id, Map<String, dynamic> data) async {
     try {
       final response = await client
           .from(table)

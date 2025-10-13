@@ -5,7 +5,7 @@ class SupabaseHelper {
 
   Future<bool> isConnected() async {
     try {
-      final response = await client.from('products').select().limit(1);
+      final response = await client.from('Products').select().limit(1);
       return response.isNotEmpty;
     } catch (e) {
       print("Connection error: $e");

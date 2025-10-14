@@ -17,6 +17,7 @@ class AdminSupabaseHelper {
     }
   }
 
+
   Future<List<Map<String, dynamic>>> getAll(
       String table, String? searchTerm, String? searchColumn) async {
     try {
@@ -38,6 +39,9 @@ class AdminSupabaseHelper {
       return [];
     }
   }
+
+
+  
 
   Future<Map<String, dynamic>?> getById(
       String table, String idColumn, dynamic id) async {
@@ -229,4 +233,6 @@ Future<File?> fileFromSupabase(String publicUrl, {String? filename}) async {
     print('Error downloading file: $e');
     return null;
   }
+  
 }
+

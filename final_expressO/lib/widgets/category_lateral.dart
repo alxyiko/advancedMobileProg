@@ -39,13 +39,19 @@ class _CategoryLateralState extends State<CategoryLateral> {
     Icons.bakery_dining,
     Icons.spa,
     Icons.icecream,
-    Icons.paste_sharp,
+    Icons.rice_bowl,
   ];
 
   @override
   void initState() {
     super.initState();
     categories = List.from(widget.initialCategories);
+  }
+
+  // Simulated product check
+  bool canDeleteCategory(Category category) {
+    // Replace with your real logic: return false if products exist under this category
+    return true;
   }
 
   void _showAddEditCategoryDialog({Category? category, int? editIndex}) {
@@ -303,6 +309,55 @@ class _CategoryLateralState extends State<CategoryLateral> {
               size: 20,
             ),
           ),
+          IconButton(
+            onPressed: () {
+              if (!canDeleteCategory(category)) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Cannot Delete"),
+                    content: const Text(
+                        "This category has products assigned and cannot be deleted."),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  ),
+                );
+                return;
+              }
+
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Delete Category"),
+                  content: Text(
+                      "Are you sure you want to delete '${category.name}'?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          categories.removeAt(index);
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "Delete",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+          ),
         ],
       ),
     );
@@ -320,7 +375,7 @@ class _CategoryLateralState extends State<CategoryLateral> {
           child: Column(
             children: [
               Container(
-                height: 60,
+                height: 75,
                 decoration: const BoxDecoration(color: Color(0xFF38241D)),
                 child: SafeArea(
                   child: Padding(

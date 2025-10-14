@@ -15,8 +15,7 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAll(
-    String table ) async {
+  Future<List<Map<String, dynamic>>> getAll(String table) async {
     try {
       var query = client.from(table).select();
 

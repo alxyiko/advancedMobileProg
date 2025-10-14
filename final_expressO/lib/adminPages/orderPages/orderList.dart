@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../models/product.dart';
+import '../../models/product.dart';
 import 'adminOrderDetailedPage.dart';
 
-import './adminHome.dart';
+import '../adminHome.dart';
 
 class OrderListPage extends StatefulWidget {
   const OrderListPage({Key? key}) : super(key: key);
@@ -321,14 +321,16 @@ class _OrderListPageState extends State<OrderListPage>
           actions: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              // child: GestureDetector(
-              //   onTap: () => _showCategoriesPanel(context),
-              //   child: SvgPicture.asset(
-              //     'assets/images/store_icon.svg',
-              //     width: 24,
-              //     height: 24,
-              //   ),
-              // ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: const Icon(
+                  Icons.store_outlined,
+                  size: 24,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
           bottom: PreferredSize(

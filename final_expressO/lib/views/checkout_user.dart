@@ -1,397 +1,302 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Checkout',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CheckoutPage(),
+      debugShowCheckedModeBanner: false,
+      title: 'Checkout Page',
+      home: const CheckoutPage(),
     );
   }
 }
 
 class CheckoutPage extends StatefulWidget {
+  const CheckoutPage({super.key});
+
   @override
-  _CheckoutPageState createState() => _CheckoutPageState();
+  State<CheckoutPage> createState() => _CheckoutPageState();
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  String _selectedPaymentMethod = 'counter';
-  TextEditingController _discountController = TextEditingController();
-  double _subtotal = 100.00;
-  double _discount = 0.0;
-  double _total = 100.00;
+  bool onlinePayment = false;
 
-  void _applyDiscount() {
-    setState(() {
-      if (_discountController.text.isNotEmpty) {
-        _discount = 10.0; // 10% discount for demo
-        _total = _subtotal - (_subtotal * _discount / 100);
-      } else {
-        _discount = 0.0;
-        _total = _subtotal;
-      }
-    });
-  }
+  final Color brown = const Color(0xFF38241D);
+  final Color beige = const Color(0xFFFAF3EA);
+  final Color accentOrange = const Color(0xFFE49B3C);
+  final Color whiteCard = const Color(0xFFFFF8F1);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: beige,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: brown,
+        title: const Text("Check Out", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {},
         ),
-        title: Text(
-          'Checkout',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Address Section
             _buildSection(
-              'Address',
-              _buildAddressSection(),
+              icon: Icons.location_on,
+              title: "Address",
+              child: const Text(
+                "Blk 1 Lt 2 Golden Ville Salitran II Dasmariñas City Cavite",
+                style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+              ),
             ),
-            SizedBox(height: 20),
-            
-            // News Section
+
+            const SizedBox(height: 16),
+
             _buildSection(
-              'News',
-              _buildNewsSection(),
+              icon: Icons.local_cafe,
+              title: "Items",
+              child: Column(
+                children: List.generate(3, (index) {
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 25,
+                            backgroundImage: NetworkImage(
+                              "https://cdn-icons-png.flaticon.com/512/415/415733.png",
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Text(
+                              "Caramel Macchiato",
+                              style: TextStyle(fontSize: 15, color: Colors.black87),
+                            ),
+                          ),
+                          Text(
+                            "₱250",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: brown,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (index != 2)
+                        Divider(color: Colors.brown.shade100, height: 20),
+                    ],
+                  );
+                }),
+              ),
             ),
-            SizedBox(height: 20),
-            
-            // Divider
-            Divider(height: 1, color: Colors.grey[300]),
-            SizedBox(height: 20),
-            
-            // Add Discount Code
-            _buildDiscountSection(),
-            SizedBox(height: 20),
-            
-            // Payment Method
+
+            const SizedBox(height: 16),
+
             _buildSection(
-              'Payment Method',
-              _buildPaymentMethodSection(),
+              icon: Icons.local_offer_outlined,
+              title: "Add Discount Code",
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox.shrink(),
+                  Icon(Icons.arrow_forward_ios, color: brown, size: 18),
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            
-            // Payment Details
+
+            const SizedBox(height: 16),
+
             _buildSection(
-              'Payment Details',
-              _buildPaymentDetails(),
+              icon: Icons.payments_outlined,
+              title: "Payment Method",
+              child: Column(
+                children: [
+                  RadioListTile<bool>(
+                    title: Row(
+                      children: [
+                        const Text("Pay at the counter"),
+                        const SizedBox(width: 5),
+                        Icon(Icons.store, color: accentOrange, size: 18),
+                      ],
+                    ),
+                    value: false,
+                    activeColor: accentOrange,
+                    groupValue: onlinePayment,
+                    onChanged: (val) => setState(() => onlinePayment = val!),
+                  ),
+                  RadioListTile<bool>(
+                    title: Row(
+                      children: [
+                        const Text("Online Payment"),
+                        const SizedBox(width: 5),
+                        Icon(Icons.credit_card, color: accentOrange, size: 18),
+                      ],
+                    ),
+                    value: true,
+                    activeColor: accentOrange,
+                    groupValue: onlinePayment,
+                    onChanged: (val) => setState(() => onlinePayment = val!),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 30),
-            
-            // Trade Section
-            _buildTradeSection(),
+
+            const SizedBox(height: 16),
+
+            _buildSection(
+              icon: Icons.receipt_long_outlined,
+              title: "Payment Details",
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  _PaymentRow(label: "Shipping", value: "₱50.00"),
+                  _PaymentRow(label: "Subtotal", value: "₱500.00"),
+                  _PaymentRow(
+                    label: "Voucher Applied",
+                    value: "-₱500.00",
+                    isNegative: true,
+                  ),
+                  Divider(),
+                  _PaymentRow(label: "Total Payment", value: "₱50.00", isTotal: true),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Bottom total and button
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+              decoration: BoxDecoration(
+                color: whiteCard,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 5,
+                    offset: Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total: ₱500.00",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: brown,
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentOrange,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      elevation: 0,
+                    ),
+                    onPressed: () {},
+                    child: const Text("Check out",
+                        style: TextStyle(color: Colors.white, fontSize: 15)),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomAppBar(),
     );
   }
 
-  Widget _buildSection(String title, Widget content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: 8),
-        content,
-      ],
-    );
-  }
-
-  Widget _buildAddressSection() {
+  Widget _buildSection({
+    required IconData icon,
+    required String title,
+    required Widget child,
+  }) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        'B1.1.1.2 Golden Web Safariers | Communities City, Ocelia',
-        style: TextStyle(fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildNewsSection() {
-    return Column(
-      children: List.generate(3, (index) => _buildNewsItem()),
-    );
-  }
-
-  Widget _buildNewsItem() {
-    return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(4),
-        color: Colors.grey[50],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.blue[100]!),
-            ),
-            child: Text(
-              'F250',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-          SizedBox(width: 12),
-          Text(
-            'Coronel Nocciato',
-            style: TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDiscountSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Add Discount Code',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _discountController,
-                decoration: InputDecoration(
-                  hintText: 'Enter discount code',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-              ),
-            ),
-            SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: _applyDiscount,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              child: Text('Apply'),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentMethodSection() {
-    return Column(
-      children: [
-        _buildPaymentOption(
-          value: 'counter',
-          title: 'Pay us the counter',
-        ),
-        SizedBox(height: 8),
-        _buildPaymentOption(
-          value: 'online',
-          title: 'Online Payment',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentOption({required String value, required String title}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: RadioListTile<String>(
-        title: Text(title),
-        value: value,
-        groupValue: _selectedPaymentMethod,
-        onChanged: (value) {
-          setState(() {
-            _selectedPaymentMethod = value!;
-          });
-        },
-        contentPadding: EdgeInsets.only(left: 8),
-        controlAffinity: ListTileControlAffinity.leading,
-        dense: true,
-      ),
-    );
-  }
-
-  Widget _buildPaymentDetails() {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(4),
+        color: whiteCard,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildPaymentDetailRow('Pricing', '9:00:30'),
-          SizedBox(height: 8),
-          _buildPaymentDetailRow('Submit', '9:00:30'),
-          SizedBox(height: 8),
-          _buildPaymentDetailRow('Vendor Added', '9:00:30'),
-          SizedBox(height: 8),
-          Divider(height: 1, color: Colors.grey[300]),
-          SizedBox(height: 8),
-          _buildPaymentDetailRow(
-            'Total Payment',
-            _total.toStringAsFixed(2),
-            isTotal: true,
+          Row(
+            children: [
+              Icon(icon, color: accentOrange, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  color: brown,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
+          child,
         ],
       ),
     );
   }
+}
 
-  Widget _buildPaymentDetailRow(String label, String value, {bool isTotal = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: isTotal ? Colors.black : Colors.black87,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: isTotal ? Colors.black : Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
+class _PaymentRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isNegative;
+  final bool isTotal;
 
-  Widget _buildTradeSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Trade # ${_subtotal.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'C:\\Users\\crc',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
+  const _PaymentRow({
+    required this.label,
+    required this.value,
+    this.isNegative = false,
+    this.isTotal = false,
+  });
 
-  Widget _buildBottomAppBar() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
-      ),
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Total Payment',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                Text(
-                  '\$${_total.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 15 : 14,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: Colors.black87,
             ),
           ),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                // Handle checkout logic
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Checkout',
-                style: TextStyle(fontSize: 16),
-              ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isTotal ? 15 : 14,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isNegative
+                  ? Colors.red
+                  : isTotal
+                      ? Colors.black
+                      : Colors.black87,
             ),
           ),
         ],

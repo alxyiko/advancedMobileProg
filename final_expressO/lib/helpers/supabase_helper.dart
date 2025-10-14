@@ -23,6 +23,9 @@ class SupabaseHelper {
     }
   }
 
+
+
+
   Future<Map<String, dynamic>?> getById(
       String table, String idColumn, dynamic id) async {
     try {

@@ -143,7 +143,8 @@ class UserSupabaseHelper {
   Future<List<Map<String, dynamic>>> getCategs() async {
     try {
       print("functname start: getCategs");
-      var query = _client.from("Categories").select();
+      var query =
+          _client.from("Categories").select().isFilter('deleted_at', null);
       final response = await query;
       print("functname: getCategs");
 

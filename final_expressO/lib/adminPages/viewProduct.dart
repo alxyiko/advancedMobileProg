@@ -16,8 +16,8 @@ class _ViewProductPageState extends State<ViewProductPage> {
 
   @override
   void initState() {
-    super.initState();
     print(widget.productData);
+    super.initState();
   }
 
   @override

@@ -17,11 +17,10 @@ class AdminSupabaseHelper {
     }
   }
 
-
   Future<List<Map<String, dynamic>>> getAll(
       String table, String? searchTerm, String? searchColumn) async {
     try {
-      var query = client.from(table).select();
+      var query = client.from(table).select().isFilter('deleted_at', null);
 
       // If a search term and column are provided, apply a filter
       if (searchTerm != null && searchColumn != null) {
@@ -39,9 +38,6 @@ class AdminSupabaseHelper {
       return [];
     }
   }
-
-
-  
 
   Future<Map<String, dynamic>?> getById(
       String table, String idColumn, dynamic id) async {
@@ -165,7 +161,11 @@ class AdminSupabaseHelper {
 
   Future<bool> delete(String table, String idColumn, dynamic id) async {
     try {
-      await client.from(table).delete().eq(idColumn, id);
+      final timestamp = DateTime.now().toUtc().toIso8601String();
+
+      await client
+          .from(table)
+          .update({'deleted_at': timestamp}).eq(idColumn, id);
       return true;
     } catch (e) {
       print("Delete error: $e");
@@ -233,6 +233,4 @@ Future<File?> fileFromSupabase(String publicUrl, {String? filename}) async {
     print('Error downloading file: $e');
     return null;
   }
-  
 }
-

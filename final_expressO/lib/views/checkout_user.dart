@@ -11,8 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Checkout Page',
-      home: const CheckoutPage(),
+      home: CheckoutPage(),
     );
   }
 }
@@ -25,280 +24,256 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  bool onlinePayment = false;
+  bool isOnlinePayment = false;
 
-  final Color brown = const Color(0xFF38241D);
-  final Color beige = const Color(0xFFFAF3EA);
-  final Color accentOrange = const Color(0xFFE49B3C);
-  final Color whiteCard = const Color(0xFFFFF8F1);
+  final double itemPrice = 250.0;
+  final int itemCount = 3;
+  final double shippingFee = 50.0;
+  final double voucherDiscount = 500.0;
+
+  double get subtotal => itemPrice * itemCount;
+  double get totalPayment => (subtotal + shippingFee) - voucherDiscount;
 
   @override
   Widget build(BuildContext context) {
+    final brown = const Color(0xFF38241D);
+    final background = const Color(0xFFFFF9F2);
+
     return Scaffold(
-      backgroundColor: beige,
+      backgroundColor: background,
       appBar: AppBar(
         backgroundColor: brown,
-        title: const Text("Check Out", style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () {},
+        elevation: 0,
+        title: const Text(
+          "Check Out",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
         ),
+        leading:
+            const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildSection(
-              icon: Icons.location_on,
               title: "Address",
+              icon: Icons.location_on_outlined,
               child: const Text(
                 "Blk 1 Lt 2 Golden Ville Salitran II Dasmariñas City Cavite",
-                style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+                style: TextStyle(fontSize: 14, color: Colors.black87),
               ),
             ),
-
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 12),
             _buildSection(
-              icon: Icons.local_cafe,
               title: "Items",
+              icon: Icons.coffee_outlined,
               child: Column(
-                children: List.generate(3, (index) {
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 25,
-                            backgroundImage: NetworkImage(
-                              "https://cdn-icons-png.flaticon.com/512/415/415733.png",
-                            ),
+                children: List.generate(
+                  itemCount,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text("₱250",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87)),
+                              SizedBox(height: 4),
+                              Text("Caramel Macchiato",
+                                  style: TextStyle(color: Colors.black54)),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Text(
-                              "Caramel Macchiato",
-                              style: TextStyle(fontSize: 15, color: Colors.black87),
-                            ),
-                          ),
-                          Text(
-                            "₱250",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: brown,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (index != 2)
-                        Divider(color: Colors.brown.shade100, height: 20),
-                    ],
-                  );
-                }),
+                        ),
+                        const CircleAvatar(
+                          radius: 24,
+                          backgroundImage: NetworkImage(
+                              "https://cdn-icons-png.flaticon.com/512/415/415733.png"),
+                          backgroundColor: Colors.transparent,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            _buildSection(
-              icon: Icons.local_offer_outlined,
+            const SizedBox(height: 12),
+            _buildClickableSection(
               title: "Add Discount Code",
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox.shrink(),
-                  Icon(Icons.arrow_forward_ios, color: brown, size: 18),
-                ],
-              ),
+              icon: Icons.local_offer_outlined,
+              onTap: () {},
             ),
-
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 12),
             _buildSection(
-              icon: Icons.payments_outlined,
               title: "Payment Method",
+              icon: Icons.credit_card_outlined,
               child: Column(
                 children: [
                   RadioListTile<bool>(
-                    title: Row(
-                      children: [
-                        const Text("Pay at the counter"),
-                        const SizedBox(width: 5),
-                        Icon(Icons.store, color: accentOrange, size: 18),
-                      ],
-                    ),
+                    title: const Text("Pay at the counter"),
+                    secondary: const Icon(Icons.store_outlined),
+                    activeColor: brown,
                     value: false,
-                    activeColor: accentOrange,
-                    groupValue: onlinePayment,
-                    onChanged: (val) => setState(() => onlinePayment = val!),
+                    groupValue: isOnlinePayment,
+                    onChanged: (val) => setState(() => isOnlinePayment = val!),
                   ),
                   RadioListTile<bool>(
-                    title: Row(
-                      children: [
-                        const Text("Online Payment"),
-                        const SizedBox(width: 5),
-                        Icon(Icons.credit_card, color: accentOrange, size: 18),
-                      ],
-                    ),
+                    title: const Text("Online Payment"),
+                    secondary: const Icon(Icons.payment_outlined),
+                    activeColor: brown,
                     value: true,
-                    activeColor: accentOrange,
-                    groupValue: onlinePayment,
-                    onChanged: (val) => setState(() => onlinePayment = val!),
+                    groupValue: isOnlinePayment,
+                    onChanged: (val) => setState(() => isOnlinePayment = val!),
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 12),
             _buildSection(
-              icon: Icons.receipt_long_outlined,
               title: "Payment Details",
+              icon: Icons.receipt_long_outlined,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  _PaymentRow(label: "Shipping", value: "₱50.00"),
-                  _PaymentRow(label: "Subtotal", value: "₱500.00"),
-                  _PaymentRow(
-                    label: "Voucher Applied",
-                    value: "-₱500.00",
-                    isNegative: true,
-                  ),
-                  Divider(),
-                  _PaymentRow(label: "Total Payment", value: "₱50.00", isTotal: true),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Bottom total and button
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              decoration: BoxDecoration(
-                color: whiteCard,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 5,
-                    offset: Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Total: ₱500.00",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: brown,
-                    ),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentOrange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      elevation: 0,
-                    ),
-                    onPressed: () {},
-                    child: const Text("Check out",
-                        style: TextStyle(color: Colors.white, fontSize: 15)),
-                  ),
+                  _buildPaymentRow("Shipping", shippingFee),
+                  _buildPaymentRow("Subtotal", subtotal),
+                  _buildPaymentRow("Voucher Applied", -voucherDiscount,
+                      isDiscount: true),
+                  const Divider(),
+                  _buildPaymentRow("Total Payment", totalPayment, isBold: true),
                 ],
               ),
             ),
+            const SizedBox(height: 20),
+            _buildBottomSummary(brown),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSection({
-    required IconData icon,
-    required String title,
-    required Widget child,
-  }) {
+  Widget _buildSection(
+      {required String title, required IconData icon, required Widget child}) {
+    final brown = const Color(0xFF38241D);
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: whiteCard,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, color: accentOrange, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                title,
+          Row(children: [
+            Icon(icon, color: brown, size: 18),
+            const SizedBox(width: 6),
+            Text(title,
                 style: TextStyle(
-                  color: brown,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
+                    color: brown, fontWeight: FontWeight.w600, fontSize: 15)),
+          ]),
           const SizedBox(height: 8),
           child,
         ],
       ),
     );
   }
-}
 
-class _PaymentRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isNegative;
-  final bool isTotal;
+  Widget _buildClickableSection({
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final brown = const Color(0xFF38241D);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(children: [
+              Icon(icon, color: brown, size: 18),
+              const SizedBox(width: 6),
+              Text(title,
+                  style: TextStyle(
+                      color: brown, fontWeight: FontWeight.w600, fontSize: 15)),
+            ]),
+            const Icon(Icons.arrow_forward_ios,
+                size: 16, color: Colors.black45),
+          ],
+        ),
+      ),
+    );
+  }
 
-  const _PaymentRow({
-    required this.label,
-    required this.value,
-    this.isNegative = false,
-    this.isTotal = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPaymentRow(String label, double value,
+      {bool isDiscount = false, bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Text(label,
+              style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.w400,
+                  color: Colors.black87)),
           Text(
-            label,
+            "₱${value.toStringAsFixed(2)}",
             style: TextStyle(
-              fontSize: isTotal ? 15 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: Colors.black87,
+              color: isDiscount ? Colors.red : Colors.black87,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w400,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isTotal ? 15 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: isNegative
-                  ? Colors.red
-                  : isTotal
-                      ? Colors.black
-                      : Colors.black87,
-            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomSummary(Color brown) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 5,
+            offset: Offset(0, 3),
           ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text("Total: ₱${totalPayment.toStringAsFixed(2)}",
+              style:
+                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFCF8C47),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text(
+              "Check out",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14),
+            ),
+          )
         ],
       ),
     );

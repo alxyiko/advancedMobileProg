@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_nexus/appColors.dart';
 import '../adminHome.dart'; // adjust path depending on your folder structure
@@ -56,19 +58,39 @@ class StatusBadge extends StatelessWidget {
 
 // ---------- DISCOUNT CARD ----------
 class DiscountCard extends StatelessWidget {
+  final int id;
   final IconData icon;
+  final String desc;
   final String discountCode;
+  final String discountType;
   final String description;
   final String status;
+  final String value;
+  final int? rate;
+  final double? flat_amount;
+  final int usage_limit;
+  final DateTime start_date;
+  final DateTime expiry_date;
   final DateTime createdAt;
+  final bool isActive;
 
   const DiscountCard({
     super.key,
+    required this.id,
     required this.icon,
+    required this.desc,
     required this.discountCode,
+    required this.discountType,
+    required this.usage_limit,
     required this.description,
+    required this.value,
+    this.flat_amount,
+    this.rate,
     required this.status,
+    required this.isActive,
     required this.createdAt,
+    required this.start_date,
+    required this.expiry_date,
   });
 
   @override
@@ -102,7 +124,7 @@ class DiscountCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(discountCode,
+                  Text('${discountCode}: ${value} OFF',
                       style: const TextStyle(
                           fontFamily: 'Quicksand',
                           fontWeight: FontWeight.bold,
@@ -134,21 +156,23 @@ class DiscountCard extends StatelessWidget {
                   children: [
                     StatusBadge(status: status),
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.grey),
+                      icon: const Icon(Icons.edit, color: Colors.white),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => DiscountEdit(
-                              code: "DEFAULTCODE",
-                              description: "Default description",
-                              discountType: "percentage",
-                              discountValue: "0",
-                              usageLimit: "0",
-                              startDate: DateTime.now(),
-                              endDate:
-                                  DateTime.now().add(const Duration(days: 30)),
-                              isAvailable: false,
+                              id: id,
+                              code: discountCode,
+                              desc: desc,
+                              type: discountType,
+                              rate: rate,
+                              flat_amount: flat_amount,
+                              value: value,
+                              usage_limit: usage_limit,
+                              start_date: start_date,
+                              expiry_date: expiry_date,
+                              isActive: isActive,
                             ),
                           ),
                         );
@@ -165,12 +189,19 @@ class DiscountCard extends StatelessWidget {
   }
 }
 
-// ---------- MAIN PAGE ----------
-class DiscountListPage extends StatelessWidget {
+class DiscountListPage extends StatefulWidget {
   const DiscountListPage({super.key});
 
+  @override
+  State<DiscountListPage> createState() => _DiscountListPageState();
+}
+
+class _DiscountListPageState extends State<DiscountListPage> {
+  final supabaseHelper = AdminSupabaseHelper();
+  bool _loading = true;
+  List<Map<String, dynamic>> _discounts = [];
+
   Future<UserProfile> fetchUserProfile() async {
-    // TODO: replace with your real backend call
     await Future.delayed(const Duration(milliseconds: 300));
     return UserProfile(
       displayName: 'Express-O',
@@ -181,33 +212,57 @@ class DiscountListPage extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      final discounts = await supabaseHelper.getAll("Discounts", null, null);
+      setState(() {
+        _discounts = discounts;
+        _loading = false;
+      });
+    } catch (e) {
+      print("Error fetching discounts: $e");
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final _rand = Random();
-    final sampleStatuses = ["Active", "Expired", "Inactive"];
+    // 🔶 LOADING OVERLAY
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
-        iconTheme:
-            const IconThemeData(color: Colors.white), // back/menu icon white
-        title: const Text("Discount Codes",
-            style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Quicksand',
-                fontSize: 16,
-                fontWeight: FontWeight.w600)),
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Discount Codes",
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Quicksand',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         centerTitle: true,
       ),
-
       drawer: AdminDrawer(
-        profileFuture: fetchUserProfile(), // <-- your future method
-        selectedRoute: "/discounts", // mark this as active/highlighted
+        profileFuture: fetchUserProfile(),
+        selectedRoute: "/discounts",
         onNavigate: (route) {
           Navigator.pushNamed(context, route);
         },
       ),
-
-      // ✅ Floating Button Bottom Right
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
         backgroundColor: AppColors.primary,
@@ -219,34 +274,78 @@ class DiscountListPage extends StatelessWidget {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
+      body: _discounts.isEmpty
+          ? const Center(
+              child: Text(
+                "No discounts found.",
+                style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: _discounts.length,
+              itemBuilder: (context, index) {
+                final discount = _discounts[index];
 
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: 5, // or your real list length
-        itemBuilder: (context, index) {
-          final status = sampleStatuses[_rand.nextInt(sampleStatuses.length)];
-          final hoursAgo = _rand.nextInt(12); // random 0..11 hours ago
-          final createdAt = DateTime.now().subtract(Duration(hours: hoursAgo));
+                final type = discount['type'] ?? 'fixed';
+                final value = type == 'percentage'
+                    ? "${discount['rate']}%"
+                    : "₱${discount['flat_amount']}";
+                final code = discount['code'] ?? "N/A";
+                final desc = discount['desc'] ?? "";
+                final isActive = discount['isActive'] ?? false;
+                final createdAt = DateTime.tryParse(
+                        discount['start_date'] ?? DateTime.now().toString()) ??
+                    DateTime.now();
 
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => DiscountViewPage(discountCode: "CODE$index"),
-                ),
-              );
-            },
-            child: DiscountCard(
-              icon: Icons.local_offer,
-              discountCode: "CODE$index",
-              description: "Sample discount description #$index",
-              status: status,
-              createdAt: createdAt,
+                String status;
+                if (!isActive) {
+                  status = "Inactive";
+                } else {
+                  final expiryDate =
+                      DateTime.tryParse(discount['expiry_date'] ?? '') ??
+                          DateTime.now();
+                  status = expiryDate.isBefore(DateTime.now())
+                      ? "Expired"
+                      : "Active";
+                }
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DiscountViewPage(discountCode: code),
+                      ),
+                    );
+                  },
+                  child: DiscountCard(
+                    id: discount['id'],
+                    icon: Icons.local_offer,
+                    discountType: type,
+                    value: value,
+                    desc: desc,
+                    isActive: discount['isActive'],
+                    discountCode: code,
+                    description: desc,
+                    status: status,
+                    createdAt: createdAt,
+                    flat_amount: discount['flat_amount'],
+                    rate: discount['rate'],
+                    usage_limit: discount['usage_limit'],
+                    start_date: DateTime.tryParse(discount['start_date'] ??
+                            DateTime.now().toString()) ??
+                        DateTime.now(),
+                    expiry_date: DateTime.tryParse(discount['expiry_date'] ??
+                            DateTime.now().toString()) ??
+                        DateTime.now(),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

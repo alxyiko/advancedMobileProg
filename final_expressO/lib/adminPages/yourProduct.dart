@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/adminPages/AddProduct.dart';
+import 'package:firebase_nexus/adminPages/EditProductFlow.dart';
 import 'package:firebase_nexus/adminPages/addProductFlow.dart';
 import 'package:firebase_nexus/adminPages/editProduct.dart';
 import 'package:firebase_nexus/adminPages/viewProduct.dart';
@@ -71,7 +72,7 @@ class _YourProductPageState extends State<YourProductPage> {
       print('STARTED');
 
       final categories = await supabaseHelper.getAll("Categories");
-      final products = await supabaseHelper.getAll("product_list");
+      final products = await supabaseHelper.getAll("product_overview");
       if (categories.isNotEmpty) {
         print('Categoried loaded!');
         print(categories);
@@ -1357,7 +1358,7 @@ class _YourProductPageState extends State<YourProductPage> {
                                     children: [
                                       // Price - not bold, normal weight
                                       Text(
-                                        "Php ${product['price'].toString()}",
+                                        "Php ${product['lowest_price'].toString()}",
                                         // product['price'] as String,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.normal,
@@ -1432,8 +1433,9 @@ class _YourProductPageState extends State<YourProductPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            EditProduct(productData: product),
+                                        builder: (context) => Editproductflow(
+                                          productID: product['id'],
+                                        ),
                                       ),
                                     );
                                   },

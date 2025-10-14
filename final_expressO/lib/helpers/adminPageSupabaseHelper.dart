@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,8 +17,7 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAll(
-    String table ) async {
+  Future<List<Map<String, dynamic>>> getAll(String table) async {
     try {
       var query = client.from(table).select();
 
@@ -74,21 +75,25 @@ class AdminSupabaseHelper {
   }
 
   Future<String?> uploadProductImage(File file, String productID) async {
-    final filePath = 'files/$productID.jpg'; // folder + filename
-    print('UPLOADING IMAGE');
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final filePath =
+        'files/${productID}_$timestamp.jpg'; // folder + unique filename
+    print('UPLOADING IMAGE (overwrite mode)');
 
     try {
-      final response = await client.storage
-          .from('product_images') // 👈 bucket name
-          .upload(filePath, file);
+      final response = await client.storage.from('product_images').upload(
+            filePath,
+            file,
+            fileOptions: const FileOptions(upsert: true), // 👈 allow overwrite
+          );
 
-      print(response);
+      print('Storage response: $response');
 
-      // Get a public URL if the bucket is public
+      // Get the public URL
       final publicUrl =
           client.storage.from('product_images').getPublicUrl(filePath);
 
-      return publicUrl; // return the URL so you can store it in DB
+      return publicUrl;
     } on StorageException catch (e) {
       print('Storage error: ${e.message}');
       return null;
@@ -203,5 +208,24 @@ class AdminSupabaseHelper {
 
   void unsubscribe(RealtimeChannel channel) {
     client.removeChannel(channel);
+  }
+}
+
+Future<File?> fileFromSupabase(String publicUrl, {String? filename}) async {
+  try {
+    final response = await http.get(Uri.parse(publicUrl));
+    if (response.statusCode == 200) {
+      final dir = await getTemporaryDirectory();
+      final name = filename ?? publicUrl.split('/').last;
+      final file = File('${dir.path}/$name');
+      await file.writeAsBytes(response.bodyBytes);
+      return file;
+    } else {
+      print('Download failed: ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Error downloading file: $e');
+    return null;
   }
 }

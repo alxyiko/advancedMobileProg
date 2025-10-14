@@ -18,12 +18,14 @@ class AddProductStep1 extends StatefulWidget {
   final Map<String, dynamic> draft;
   final void Function(Map<String, dynamic> updatedDraft) onNext;
   final VoidCallback onCancel;
+  final bool editMode;
 
   const AddProductStep1({
     super.key,
     required this.draft,
     required this.onNext,
     required this.onCancel,
+    required this.editMode,
   });
 
   @override
@@ -31,6 +33,8 @@ class AddProductStep1 extends StatefulWidget {
 }
 
 class _AddProductStep1State extends State<AddProductStep1> {
+  late bool _editMode;
+  late bool _newImage;
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   final ImagePicker _picker = ImagePicker();
@@ -39,7 +43,12 @@ class _AddProductStep1State extends State<AddProductStep1> {
   @override
   void initState() {
     super.initState();
+
+    print("widget.draft printed!");
+    print(widget.draft);
+    _newImage = widget.draft["newImg"] ?? false;
     _selectedImage = widget.draft["productImage"];
+    _editMode = widget.editMode;
     _nameController =
         TextEditingController(text: widget.draft["productName"] ?? "");
     _descriptionController =
@@ -55,7 +64,14 @@ class _AddProductStep1State extends State<AddProductStep1> {
     );
 
     if (image != null) {
-      setState(() => _selectedImage = File(image.path));
+      if (_editMode) {
+        setState(() {
+          _newImage = true;
+          _selectedImage = File(image.path);
+        });
+      } else {
+        setState(() => _selectedImage = File(image.path));
+      }
     }
   }
 
@@ -105,6 +121,7 @@ class _AddProductStep1State extends State<AddProductStep1> {
       "productName": _nameController.text,
       "description": _descriptionController.text,
       "productImage": _selectedImage,
+      "newImg": _newImage,
     };
 
     widget.onNext(updatedDraft);
@@ -116,8 +133,8 @@ class _AddProductStep1State extends State<AddProductStep1> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primaryBrown,
-        title: const Text(
-          "Add Product",
+        title: Text(
+          _editMode ? "Edit Product" : "Add Product",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -311,6 +328,7 @@ class AddProductStep2 extends StatefulWidget {
   final List<Map<String, dynamic>> categories;
   final void Function(Map<String, dynamic> updates) onFinalize;
   final VoidCallback onBack;
+  final bool editMode;
 
   const AddProductStep2({
     super.key,
@@ -318,6 +336,7 @@ class AddProductStep2 extends StatefulWidget {
     required this.categories,
     required this.onFinalize,
     required this.onBack,
+    required this.editMode,
   });
 
   @override
@@ -326,9 +345,9 @@ class AddProductStep2 extends StatefulWidget {
 
 class _AddProductStep2State extends State<AddProductStep2> {
   late String _status;
+  late bool _editMode;
   String? _selectedCategory;
   late TextEditingController _stockController;
-
   List<Map<String, dynamic>> _variations = [];
 
   final supabaseHelper = AdminSupabaseHelper();
@@ -336,6 +355,7 @@ class _AddProductStep2State extends State<AddProductStep2> {
   @override
   void initState() {
     super.initState();
+    _editMode = widget.editMode;
     _status = widget.draft["status"] ?? "Available";
     _stockController = TextEditingController(
       text: widget.draft["stock"]?.toString() ?? '',
@@ -346,7 +366,6 @@ class _AddProductStep2State extends State<AddProductStep2> {
     _selectedCategory = widget.draft['category'];
   }
 
- 
   bool _validateProduct() {
     final stock = int.parse(_stockController.text);
     final variations = _variations;
@@ -422,15 +441,13 @@ class _AddProductStep2State extends State<AddProductStep2> {
 
   @override
   Widget build(BuildContext context) {
-     
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primaryBrown,
-        title: const Text(
-          "Add Product",
-          style: TextStyle(
+        title: Text(
+          _editMode ? "Edit Product" : "Add Product",
+          style: const TextStyle(
               fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
         ),
         centerTitle: true,

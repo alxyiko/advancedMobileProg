@@ -5,14 +5,15 @@ import 'package:firebase_nexus/widgets/loading_overlay.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 
-class AddProductFlow extends StatefulWidget {
-  const AddProductFlow({super.key});
+class Editproductflow extends StatefulWidget {
+  final int productID;
+  const Editproductflow({super.key, required this.productID});
 
   @override
-  State<AddProductFlow> createState() => _AddProductFlowState();
+  State<Editproductflow> createState() => _EditproductflowState();
 }
 
-class _AddProductFlowState extends State<AddProductFlow> {
+class _EditproductflowState extends State<Editproductflow> {
   int _currentStep = 1;
   bool _loading = true;
   bool _success = false;
@@ -32,6 +33,7 @@ class _AddProductFlowState extends State<AddProductFlow> {
     "status": "Available",
     "variations": [],
     "final": false,
+    "newImg": false,
   };
 
   List<Map<String, dynamic>> _categories = [];
@@ -50,16 +52,40 @@ class _AddProductFlowState extends State<AddProductFlow> {
       _initialized = true;
 
       final categories = await supabaseHelper.getAll("Categories");
+      final editedProduct =
+          await supabaseHelper.getById("Products", 'id', widget.productID);
 
-      setState(() {
-        if (categories.isNotEmpty) {
-          productDraft["category"] = categories.first["id"].toString();
-        }
-        _categories = categories;
-        _loading = false;
-      });
+      print("editedProduct printed!");
+      print(editedProduct);
+
+      if (editedProduct != null && editedProduct['img'] == null) {
+        setState(() {
+          productDraft["category"] = editedProduct["cat_id"].toString();
+          productDraft["productName"] = editedProduct["name"];
+          productDraft["description"] = editedProduct["desc"];
+          productDraft["stock"] = editedProduct["stock"];
+          productDraft["status"] = editedProduct["status"];
+          productDraft["variations"] = editedProduct["variations"];
+          _categories = categories;
+          _loading = false;
+        });
+      } else if (editedProduct != null && editedProduct['img'] != null) {
+        final file = await fileFromSupabase(editedProduct['img']);
+
+        setState(() {
+          productDraft["category"] = editedProduct["cat_id"].toString();
+          productDraft["productName"] = editedProduct["name"];
+          productDraft["description"] = editedProduct["desc"];
+          productDraft["productImage"] = file;
+          productDraft["stock"] = editedProduct["stock"];
+          productDraft["status"] = editedProduct["status"];
+          productDraft["variations"] = editedProduct["variations"];
+          _categories = categories;
+          _loading = false;
+        });
+      }
     } catch (e) {
-      print("Error fetching categories: $e");
+      print("Error fetching initial state: $e");
       setState(() => _loading = false);
     }
   }
@@ -91,58 +117,70 @@ class _AddProductFlowState extends State<AddProductFlow> {
   }
 
   Future<void> _finalSubmit() async {
+    setState(() => _submitLoading = true);
+
     try {
-      print(
-          '--------------------------------------------------------------------------------------------');
+      print('---------------------- FINAL SUBMIT ----------------------');
 
-      final response = await supabaseHelper.insert('Products', {
-        'cat_id': productDraft['category'],
-        'name': productDraft['productName'],
-        'desc': productDraft['description'],
-        'stock': productDraft['stock'],
-        'status': productDraft['status'],
-        'variations': productDraft['variations'],
-      });
+      // Extract values from draft
+      final productID = widget.productID.toString();
+      final productName = productDraft["productName"];
+      final description = productDraft["description"];
+      final category = productDraft["category"];
+      final stock = productDraft["stock"];
+      final status = productDraft["status"];
+      final variations = productDraft["variations"];
+      final imageFile = productDraft["productImage"];
+      final newImage = productDraft["newImg"];
 
-      print(response);
-      print(response['data']['id']);
+      // Prepare data map
+      final Map<String, dynamic> updateData = {
+        "name": productName,
+        "desc": description,
+        "cat_id": int.tryParse(category ?? _categories.first['id']),
+        "stock": stock,
+        "status": status,
+        "variations": variations,
+      };
 
-      if (response['status'] != 'success') {
-        setState(() {
-          _submitLoading = false;
-          _error = response['message'];
-        });
-        return;
+      // If a new image (File) is selected, upload and include URL
+      if (newImage as bool && imageFile is File) {
+        final newImageUrl =
+            await supabaseHelper.uploadProductImage(imageFile, productID);
+        if (newImageUrl != null) {
+          updateData["img"] = newImageUrl;
+        } else {
+          throw Exception("Failed to upload product image");
+        }
       }
 
-      final imgResponse = await supabaseHelper.uploadProductImage(
-          productDraft['productImage'], response['data']['id'].toString());
-      print(imgResponse);
+      print('Updating product with data: $updateData');
 
-      if (imgResponse == null) {
-        setState(() {
-          _submitLoading = false;
-          _error = 'Image upload failed!';
-        });
-        return;
-      }
-      print(response['data']['id']);
-      print({'img': imgResponse});
-      final updateResponse = await supabaseHelper.update('Products', 'id',
-          response['data']['id'].toString(), {'img': imgResponse});
-      print(updateResponse);
+      // Perform the update
+      final result =
+          await supabaseHelper.update("Products", "id", productID, updateData);
 
-      if (updateResponse['status'] != 'success') {
-        setState(() {
-          _submitLoading = false;
-          _error = response['message'];
-        });
-        return;
-      } else {
+      if (result['status'] == 'success') {
+        print('✅ Product updated successfully');
         _confirmSuccess();
+      } else {
+        print('❌ Update failed: ${result['message']}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Update failed: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       print("Error submitting final submit: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating product: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
       setState(() => _submitLoading = false);
     }
   }
@@ -159,9 +197,9 @@ class _AddProductFlowState extends State<AddProductFlow> {
         child: Stack(
           children: [
             // Main content stays in memory even while loading
-            _currentStep == 1
+            _currentStep == 1 && !(_loading || _submitLoading)
                 ? AddProductStep1(
-                    editMode: false,
+                    editMode: true,
                     key: const ValueKey(1),
                     draft: productDraft,
                     onNext: (updates) {
@@ -171,8 +209,8 @@ class _AddProductFlowState extends State<AddProductFlow> {
                     onCancel: () => Navigator.pop(context),
                   )
                 : AddProductStep2(
+                    editMode: true,
                     key: const ValueKey(2),
-                    editMode: false,
                     draft: productDraft,
                     categories: _categories,
                     onBack: () => _goToStep(1),

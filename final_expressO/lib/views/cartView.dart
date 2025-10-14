@@ -1,3 +1,6 @@
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:provider/provider.dart';
@@ -12,22 +15,119 @@ class NeilCart extends StatefulWidget {
 }
 
 class _NeilCartState extends State<NeilCart> {
+  String _selectedCategory = 'All';
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  int _selectedIconIndex = 0;
+  final TextEditingController _categoryNameController = TextEditingController();
+  final supabaseHelper = UserSupabaseHelper();
+
+  bool _loading = true;
+  final List<String> _categories = ['All'];
+  List<Map<String, dynamic>> _products = [];
+  final FocusNode _searchFocusNode = FocusNode();
+
+  // ✅ Filtered list logic
+  List<Map<String, dynamic>> get filteredProducts {
+    List<Map<String, dynamic>> filtered = _products;
+
+    if (_selectedCategory != 'All') {
+      filtered = filtered
+          .where((product) =>
+              (product['category_name'] ?? '').toString() == _selectedCategory)
+          .toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((product) {
+        final name = product['name'].toString().toLowerCase();
+        final desc = product['desc'].toString().toLowerCase();
+        final query = _searchQuery.toLowerCase();
+        return name.contains(query) || desc.contains(query);
+      }).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+
+    _searchFocusNode.addListener(() {
+      if (!_searchFocusNode.hasFocus) {
+        _performSearch();
+      }
+    });
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      print('INIT STARTED');
+      final categories = await supabaseHelper.getCategs();
+      final products = await supabaseHelper.getProductsForUser(null);
+
+      print('INIT FINISHED');
+      print('categories fetched!');
+      print(categories);
+      print('products fetched!');
+      print(products);
+
+      setState(() {
+        _loading = false;
+        _categories.addAll(categories.map((e) => e['name'] as String).toList());
+        _products = products;
+      });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _performSearch() async {
+    setState(() => _loading = true);
+    try {
+      final products = await supabaseHelper.getProductsForUser(
+        _searchQuery.isNotEmpty ? _searchQuery : null,
+      );
+
+      setState(() {
+        _products = products;
+        _loading = false;
+      });
+    } catch (e) {
+      print("Search error: $e");
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
   int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
 
-    final List<String> categories = [
-      "All",
-      "Espresso",
-      "Cappuccino",
-      "Latte",
-      "Mocha",
-      "Americano",
-      "Cold Brew",
-      "Macchiato",
-    ];
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
@@ -41,25 +141,21 @@ class _NeilCartState extends State<NeilCart> {
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined,
-                color: Color(0xFFFAF6EA)), // 🛒 cart
+                color: Color(0xFFFAF6EA)),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const OrderDetails(),
-                ),
+                MaterialPageRoute(builder: (context) => const OrderDetails()),
               );
             },
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_none,
-                color: Color(0xFFFAF6EA)), // 🔔 notif
+            icon:
+                const Icon(Icons.notifications_none, color: Color(0xFFFAF6EA)),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const NotifPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const NotifPage()),
               );
             },
           ),
@@ -67,7 +163,7 @@ class _NeilCartState extends State<NeilCart> {
       ),
       body: Column(
         children: [
-          // 🔽 Title + Search + Categories section
+          // 🔽 Title + Search + Categories
           Container(
             width: double.infinity,
             color: const Color(0xFF38241D),
@@ -75,7 +171,6 @@ class _NeilCartState extends State<NeilCart> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 📝 Title
                 RichText(
                   text: const TextSpan(
                     style: TextStyle(
@@ -104,26 +199,18 @@ class _NeilCartState extends State<NeilCart> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF503228), // ✅ background color
+                          color: const Color(0xFF503228),
                           borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 3,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
                         ),
-                        child: const TextField(
-                          style: TextStyle(
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          style: const TextStyle(
                             fontFamily: 'Quicksand',
                             fontSize: 16,
-                            color: Color(0xFF9E7A6E), // ✅ text color
+                            color: Color(0xFF9E7A6E),
                           ),
-                          decoration: InputDecoration(
-                            filled: true, // ✅ enable background fill
-                            fillColor:
-                                Color(0xFF503228), // ✅ same color as container
+                          decoration: const InputDecoration(
                             hintText: "Search coffee...",
                             hintStyle: TextStyle(
                               fontFamily: 'Quicksand',
@@ -136,40 +223,26 @@ class _NeilCartState extends State<NeilCart> {
                                   BorderRadius.all(Radius.circular(15)),
                               borderSide: BorderSide.none,
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: Color(0xFF9E7A6E),
-                            ),
+                            prefixIcon:
+                                Icon(Icons.search, color: Color(0xFF9E7A6E)),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE27D19),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.filter_list,
-                            color: Color(0xFF603B17)),
-                        onPressed: () {
-                          // TODO: filter action
-                        },
-                      ),
-                    ),
+                    // const SizedBox(width: 10),
+                    // Container(
+                    //   height: 48,
+                    //   width: 48,
+                    //   decoration: BoxDecoration(
+                    //     color: const Color(0xFFE27D19),
+                    //     borderRadius: BorderRadius.circular(8),
+                    //   ),
+                    //   child: IconButton(
+                    //     icon: const Icon(Icons.filter_list,
+                    //         color: Color(0xFF603B17)),
+                    //     onPressed: () {},
+                    //   ),
+                    // ),
                   ],
                 ),
 
@@ -180,11 +253,11 @@ class _NeilCartState extends State<NeilCart> {
                   height: 30,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
+                    itemCount: _categories.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 30),
                     itemBuilder: (context, index) {
                       final isSelected = index == selectedIndex;
-                      final text = categories[index];
+                      final text = _categories[index];
                       final textStyle = TextStyle(
                         fontFamily: 'Quicksand',
                         fontWeight: FontWeight.w500,
@@ -206,17 +279,15 @@ class _NeilCartState extends State<NeilCart> {
                         onTap: () {
                           setState(() {
                             selectedIndex = index;
+                            _selectedCategory = _categories[index];
                           });
                         },
                         child: SizedBox(
-                          height: 30, // match parent height
+                          height: 30,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
-                                text,
-                                style: textStyle,
-                              ),
+                              Text(text, style: textStyle),
                               if (isSelected)
                                 Container(
                                   margin: const EdgeInsets.only(top: 1),
@@ -238,7 +309,7 @@ class _NeilCartState extends State<NeilCart> {
             ),
           ),
 
-          // 📜 Grid items
+          // 📜 Grid of products
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
@@ -248,8 +319,14 @@ class _NeilCartState extends State<NeilCart> {
                 mainAxisSpacing: 24,
                 mainAxisExtent: 180,
               ),
-              itemCount: 10,
+              itemCount: filteredProducts.length,
               itemBuilder: (context, index) {
+                final product = filteredProducts[index];
+                final name = product['name'] ?? 'Unknown';
+                final price = product['lowest_price']?.toString() ?? 'N/A';
+                final imageUrl = product['img'] ??
+                    'https://placehold.co/200x150/png'; // fallback
+
                 return FractionallySizedBox(
                   widthFactor: 0.9,
                   child: Container(
@@ -270,21 +347,23 @@ class _NeilCartState extends State<NeilCart> {
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(16)),
-                          child: Image.asset(
-                            "assets/images/coffee_img.png",
+                          child: Image.network(
+                            imageUrl,
                             height: 100,
                             width: double.infinity,
-                            fit: BoxFit.contain,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.image),
                           ),
                         ),
-                        const Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
                           child: Center(
                             child: Text(
-                              "Coffee Name",
+                              name,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontFamily: 'Quicksand',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
@@ -299,9 +378,9 @@ class _NeilCartState extends State<NeilCart> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              const Text(
-                                "Php. 4.99",
-                                style: TextStyle(
+                              Text(
+                                "₱$price",
+                                style: const TextStyle(
                                   fontFamily: 'Quicksand',
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -320,7 +399,9 @@ class _NeilCartState extends State<NeilCart> {
                                   iconSize: 16,
                                   icon: const Icon(Icons.add,
                                       color: Color(0xFFFFFFFF)),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    // Add to cart logic
+                                  },
                                 ),
                               ),
                             ],

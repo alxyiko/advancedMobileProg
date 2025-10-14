@@ -11,7 +11,7 @@ class AppBottomNav extends StatelessWidget {
     final navProvider = Provider.of<NavigationProvider>(context);
 
     return Container(
-      height: 70, 
+      height: 70,
       decoration: const BoxDecoration(
         color: Color(0xFFFFFFFF), // 🔹 Unselected background color
       ),
@@ -35,10 +35,10 @@ class AppBottomNav extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(
               navProvider.selectedIndex == 1
-                  ? Icons.shopping_cart
-                  : Icons.shopping_cart_outlined,
+                  ? Icons.fastfood
+                  : Icons.fastfood_outlined,
             ),
-            label: 'Cart',
+            label: 'Browse',
           ),
           BottomNavigationBarItem(
             icon: Icon(

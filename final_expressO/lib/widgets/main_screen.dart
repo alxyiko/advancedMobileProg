@@ -2,12 +2,13 @@ import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/adminPages/dummyCart.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:firebase_nexus/views/cartView.dart';
+import 'package:firebase_nexus/views/checkout_user.dart';
 import 'package:firebase_nexus/views/dummyCart.dart';
 import 'package:firebase_nexus/views/dummyCartSupa.dart';
 import 'package:firebase_nexus/views/MyHomePage.dart';
-import 'package:firebase_nexus/views/orderView.dart';
+import 'package:firebase_nexus/views/user_OrderPages/orderView.dart';
 import 'package:firebase_nexus/views/userProfile.dart';
-import 'package:firebase_nexus/views/orderList.dart';
+import 'package:firebase_nexus/views/user_OrderPages/orderList.dart';
 
 import 'package:firebase_nexus/widgets/app_bottom_nav.dart.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +24,8 @@ class MainScreen extends StatelessWidget {
     final pages = [
       const MyHomePage(),
       const NeilCart(),
-
-      const DummyOrderPage(),
+      const OrderListPage(),
+      // const DummyOrderPage(),
       // const SQLitePage(),
       // const SupaPage(),
 

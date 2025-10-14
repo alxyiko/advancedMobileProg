@@ -45,15 +45,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        backgroundColor: brown,
+        backgroundColor: const Color(0xFF2c1d16),
         centerTitle: true,
         elevation: 0,
+        foregroundColor: Colors.white,
         title: const Text(
           "Check Out",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontFamily: 'Quicksand',
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        leading:
-            const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
+          onPressed: () {
+            Navigator.pop(context); // goes back to DummyOrderPage
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

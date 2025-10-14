@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:firebase_nexus/providers/userProvider.dart';
+import 'package:provider/provider.dart';
+
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
 
@@ -11,6 +14,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
   bool _isProfileExpanded = true;
   bool _isAboutExpanded = true;
   bool _isActivitiesExpanded = true;
+
+  Future<void> _logout(BuildContext context) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    // Clear user in provider + shared preferences
+    await userProvider.clearUser(context);
+
+    // Navigate to login (replace with your actual login route)
+    if (mounted) {
+      Navigator.pushNamed(context, '/tioLogin');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +64,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           size: 24,
                         ),
                       ),
-                      
+
                       // Profile Title in white
                       Text(
                         "Profile",
@@ -59,7 +74,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           color: const Color(0xFFFFFEF9), // White text on brown
                         ),
                       ),
-                      
+
                       // Settings/Menu Icon
                       IconButton(
                         onPressed: () {
@@ -75,13 +90,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ],
                   ),
                   SizedBox(height: 40),
-                  
+
                   // Avatar with white border
                   Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color.fromRGBO(226, 125, 25, 1), // Orange background for avatar
+                      color: const Color.fromRGBO(
+                          226, 125, 25, 1), // Orange background for avatar
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: const Color.fromRGBO(226, 125, 25, 1),
@@ -100,7 +116,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ),
                   SizedBox(height: 24),
-                  
+
                   // Name in white
                   Text(
                     "Ano Boss",
@@ -111,21 +127,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ),
                   SizedBox(height: 12),
-                  
+
                   // Email in light color
                   Text(
                     "anoboss@gmail.com",
                     style: TextStyle(
                       fontSize: 16,
-                      color: const Color.fromARGB(158, 255, 255, 255).withOpacity(0.8), // Semi-transparent white
+                      color: const Color.fromARGB(158, 255, 255, 255)
+                          .withOpacity(0.8), // Semi-transparent white
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             SizedBox(height: 20), // Space between brown section and content
-            
+
             // Profile Details Section
             _buildProfileSection(
               title: "Profile Details",
@@ -137,7 +154,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               },
               content: _buildProfileDetails(),
             ),
-            
+
             // About Us Section
             _buildProfileSection(
               title: "About Us",
@@ -149,7 +166,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               },
               content: _buildAboutUs(),
             ),
-            
+
             // Recent Activities Section
             _buildProfileSection(
               title: "Recent Activities",
@@ -185,11 +202,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout'),
-                onTap: () {
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () async {
                   Navigator.pop(context);
-                  // Add logout functionality
+                  await _logout(context);
                 },
               ),
             ],
@@ -227,10 +244,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
             contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           ),
         ),
-        
+
         // Content
         if (isExpanded) content,
-        
+
         // Divider between sections
         Container(height: 8, color: Colors.white),
       ],
@@ -281,7 +298,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ],
           ),
           SizedBox(height: 24),
-          
+
           // Mobile Number Section
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,

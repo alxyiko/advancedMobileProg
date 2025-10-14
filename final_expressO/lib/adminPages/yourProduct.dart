@@ -40,7 +40,7 @@ class _YourProductPageState extends State<YourProductPage> {
     // Apply category filter
     if (_selectedCategory != 'All') {
       filtered = filtered
-          .where((product) => product['category'] == _selectedCategory)
+          .where((product) => product['category_name'] == _selectedCategory)
           .toList();
     }
 

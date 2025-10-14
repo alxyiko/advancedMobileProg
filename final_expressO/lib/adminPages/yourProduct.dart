@@ -225,7 +225,7 @@ class _YourProductPageState extends State<YourProductPage> {
                             ),
                           ),
                           style: const TextStyle(color: Colors.white),
-                        ),
+                        ), 
                       ),
                     ),
                   ],

@@ -1,9 +1,11 @@
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 
 class Category {
+  String? id;
   String name;
   int iconIndex;
-  Category({required this.name, required this.iconIndex});
+  Category({this.id, required this.name, required this.iconIndex});
 }
 
 class CategoryLateral extends StatefulWidget {
@@ -22,7 +24,10 @@ class CategoryLateral extends StatefulWidget {
 
 class _CategoryLateralState extends State<CategoryLateral> {
   List<Category> categories = [];
+  bool _loading = true;
+  bool _actionLoading = false; // 👈 new: for insert/update/delete lock
   final TextEditingController _categoryNameController = TextEditingController();
+  final supabaseHelper = AdminSupabaseHelper();
   int _selectedIconIndex = 0;
 
   final List<IconData> availableIcons = [
@@ -45,13 +50,83 @@ class _CategoryLateralState extends State<CategoryLateral> {
   @override
   void initState() {
     super.initState();
-    categories = List.from(widget.initialCategories);
+    _loadInitialData();
   }
 
-  // Simulated product check
+  Future<void> _loadInitialData() async {
+    try {
+      final fetchedCategories =
+          await supabaseHelper.getAll("Categories", null, null);
+
+      setState(() {
+        _loading = false;
+        categories = fetchedCategories
+            .map((e) => Category(
+                  id: e['id']?.toString(),
+                  name: e['name'] ?? '',
+                  iconIndex: e['icon'],
+                ))
+            .toList();
+      });
+    } catch (e) {
+      print("Error fetching categorieasassas: $e");
+      setState(() => _loading = false);
+    }
+  }
+
   bool canDeleteCategory(Category category) {
-    // Replace with your real logic: return false if products exist under this category
-    return true;
+    return true; // 👈 plug in your real check later
+  }
+
+  Future<void> _saveCategory({Category? category, int? editIndex}) async {
+    final name = _categoryNameController.text.trim();
+    if (name.isEmpty) return;
+
+    final data = {
+      'name': name,
+      'icon': _selectedIconIndex,
+    };
+
+    setState(() => _actionLoading = true);
+
+    try {
+      if (category == null) {
+        // INSERT
+        final res = await supabaseHelper.insert('Categories', data);
+        final newCategory = Category(
+          id: res['id'].toString(),
+          name: name,
+          iconIndex: _selectedIconIndex,
+        );
+        setState(() => categories.add(newCategory));
+      } else {
+        // UPDATE
+        await supabaseHelper.update('Categories', 'id', category.id!, data);
+        setState(() {
+          categories[editIndex!] = Category(
+              id: category.id, name: name, iconIndex: _selectedIconIndex);
+        });
+      }
+
+      Navigator.of(context).pop();
+      _categoryNameController.clear();
+    } catch (e) {
+      print("Error saving category: $e");
+    } finally {
+      setState(() => _actionLoading = false);
+    }
+  }
+
+  Future<void> _deleteCategory(Category category, int index) async {
+    setState(() => _actionLoading = true);
+    try {
+      await supabaseHelper.delete('Categories', 'id', category.id);
+      setState(() => categories.removeAt(index));
+    } catch (e) {
+      print("Error deleting category: $e");
+    } finally {
+      setState(() => _actionLoading = false);
+    }
   }
 
   void _showAddEditCategoryDialog({Category? category, int? editIndex}) {
@@ -65,6 +140,7 @@ class _CategoryLateralState extends State<CategoryLateral> {
 
     showDialog(
       context: context,
+      barrierDismissible: !_actionLoading,
       builder: (context) {
         return StatefulBuilder(builder: (context, setDialogState) {
           return Dialog(
@@ -98,41 +174,17 @@ class _CategoryLateralState extends State<CategoryLateral> {
                         color: Color(0xFF8E4B0E)),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Name',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Quicksand',
-                        color: Color(0xFF38241D)),
-                  ),
-                  const SizedBox(height: 8),
                   TextField(
                     controller: _categoryNameController,
+                    enabled: !_actionLoading,
                     decoration: InputDecoration(
                       hintText: 'Category Name',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFFBBBBBB),
-                        fontFamily: 'Quicksand',
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE7D3B4)),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE7D3B4)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE27D19)),
-                      ),
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
-                    ),
-                    style: const TextStyle(
-                      fontFamily: 'Quicksand',
-                      color: Color(0xFF38241D),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -158,11 +210,13 @@ class _CategoryLateralState extends State<CategoryLateral> {
                     itemBuilder: (context, index) {
                       final isSelected = _selectedIconIndex == index;
                       return GestureDetector(
-                        onTap: () {
-                          setDialogState(() {
-                            _selectedIconIndex = index;
-                          });
-                        },
+                        onTap: _actionLoading
+                            ? null
+                            : () {
+                                setDialogState(() {
+                                  _selectedIconIndex = index;
+                                });
+                              },
                         child: Container(
                           width: 40,
                           height: 40,
@@ -189,22 +243,10 @@ class _CategoryLateralState extends State<CategoryLateral> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            final newCategory = Category(
-                              name: _categoryNameController.text.trim(),
-                              iconIndex: _selectedIconIndex,
-                            );
-                            setState(() {
-                              if (editIndex != null) {
-                                categories[editIndex] = newCategory;
-                              } else {
-                                categories.add(newCategory);
-                              }
-                            });
-                            widget.onSaveCategory(newCategory);
-                            Navigator.of(context).pop();
-                            _categoryNameController.clear();
-                          },
+                          onPressed: _actionLoading
+                              ? null
+                              : () => _saveCategory(
+                                  category: category, editIndex: editIndex),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE27D19),
                             foregroundColor: Colors.white,
@@ -213,25 +255,36 @@ class _CategoryLateralState extends State<CategoryLateral> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Quicksand',
-                            ),
-                          ),
+                          child: _actionLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Quicksand',
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            _categoryNameController.clear();
-                            _selectedIconIndex = 0;
-                          },
+                          onPressed: _actionLoading
+                              ? null
+                              : () {
+                                  Navigator.of(context).pop();
+                                  _categoryNameController.clear();
+                                  _selectedIconIndex = 0;
+                                },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -282,11 +335,9 @@ class _CategoryLateralState extends State<CategoryLateral> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-                category.iconIndex >= 0 &&
-                        category.iconIndex < availableIcons.length
-                    ? availableIcons[category.iconIndex]
-                    : Icons.category,
-                color: Colors.orange),
+              availableIcons[category.iconIndex],
+              color: Colors.orange,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -301,61 +352,54 @@ class _CategoryLateralState extends State<CategoryLateral> {
             ),
           ),
           IconButton(
-            onPressed: () => _showAddEditCategoryDialog(
-                category: category, editIndex: index),
-            icon: const Icon(
-              Icons.edit_outlined,
-              color: Color(0xFF8E4B0E),
-              size: 20,
-            ),
+            onPressed: _actionLoading
+                ? null
+                : () => _showAddEditCategoryDialog(
+                    category: category, editIndex: index),
+            icon: const Icon(Icons.edit_outlined,
+                color: Color(0xFF8E4B0E), size: 20),
           ),
           IconButton(
-            onPressed: () {
-              if (!canDeleteCategory(category)) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Cannot Delete"),
-                    content: const Text(
-                        "This category has products assigned and cannot be deleted."),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("OK"),
-                      ),
-                    ],
-                  ),
-                );
-                return;
-              }
+            onPressed: _actionLoading
+                ? null
+                : () {
+                    if (!canDeleteCategory(category)) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => const AlertDialog(
+                          title: Text("Cannot Delete"),
+                          content: Text(
+                              "This category has products assigned and cannot be deleted."),
+                        ),
+                      );
+                      return;
+                    }
 
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text("Delete Category"),
-                  content: Text(
-                      "Are you sure you want to delete '${category.name}'?"),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Cancel"),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          categories.removeAt(index);
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        "Delete",
-                        style: TextStyle(color: Colors.red),
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Delete Category"),
+                        content: Text(
+                            "Are you sure you want to delete '${category.name}'?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _deleteCategory(category, index);
+                            },
+                            child: const Text(
+                              "Delete",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    );
+                  },
             icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
           ),
         ],
@@ -372,66 +416,70 @@ class _CategoryLateralState extends State<CategoryLateral> {
           width: MediaQuery.of(context).size.width * 0.75,
           height: MediaQuery.of(context).size.height,
           decoration: const BoxDecoration(color: Color(0xFFF5F3F0)),
-          child: Column(
-            children: [
-              Container(
-                height: 75,
-                decoration: const BoxDecoration(color: Color(0xFF38241D)),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.chevron_left,
-                              color: Colors.white, size: 28),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Categories',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Quicksand',
-                            ),
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    Container(
+                      height: 75,
+                      decoration: const BoxDecoration(color: Color(0xFF38241D)),
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: const Icon(Icons.chevron_left,
+                                    color: Colors.white, size: 28),
+                              ),
+                              const Expanded(
+                                child: Text(
+                                  'Categories',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Quicksand',
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: _actionLoading
+                                    ? null
+                                    : () => _showAddEditCategoryDialog(),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE27D19),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => _showAddEditCategoryDialog(),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFE27D19),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: ListView.builder(
+                          itemCount: categories.length,
+                          itemBuilder: (context, index) =>
+                              _buildCategoryItem(categories[index], index),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ListView.builder(
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) =>
-                        _buildCategoryItem(categories[index], index),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 class AdminMainScreen extends StatelessWidget {
   const AdminMainScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);

@@ -15,8 +15,8 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
 
   @override
   Widget build(BuildContext context) {
-  // navigation provider available if needed
-  // final navProvider = Provider.of<NavigationProvider>(context);
+    // navigation provider available if needed
+    // final navProvider = Provider.of<NavigationProvider>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
@@ -136,9 +136,8 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                                       });
                                     },
                                     checkColor: const Color(0xFFE27D19),
-                                    fillColor:
-                                        WidgetStateProperty.resolveWith(
-                                            (states) {
+                                    fillColor: WidgetStateProperty.resolveWith(
+                                        (states) {
                                       if (states
                                           .contains(WidgetState.selected)) {
                                         return Colors
@@ -211,7 +210,8 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => OrderDetailedView(product: product),
+                                builder: (context) =>
+                                    OrderDetailedView(product: product),
                               ),
                             );
                           },
@@ -228,7 +228,8 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                                   Expanded(
                                     flex: 2,
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Image.asset(
                                           'assets/images/coffee_img.png',
@@ -303,7 +304,8 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                                   Expanded(
                                     flex: 2,
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         // Add Button
                                         IconButton(

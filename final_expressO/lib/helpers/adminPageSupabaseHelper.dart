@@ -1,6 +1,7 @@
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 
-import 'package:firebase_nexus/adminPages/analyticsVIew.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminSupabaseHelper {
@@ -16,15 +17,31 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAll(String table) async {
+
+  Future<List<Map<String, dynamic>>> getAll(
+      String table, String? searchTerm, String? searchColumn) async {
     try {
-      final response = await client.from(table).select();
+      var query = client.from(table).select();
+
+      // If a search term and column are provided, apply a filter
+      if (searchTerm != null && searchColumn != null) {
+        query = query.ilike(searchColumn, '%$searchTerm%');
+      }
+
+      final response = await query;
+
+      print("functname: getAll");
+      print(response);
+
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       print("GetAll error: $e");
       return [];
     }
   }
+
+
+  
 
   Future<Map<String, dynamic>?> getById(
       String table, String idColumn, dynamic id) async {
@@ -38,30 +55,50 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<Map<String, dynamic>?> insert(
+  Future<Map<String, dynamic>> insert(
       String table, Map<String, dynamic> data) async {
     try {
       final response = await client.from(table).insert(data).select().single();
-      return response;
+      print('INSERT ROW');
+
+      print(response);
+
+      return {
+        'status': 'success',
+        'message': 'Insert successful',
+        'data': response,
+      };
     } catch (e) {
       print("Insert error: $e");
-      return null;
+
+      return {
+        'status': 'error',
+        'message': e.toString(),
+        'data': null,
+      };
     }
   }
 
   Future<String?> uploadProductImage(File file, String productID) async {
-    final filePath = 'files/$productID.png'; // folder + filename
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final filePath =
+        'files/${productID}_$timestamp.jpg'; // folder + unique filename
+    print('UPLOADING IMAGE (overwrite mode)');
 
     try {
-      final response = await client.storage
-          .from('product_images') // 👈 bucket name
-          .upload(filePath, file);
+      final response = await client.storage.from('product_images').upload(
+            filePath,
+            file,
+            fileOptions: const FileOptions(upsert: true), // 👈 allow overwrite
+          );
 
-      // Get a public URL if the bucket is public
+      print('Storage response: $response');
+
+      // Get the public URL
       final publicUrl =
           client.storage.from('product_images').getPublicUrl(filePath);
 
-      return publicUrl; // return the URL so you can store it in DB
+      return publicUrl;
     } on StorageException catch (e) {
       print('Storage error: ${e.message}');
       return null;
@@ -71,56 +108,58 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<Map<String, dynamic>> addNewProduct(
-    String name,
-    String desc,
-    String category,
-    String stock,
-    String cost,
-    String cost,
-
-    
-    , File file) async {
+  Future<Map<String, dynamic>> update(String table, String idColumn, String id,
+      Map<String, dynamic> data) async {
     try {
+      print('UPDATING ROW: $table where $idColumn=$id');
 
-        final response = await insert('Products', {product})
+      final rowId = int.tryParse(id);
+      if (rowId == null) {
+        return {
+          'status': 'error',
+          'message': 'Invalid ID format: $id',
+          'data': null,
+        };
+      }
 
+      // 1️⃣ Existence check
+      final existing = await client
+          .from(table)
+          .select()
+          .eq(idColumn, rowId)
+          .maybeSingle(); // returns null if no row
 
+      if (existing == null) {
+        return {
+          'status': 'error',
+          'message': 'No row found with $idColumn = $id',
+          'data': null,
+        };
+      }
 
-
-
-
-
-
-
-
-
-      return {
-        'success': true,
-        'message': 'User logged in successfully!',
-      };
-    } catch (e) {
-      print('Sign-in error: $e');
-      return {
-        'success': false,
-        'message': 'Something went wrong on our end, try again later.',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>?> update(String table, String idColumn,
-      dynamic id, Map<String, dynamic> data) async {
-    try {
+      print(existing);
+      // 2️⃣ Update
       final response = await client
           .from(table)
           .update(data)
-          .eq(idColumn, id)
+          .eq(idColumn, rowId)
           .select()
           .single();
-      return response;
+
+      print('UPDATE RESPONSE: $response');
+
+      return {
+        'status': 'success',
+        'message': 'Update successful',
+        'data': response,
+      };
     } catch (e) {
       print("Update error: $e");
-      return null;
+      return {
+        'status': 'error',
+        'message': e.toString(),
+        'data': null,
+      };
     }
   }
 
@@ -176,3 +215,24 @@ class AdminSupabaseHelper {
     client.removeChannel(channel);
   }
 }
+
+Future<File?> fileFromSupabase(String publicUrl, {String? filename}) async {
+  try {
+    final response = await http.get(Uri.parse(publicUrl));
+    if (response.statusCode == 200) {
+      final dir = await getTemporaryDirectory();
+      final name = filename ?? publicUrl.split('/').last;
+      final file = File('${dir.path}/$name');
+      await file.writeAsBytes(response.bodyBytes);
+      return file;
+    } else {
+      print('Download failed: ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Error downloading file: $e');
+    return null;
+  }
+  
+}
+

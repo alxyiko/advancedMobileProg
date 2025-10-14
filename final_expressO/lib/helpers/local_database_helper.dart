@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:firebase_nexus/models/product.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class SQLFliteDatabaseHelper {
-  static final SQLFliteDatabaseHelper _instance = SQLFliteDatabaseHelper._internal();
+  static final SQLFliteDatabaseHelper _instance =
+      SQLFliteDatabaseHelper._internal();
   factory SQLFliteDatabaseHelper() => _instance;
   SQLFliteDatabaseHelper._internal();
 
@@ -37,20 +40,17 @@ class SQLFliteDatabaseHelper {
     ''');
   }
 
-  
   //Insert Product
   Future<int> insertCart(String table, Product product) async {
     final db = await database;
-    return await db.insert(
-        'table', {...product.toMap()},
+    return await db.insert('table', {...product.toMap()},
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   //Insert Product
   Future<int> insertProduct(Product product) async {
     final db = await database;
-    return await db.insert(
-        'products', {...product.toMap()},
+    return await db.insert('products', {...product.toMap()},
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -59,16 +59,14 @@ class SQLFliteDatabaseHelper {
     final db = await database;
     final result = await db.query('Cart');
     return result.map((map) {
-      return Product.fromMap(
-          {...map});
+      return Product.fromMap({...map});
     }).toList();
   }
 
   //update product
   Future<int> updateProduct(Product product) async {
     final db = await database;
-    return await db.update(
-        'products', {...product.toMap()},
+    return await db.update('products', {...product.toMap()},
         where: 'id=?', whereArgs: [product.id]);
   }
 
@@ -76,5 +74,21 @@ class SQLFliteDatabaseHelper {
   Future<int> deleteProduct(int? id) async {
     final db = await database;
     return await db.delete('products', where: 'id=?', whereArgs: [id]);
+  }
+}
+
+Map<String, Color> getStatColor(String status) {
+  switch (status) {
+    case 'Available':
+      return {'labelColor': Color(0xFFB6EAC7), 'textColor': Color(0xFF2E7D32)};
+  
+    case 'Inactive':
+      return {'labelColor': Color.fromARGB(255, 239, 175, 0), 'textColor': Color.fromARGB(255, 255, 255, 255)};
+
+    case 'Out of Stock':
+      return {'labelColor': Color(0xFFE0E0E0), 'textColor': Color.fromARGB(255, 193, 13, 13)};
+
+    default:
+      return {'labelColor': Color(0xFFE0E0E0), 'textColor': Color(0xFF757575)};
   }
 }

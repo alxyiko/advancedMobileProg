@@ -25,11 +25,14 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   bool isOnlinePayment = false;
+  bool showDiscountField = false;
+  bool discountApplied = false;
+  final TextEditingController discountController = TextEditingController();
 
   final double itemPrice = 250.0;
   final int itemCount = 3;
   final double shippingFee = 50.0;
-  final double voucherDiscount = 500.0;
+  double voucherDiscount = 0.0;
 
   double get subtotal => itemPrice * itemCount;
   double get totalPayment => (subtotal + shippingFee) - voucherDiscount;
@@ -103,11 +106,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             const SizedBox(height: 12),
-            _buildClickableSection(
-              title: "Add Discount Code",
-              icon: Icons.local_offer_outlined,
-              onTap: () {},
-            ),
+            _buildDiscountSection(brown),
             const SizedBox(height: 12),
             _buildSection(
               title: "Payment Method",
@@ -142,8 +141,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 children: [
                   _buildPaymentRow("Shipping", shippingFee),
                   _buildPaymentRow("Subtotal", subtotal),
-                  _buildPaymentRow("Voucher Applied", -voucherDiscount,
-                      isDiscount: true),
+                  if (voucherDiscount > 0)
+                    _buildPaymentRow("Voucher Applied", -voucherDiscount,
+                        isDiscount: true),
                   const Divider(),
                   _buildPaymentRow("Total Payment", totalPayment, isBold: true),
                 ],
@@ -157,8 +157,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _buildSection(
-      {required String title, required IconData icon, required Widget child}) {
+  // --- UI Components ---
+
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
     final brown = const Color(0xFF38241D);
     return Container(
       padding: const EdgeInsets.all(14),
@@ -183,34 +188,93 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _buildClickableSection({
-    required String title,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final brown = const Color(0xFF38241D);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(children: [
-              Icon(icon, color: brown, size: 18),
-              const SizedBox(width: 6),
-              Text(title,
-                  style: TextStyle(
-                      color: brown, fontWeight: FontWeight.w600, fontSize: 15)),
-            ]),
-            const Icon(Icons.arrow_forward_ios,
-                size: 16, color: Colors.black45),
+  Widget _buildDiscountSection(Color brown) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                showDiscountField = !showDiscountField;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(children: [
+                  Icon(Icons.local_offer_outlined, color: brown, size: 18),
+                  const SizedBox(width: 6),
+                  Text("Add Discount Code",
+                      style: TextStyle(
+                          color: brown,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15)),
+                ]),
+                Icon(
+                  showDiscountField
+                      ? Icons.expand_less
+                      : Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Colors.black45,
+                ),
+              ],
+            ),
+          ),
+          if (showDiscountField) ...[
+            const SizedBox(height: 10),
+            TextField(
+              controller: discountController,
+              decoration: InputDecoration(
+                hintText: "Enter your discount code",
+                hintStyle: const TextStyle(color: Colors.black38),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide:
+                      BorderSide(color: brown.withOpacity(0.3), width: 1),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFCF8C47),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                setState(() {
+                  if (discountController.text.trim().toUpperCase() ==
+                      "SAVE50") {
+                    voucherDiscount = 500.0;
+                    discountApplied = true;
+                  } else {
+                    voucherDiscount = 0.0;
+                    discountApplied = false;
+                  }
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  backgroundColor: discountApplied ? Colors.green : Colors.red,
+                  content: Text(discountApplied
+                      ? "Discount Applied Successfully!"
+                      : "Invalid Discount Code"),
+                  duration: const Duration(seconds: 2),
+                ));
+              },
+              child: const Text("Apply",
+                  style: TextStyle(color: Colors.white, fontSize: 14)),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

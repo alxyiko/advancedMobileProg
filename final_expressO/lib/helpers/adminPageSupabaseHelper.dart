@@ -17,14 +17,15 @@ class AdminSupabaseHelper {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAll(String table) async {
+  Future<List<Map<String, dynamic>>> getAll(
+      String table, String? searchTerm, String? searchColumn) async {
     try {
       var query = client.from(table).select();
 
-      // // If a search term and column are provided, apply a filter
-      // if (searchTerm != null && searchColumn != null) {
-      //   query = query.ilike(searchColumn, '%$searchTerm%');
-      // }
+      // If a search term and column are provided, apply a filter
+      if (searchTerm != null && searchColumn != null) {
+        query = query.ilike(searchColumn, '%$searchTerm%');
+      }
 
       final response = await query;
 

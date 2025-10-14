@@ -49,7 +49,7 @@ class _AddProductFlowState extends State<AddProductFlow> {
       if (_initialized) return;
       _initialized = true;
 
-      final categories = await supabaseHelper.getAll("Categories");
+      final categories = await supabaseHelper.getAll("Categories",null,null);
 
       setState(() {
         if (categories.isNotEmpty) {

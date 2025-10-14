@@ -23,6 +23,7 @@ class YourProductPage extends StatefulWidget {
 
 class _YourProductPageState extends State<YourProductPage> {
   String _selectedCategory = 'All';
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -33,6 +34,7 @@ class _YourProductPageState extends State<YourProductPage> {
   bool _loading = true;
   final List<String> _categories = ['All'];
   List<Map<String, dynamic>> _products = [];
+  final FocusNode _searchFocusNode = FocusNode();
 
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> filtered = _products;
@@ -67,14 +69,23 @@ class _YourProductPageState extends State<YourProductPage> {
         _searchQuery = _searchController.text;
       });
     });
+
+    _searchFocusNode.addListener(() {
+      if (!_searchFocusNode.hasFocus) {
+        // Trigger search when focus is lost
+        // basically when the user stops typing and closes the keyboard
+        _performSearch();
+      }
+    });
   }
 
   Future<void> _loadInitialData() async {
     try {
       print('STARTED');
 
-      final categories = await supabaseHelper.getAll("Categories");
-      final products = await supabaseHelper.getAll("product_overview");
+      final categories = await supabaseHelper.getAll("Categories", null, null);
+      final products =
+          await supabaseHelper.getAll("product_overview", null, null);
       if (categories.isNotEmpty) {
         print('Categoried loaded!');
         print(categories);
@@ -100,353 +111,9 @@ class _YourProductPageState extends State<YourProductPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   // 🔶 LOADING OVERLAY
-  //   if (_loading) {
-  //     return LoadingScreens(
-  //       message: 'Loading...',
-  //       error: false,
-  //       onRetry: null,
-  //     );
-  //   }
-
-  //   return Scaffold(
-  //     backgroundColor: const Color(0xFFF9F6ED),
-  //     appBar: AppBar(
-  //       backgroundColor: const Color(0xFF38241D),
-  //       centerTitle: true,
-  //       titleSpacing: 0,
-  //       toolbarHeight: 60,
-  //       title: Padding(
-  //         padding: const EdgeInsets.only(top: 10),
-  //         child: const Text('Products',
-  //             style: TextStyle(
-  //                 color: Colors.white,
-  //                 fontFamily: 'Quicksand',
-  //                 fontWeight: FontWeight.w600)),
-  //       ),
-  //       leading: Padding(
-  //         padding: const EdgeInsets.only(top: 5),
-  //         child: IconButton(
-  //           icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-  //           onPressed: () => Navigator.of(context).pop(),
-  //         ),
-  //       ),
-  //       actions: [
-  //         Padding(
-  //           padding: const EdgeInsets.only(right: 16.0),
-  //           child: GestureDetector(
-  //             onTap: () => _showCategoriesPanel(context),
-  //             child: const Icon(
-  //               Icons.sort_by_alpha,
-  //               size: 24,
-  //               color: Colors.white, // optional — match your theme
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //       bottom: PreferredSize(
-  //         preferredSize: const Size.fromHeight(160),
-  //         child: Padding(
-  //           padding: const EdgeInsets.fromLTRB(16, 20, 16, 25),
-  //           child: Column(
-  //             children: [
-  //               Container(
-  //                 color: const Color(0xFF38241D),
-  //                 padding:
-  //                     const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-  //                 child: Row(
-  //                   children: [
-  //                     Expanded(
-  //                       child: TextField(
-  //                         controller: _searchController,
-  //                         decoration: InputDecoration(
-  //                           filled: true,
-  //                           fillColor: const Color(0xFF503228),
-  //                           hintText: 'Search here...',
-  //                           hintStyle: const TextStyle(color: Colors.white70),
-  //                           prefixIcon:
-  //                               const Icon(Icons.search, color: Colors.white70),
-  //                           contentPadding:
-  //                               const EdgeInsets.symmetric(vertical: 0),
-  //                           border: OutlineInputBorder(
-  //                             borderRadius: BorderRadius.circular(12),
-  //                             borderSide: BorderSide.none,
-  //                           ),
-  //                         ),
-  //                         style: const TextStyle(color: Colors.white),
-  //                       ),
-  //                     ),
-  //                     const SizedBox(width: 12),
-  //                     Container(
-  //                       decoration: BoxDecoration(
-  //                         color: const Color(0xFFE27D19),
-  //                         borderRadius: BorderRadius.circular(12),
-  //                       ),
-  //                       child: IconButton(
-  //                         icon: const Icon(Icons.filter_alt_outlined,
-  //                             color: Color(0xFF4B2E19)),
-  //                         onPressed: () {},
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //               Container(
-  //                 color: const Color(0xFF38241D),
-  //                 child: SingleChildScrollView(
-  //                   scrollDirection: Axis.horizontal,
-  //                   padding: const EdgeInsets.symmetric(horizontal: 8),
-  //                   child: Row(
-  //                     children: _categories.map((cat) {
-  //                       final isSelected = cat == _selectedCategory;
-  //                       return GestureDetector(
-  //                         onTap: () {
-  //                           setState(() {
-  //                             _selectedCategory = cat;
-  //                           });
-  //                         },
-  //                         child: Padding(
-  //                           padding: const EdgeInsets.symmetric(
-  //                               horizontal: 12, vertical: 8),
-  //                           child: Column(
-  //                             children: [
-  //                               Text(
-  //                                 cat,
-  //                                 style: TextStyle(
-  //                                   color: isSelected
-  //                                       ? const Color(0xFFE27D19)
-  //                                       : Colors.white,
-  //                                   fontWeight: isSelected
-  //                                       ? FontWeight.bold
-  //                                       : FontWeight.normal,
-  //                                 ),
-  //                               ),
-  //                               if (isSelected)
-  //                                 Container(
-  //                                   margin: const EdgeInsets.only(top: 4),
-  //                                   height: 3,
-  //                                   width: 24,
-  //                                   decoration: BoxDecoration(
-  //                                     color: const Color(0xFFE27D19),
-  //                                     borderRadius: BorderRadius.circular(2),
-  //                                   ),
-  //                                 ),
-  //                             ],
-  //                           ),
-  //                         ),
-  //                       );
-  //                     }).toList(),
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //     body: Column(
-  //       children: [
-  //         Expanded(
-  //           child: filteredProducts.isEmpty
-  //               ? Center(
-  //                   child: Column(
-  //                     mainAxisAlignment: MainAxisAlignment.center,
-  //                     children: [
-  //                       Icon(
-  //                         Icons.search_off,
-  //                         size: 64,
-  //                         color: Colors.grey[400],
-  //                       ),
-  //                       const SizedBox(height: 16),
-  //                       Text(
-  //                         'No products found',
-  //                         style: TextStyle(
-  //                           color: Colors.grey[600],
-  //                           fontSize: 18,
-  //                           fontWeight: FontWeight.bold,
-  //                         ),
-  //                       ),
-  //                       const SizedBox(height: 8),
-  //                       Text(
-  //                         'Try a different search or category',
-  //                         style: TextStyle(
-  //                           color: Colors.grey[500],
-  //                           fontSize: 14,
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 )
-  //               : ListView.builder(
-  //                   padding: const EdgeInsets.symmetric(
-  //                       horizontal: 16, vertical: 16),
-  //                   itemCount: filteredProducts.length,
-  //                   itemBuilder: (context, index) {
-  //                     final product = filteredProducts[index];
-  //                     return GestureDetector(
-  //                       onTap: () {
-  //                         // Navigate to ViewProductPage when the card is tapped
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(
-  //                             builder: (context) =>
-  //                                 ViewProductPage(productData: product),
-  //                           ),
-  //                         );
-  //                       },
-  //                       child: Container(
-  //                         margin: const EdgeInsets.only(bottom: 16),
-  //                         decoration: BoxDecoration(
-  //                           color: Colors.white,
-  //                           borderRadius: BorderRadius.circular(16),
-  //                           boxShadow: [
-  //                             BoxShadow(
-  //                               color: Colors.black12,
-  //                               blurRadius: 4,
-  //                               offset: const Offset(0, 2),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                         child: Row(
-  //                           children: [
-  //                             Padding(
-  //                               padding: const EdgeInsets.all(12.0),
-  //                               child: ClipRRect(
-  //                                 borderRadius: BorderRadius.circular(12),
-  //                                 child: Image.network(
-  //                                   product['img'] ?? '',
-  //                                   width: 80,
-  //                                   height: 80,
-  //                                   fit: BoxFit.cover,
-  //                                   errorBuilder: (context, error, stackTrace) {
-  //                                     return Container(
-  //                                       width: 80,
-  //                                       height: 80,
-  //                                       color: Colors.grey[300],
-  //                                       child: const Icon(Icons.error),
-  //                                     );
-  //                                   },
-  //                                 ),
-  //                               ),
-  //                             ),
-  //                             Expanded(
-  //                               child: Padding(
-  //                                 padding:
-  //                                     const EdgeInsets.symmetric(vertical: 12),
-  //                                 child: Column(
-  //                                   crossAxisAlignment:
-  //                                       CrossAxisAlignment.start,
-  //                                   children: [
-  //                                     // Price - not bold, normal weight
-  //                                     Text(
-  //                                       "Php ${product['price'].toString()}",
-  //                                       style: const TextStyle(
-  //                                         fontWeight: FontWeight.normal,
-  //                                         color: Color(0xFF4B2E19),
-  //                                         fontSize: 14,
-  //                                       ),
-  //                                     ),
-  //                                     const SizedBox(height: 8),
-  //                                     // Product name and status on the same line
-  //                                     Row(
-  //                                       children: [
-  //                                         Text(
-  //                                           product['name'] as String,
-  //                                           style: const TextStyle(
-  //                                             fontWeight: FontWeight.bold,
-  //                                             color: Color(0xFF4B2E19),
-  //                                             fontSize: 16,
-  //                                           ),
-  //                                         ),
-  //                                         const SizedBox(width: 8),
-  //                                         Container(
-  //                                           padding: const EdgeInsets.symmetric(
-  //                                               horizontal: 8, vertical: 4),
-  //                                           decoration: BoxDecoration(
-  //                                             color: getStatColor(
-  //                                                     product['status'])[
-  //                                                 'labelColor'],
-  //                                             borderRadius:
-  //                                                 BorderRadius.circular(8),
-  //                                           ),
-  //                                           child: Text(
-  //                                             product['status'] as String,
-  //                                             style: TextStyle(
-  //                                               color: getStatColor(
-  //                                                       product['status'])[
-  //                                                   'textColor'],
-  //                                               fontSize: 12,
-  //                                               fontWeight: FontWeight.w600,
-  //                                             ),
-  //                                           ),
-  //                                         ),
-  //                                       ],
-  //                                     ),
-  //                                     const SizedBox(height: 8),
-  //                                     // Description
-  //                                     SizedBox(
-  //                                       width: double.infinity,
-  //                                       child: Text(
-  //                                         product['desc'] as String,
-  //                                         style: const TextStyle(
-  //                                           color: Color(0xFF757575),
-  //                                           fontSize: 12,
-  //                                         ),
-  //                                         maxLines: 2,
-  //                                         overflow: TextOverflow.ellipsis,
-  //                                       ),
-  //                                     ),
-  //                                   ],
-  //                                 ),
-  //                               ),
-  //                             ),
-  //                             Padding(
-  //                               padding: const EdgeInsets.all(16.0),
-  //                               child: IconButton(
-  //                                 icon: const Icon(
-  //                                   Icons.edit_outlined,
-  //                                   color: Color(0xFF4B2E19),
-  //                                   size: 24,
-  //                                 ),
-  //                                 onPressed: () {
-  //                                   // Navigate to EditProduct screen with product data
-  //                                   Navigator.push(
-  //                                     context,
-  //                                     MaterialPageRoute(
-  //                                       builder: (context) =>
-  //                                           EditProduct(productData: product),
-  //                                     ),
-  //                                   );
-  //                                 },
-  //                               ),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     );
-  //                   },
-  //                 ),
-  //         ),
-  //       ],
-  //     ),
-  //     floatingActionButton: FloatingActionButton(
-  //       backgroundColor: const Color(0xFFE27D19),
-  //       child: const Icon(Icons.add, color: Colors.white, size: 32),
-  //       onPressed: () {
-  //         // Navigate to the AddProduct screen
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => const AddProductFlow()),
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
 
   Future<UserProfile> fetchUserProfile() async {
     // TODO: replace with your real backend call
@@ -457,6 +124,28 @@ class _YourProductPageState extends State<YourProductPage> {
       avatarUrl:
           'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
     );
+  }
+
+  Future<void> _performSearch() async {
+    setState(() => _loading = true);
+
+    try {
+      final products = await supabaseHelper.getAll(
+        "product_overview",
+        _searchQuery.isNotEmpty ? _searchQuery : null,
+        _searchQuery.isNotEmpty
+            ? "name"
+            : null, // 🔍 column to search (you can change this)
+      );
+
+      setState(() {
+        _products = products;
+        _loading = false;
+      });
+    } catch (e) {
+      print("Search error: $e");
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -518,6 +207,7 @@ class _YourProductPageState extends State<YourProductPage> {
                         height: 44,
                         child: TextField(
                           controller: _searchController,
+                          focusNode: _searchFocusNode,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: const Color(0xFF503228),
@@ -536,37 +226,6 @@ class _YourProductPageState extends State<YourProductPage> {
                           ),
                           style: const TextStyle(color: Colors.white),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      height: 44,
-                      width: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE27D19),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.filter_alt_outlined,
-                          color: Color(0xFF4B2E19),
-                        ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'lagyan pa ba filter modal? tulad nung orderlist if clinick mo yung filter tio to?',
-                                style: TextStyle(
-                                  fontFamily: 'Quicksand',
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              backgroundColor: Color.fromARGB(255, 0, 0, 0),
-                              behavior: SnackBarBehavior.floating,
-                              duration: Duration(seconds: 15),
-                            ),
-                          );
-                        },
                       ),
                     ),
                   ],

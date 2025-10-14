@@ -51,7 +51,7 @@ class _EditproductflowState extends State<Editproductflow> {
       if (_initialized) return;
       _initialized = true;
 
-      final categories = await supabaseHelper.getAll("Categories");
+      final categories = await supabaseHelper.getAll("Categories",null,null);
       final editedProduct =
           await supabaseHelper.getById("Products", 'id', widget.productID);
 

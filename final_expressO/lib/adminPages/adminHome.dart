@@ -8,7 +8,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
 import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
-import 'orderList.dart';
+import 'orderPages/orderList.dart';
 import 'package:provider/provider.dart';
 import '../providers/userProvider.dart';
 import 'profileAdmin.dart';

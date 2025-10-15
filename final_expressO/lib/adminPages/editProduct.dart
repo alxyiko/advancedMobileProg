@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 class EditProduct extends StatefulWidget {
   final Map<String, dynamic>? productData;
-  
+
   const EditProduct({super.key, this.productData});
 
   @override
@@ -19,7 +19,7 @@ class _EditProductState extends State<EditProduct> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
   final TextEditingController _costController = TextEditingController();
-  
+
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
@@ -44,7 +44,9 @@ class _EditProductState extends State<EditProduct> {
       _productNameController.text = widget.productData!['name'] ?? '';
       _descriptionController.text = widget.productData!['desc'] ?? '';
       _stockController.text = '50'; // Default value
-      _costController.text = widget.productData!['price']?.toString().replaceAll('₱ ', '') ?? '110.00';
+      _costController.text =
+          widget.productData!['price']?.toString().replaceAll('₱ ', '') ??
+              '110.00';
       _status = widget.productData!['status'] ?? 'Active';
     } else {
       _productNameController.text = "Americano";
@@ -68,16 +70,20 @@ class _EditProductState extends State<EditProduct> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4B2E19),
+        backgroundColor: const Color(0xFF38241D),
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        toolbarHeight: 68, // slightly taller for breathing room
+        elevation: 0,
         title: const Text(
-          "Edit Product",
+          'Editewew Product',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
             color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
           ),
         ),
-        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
@@ -143,9 +149,9 @@ class _EditProductState extends State<EditProduct> {
                       ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Product Name
             const Text(
               "Product Name",
@@ -171,9 +177,9 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Description
             const Text(
               "Description",
@@ -202,9 +208,9 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Category
             const Text(
               "Category",
@@ -217,12 +223,13 @@ class _EditProductState extends State<EditProduct> {
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _category,
-              items: ["Hot Coffee", "Iced Coffee", "Tea", "Non-Coffee", "Pastries"]
-                  .map((category) => DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
-                      ))
-                  .toList(),
+              items:
+                  ["Hot Coffee", "Iced Coffee", "Tea", "Non-Coffee", "Pastries"]
+                      .map((category) => DropdownMenuItem(
+                            value: category,
+                            child: Text(category),
+                          ))
+                      .toList(),
               onChanged: (val) {
                 setState(() {
                   _category = val!;
@@ -241,9 +248,9 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Stock and Cost per Unit
             Row(
               children: [
@@ -315,9 +322,9 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Size Variations
             Row(
               children: [
@@ -351,14 +358,15 @@ class _EditProductState extends State<EditProduct> {
                             _sizes.remove(size);
                           });
                         },
-                        backgroundColor: const Color(0xFFF08F2A).withOpacity(0.2),
+                        backgroundColor:
+                            const Color(0xFFF08F2A).withOpacity(0.2),
                         labelStyle: const TextStyle(color: Color(0xFF4B2E2B)),
                       ))
                   .toList(),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Status
             const Text(
               "Status",
@@ -395,9 +403,9 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 30),
-            
+
             // Buttons
             Row(
               children: [

@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import './adminHome.dart';
+
 const brownDark = Color(0xFF3E2016);
 const lightBeige = Color(0xFFF6F0E6);
 
@@ -15,16 +17,7 @@ class AnalyticsVIew extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Admin Analytics Demo',
-      theme: ThemeData(
-        primaryColor: brownDark,
-        scaffoldBackgroundColor: lightBeige,
-        useMaterial3: true,
-      ),
-      home: const AnalyticsPage(),
-      debugShowCheckedModeBanner: false,
-    );
+    return const AnalyticsPage();
   }
 }
 
@@ -54,23 +47,44 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     super.dispose();
   }
 
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightBeige,
       appBar: AppBar(
-        backgroundColor: brownDark,
+        backgroundColor: const Color(0xFF38241D),
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        toolbarHeight: 68, // slightly taller for breathing room
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new,
-              color: Colors.white),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
         title: const Text(
           'Analytics',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        centerTitle: true,
+      ),
+      drawer: AdminDrawer(
+        profileFuture: fetchUserProfile(), // <-- your future method
+
+        selectedRoute: "/analytics", // mark this as active/highlighted
+        onNavigate: (route) {
+          Navigator.pushNamed(context, route);
+        },
       ),
       body: Column(
         children: [
@@ -181,7 +195,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                     children: categorySlices
                         .map(
                           (d) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Row(
                               children: [
                                 Container(
@@ -399,8 +414,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           if (report.topCancellingCustomers.isNotEmpty)
             _roundedCard(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 12.0, horizontal: 12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -413,11 +428,11 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                     ),
                     const SizedBox(height: 12),
                     ...report.topCancellingCustomers.asMap().entries.map(
-                      (entry) => _topCancellingTile(
-                        entry.key + 1,
-                        entry.value,
-                      ),
-                    ),
+                          (entry) => _topCancellingTile(
+                            entry.key + 1,
+                            entry.value,
+                          ),
+                        ),
                   ],
                 ),
               ),
@@ -431,7 +446,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
   List<_ChartData> _categoryChartSlices(AdminAnalyticsReport report) {
     final stats = report.categoryStats;
     if (stats.isEmpty) {
-      return [ _ChartData('No data', 1, Colors.grey.shade300) ];
+      return [_ChartData('No data', 1, Colors.grey.shade300)];
     }
     final palette = [
       const Color(0xFFE27D19),
@@ -455,12 +470,10 @@ class _AnalyticsPageState extends State<AnalyticsPage>
   }
 
   List<_ChartData> _failedChartSlices(AdminAnalyticsReport report) {
-    final cancelled = report.failedOrders
-        .where((o) => o.status == 'Cancelled')
-        .length;
-    final rejected = report.failedOrders
-        .where((o) => o.status == 'Rejected')
-        .length;
+    final cancelled =
+        report.failedOrders.where((o) => o.status == 'Cancelled').length;
+    final rejected =
+        report.failedOrders.where((o) => o.status == 'Rejected').length;
     final slices = <_ChartData>[];
     if (cancelled > 0) {
       slices.add(_ChartData('Cancelled', cancelled, const Color(0xFFA42E1E)));
@@ -469,7 +482,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       slices.add(_ChartData('Rejected', rejected, const Color(0xFFF0D0CB)));
     }
     return slices.isEmpty
-        ? [ _ChartData('No data', 1, Colors.grey.shade300) ]
+        ? [_ChartData('No data', 1, Colors.grey.shade300)]
         : slices;
   }
 
@@ -553,8 +566,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               order.customerName.isNotEmpty
                   ? order.customerName.characters.first.toUpperCase()
                   : '#',
-              style:
-                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
           title: Text(order.customerName),
@@ -586,7 +599,8 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             backgroundColor: const Color(0xFFE27D19),
             child: Text(
               '$rank',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(width: 12),

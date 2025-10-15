@@ -38,7 +38,9 @@ class _discountAddState extends State<discountAdd> {
       context: context,
       initialDate:
           isStart ? (_startDate ?? now) : (_endDate ?? _startDate ?? now),
-      firstDate: isStart ? DateTime(2020) : (_startDate ?? DateTime(2020)),
+      firstDate: isStart
+          ? DateTime(now.year, now.month, now.day)
+          : (_startDate ?? DateTime(now.year, now.month, now.day)),
       lastDate: DateTime(2100),
     );
 
@@ -125,7 +127,6 @@ class _discountAddState extends State<discountAdd> {
         });
       } else {
         _confirmSuccess();
-
       }
     } catch (e) {
       print("Error submitting final submit: $e");

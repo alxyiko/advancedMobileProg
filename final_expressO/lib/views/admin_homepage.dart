@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
- 
+
 void main() {
   runApp(const AdminHomepage());
 }
- 
+
 class AdminHomepage extends StatelessWidget {
   const AdminHomepage({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,15 +23,15 @@ class AdminHomepage extends StatelessWidget {
     );
   }
 }
- 
+
 //donut models
 class DonutSegment {
   final String label;
   final double value;
   final Color color;
- 
+
   DonutSegment({required this.label, required this.value, required this.color});
- 
+
   factory DonutSegment.fromJson(Map<String, dynamic> json) {
     return DonutSegment(
       label: json['label'] as String,
@@ -40,31 +40,31 @@ class DonutSegment {
     );
   }
 }
- 
+
 class StatsOverview {
   final double totalSales;
   final int totalCustomers;
- 
+
   StatsOverview({required this.totalSales, required this.totalCustomers});
- 
+
   factory StatsOverview.fromJson(Map<String, dynamic> json) => StatsOverview(
         totalSales: (json['totalSales'] as num).toDouble(),
         totalCustomers: (json['totalCustomers'] as num).toInt(),
       );
 }
- 
+
 class PendingOrder {
   final String id;
   final String name;
   final String itemsSummary;
   final double price;
- 
+
   PendingOrder(
       {required this.id,
       required this.name,
       required this.itemsSummary,
       required this.price});
- 
+
   factory PendingOrder.fromJson(Map<String, dynamic> json) => PendingOrder(
         id: json['id'] as String,
         name: json['name'] as String,
@@ -72,19 +72,19 @@ class PendingOrder {
         price: (json['price'] as num).toDouble(),
       );
 }
- 
+
 class DashboardData {
   final List<DonutSegment> donutSegments;
   final int totalOrders;
   final StatsOverview stats;
   final List<PendingOrder> pendingOrders;
- 
+
   DashboardData(
       {required this.donutSegments,
       required this.totalOrders,
       required this.stats,
       required this.pendingOrders});
- 
+
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     final donut = (json['donut'] as List<dynamic>)
         .map((e) => DonutSegment.fromJson(e as Map<String, dynamic>))
@@ -100,7 +100,7 @@ class DashboardData {
         pendingOrders: pending);
   }
 }
- 
+
 class DummyData {
   // Example JSON structure returned from backend
   static const _sampleJson = '''
@@ -118,7 +118,7 @@ class DummyData {
     ]
   }
   ''';
- 
+
   // Simulate network delay
   static Future<DashboardData> fetchDashboard() async {
     await Future.delayed(const Duration(milliseconds: 600));
@@ -126,27 +126,27 @@ class DummyData {
     return DashboardData.fromJson(parsed);
   }
 }
- 
+
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
- 
+
   @override
   State<DashboardPage> createState() => _DashboardPageState();
 }
- 
+
 class _DashboardPageState extends State<DashboardPage> {
   late Future<DashboardData> _dashboardFuture;
- 
+
   @override
   void initState() {
     super.initState();
     _loadData();
   }
- 
+
   void _loadData() {
     _dashboardFuture = DummyData.fetchDashboard();
   }
- 
+
   @override
   Widget build(BuildContext context) {
     const safePadding = 16.0;
@@ -164,7 +164,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 return const Center(child: Text('Error: \${snapshot.error}'));
               }
               final data = snapshot.data!;
- 
+
               return SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +189,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
- 
+
   Widget _buildTopBar() {
     return Row(
       children: [
@@ -211,7 +211,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ],
     );
   }
- 
+
   Widget _buildDonutCard(DashboardData data) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -242,7 +242,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
- 
+
   Widget _buildLegendItem(DonutSegment seg) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -259,7 +259,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
- 
+
   Widget _buildDonutChart(DashboardData data) {
     final total = data.donutSegments.fold<double>(0.0, (p, e) => p + e.value);
     const showCenterText = true;
@@ -298,7 +298,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ],
     );
   }
- 
+
   Widget _buildShortcutsRow() {
     final items = [
       _ShortcutItem(icon: Icons.person_outline, label: 'Customers'),
@@ -317,7 +317,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ],
     );
   }
- 
+
   Widget _buildShortcutCard(_ShortcutItem item) {
     return Expanded(
       child: Padding(
@@ -350,7 +350,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
- 
+
   Widget _buildStatisticsOverview(DashboardData data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +433,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ],
     );
   }
- 
+
   Widget _buildPendingOrders(DashboardData data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,7 +456,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ],
     );
   }
- 
+
   Widget _buildPendingOrderCard(PendingOrder ord) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -482,10 +482,9 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
- 
+
 class _ShortcutItem {
   final IconData icon;
   final String label;
   _ShortcutItem({required this.icon, required this.label});
 }
- 

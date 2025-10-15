@@ -64,6 +64,118 @@ class StatusBadge extends StatelessWidget {
   }
 }
 
+/// Widget that paints an animated pulsing border around its child.
+/// PulsingBorder that **overlays** a painted border so the child's layout never changes.
+class PulsingBorder extends StatefulWidget {
+  final Widget child;
+  final double minWidth;
+  final double maxWidth;
+  final Color color;
+  final BorderRadius borderRadius;
+  final Duration duration;
+
+  const PulsingBorder({
+    super.key,
+    required this.child,
+    this.minWidth = 1.0,
+    this.maxWidth = 2.0,
+    this.color = const Color(0xFFB3B3B3),
+    this.borderRadius = const BorderRadius.all(Radius.circular(12)),
+    this.duration = const Duration(milliseconds: 1000),
+  });
+
+  @override
+  _PulsingBorderState createState() => _PulsingBorderState();
+}
+
+class _PulsingBorderState extends State<PulsingBorder>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: widget.duration);
+    _anim = Tween<double>(begin: widget.minWidth, end: widget.maxWidth).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    _ctrl.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Stack: child is laid out normally; the CustomPaint overlays the animated stroke.
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // The child defines the layout (fixed size if you wrap it with SizedBox)
+            child!,
+            // Overlay painter that draws the border without affecting layout.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _BorderPainter(
+                    strokeWidth: _anim.value,
+                    color: widget.color,
+                    borderRadius: widget.borderRadius,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// Paints a rounded rect stroke (used by PulsingBorder)
+class _BorderPainter extends CustomPainter {
+  final double strokeWidth;
+  final Color color;
+  final BorderRadius borderRadius;
+
+  _BorderPainter({
+    required this.strokeWidth,
+    required this.color,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndCorners(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      topLeft: borderRadius.topLeft,
+      topRight: borderRadius.topRight,
+      bottomLeft: borderRadius.bottomLeft,
+      bottomRight: borderRadius.bottomRight,
+    );
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = color;
+    // Draw stroke centered on the edge; strokeWidth won't push layout.
+    canvas.drawRRect(rrect.deflate(strokeWidth / 2), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BorderPainter old) {
+    return old.strokeWidth != strokeWidth || old.color != color;
+  }
+}
+
+/// Converted NotifPage (Stateful) with pulse on High Priority cards only.
 class adminTransactionHistory extends StatefulWidget {
   const adminTransactionHistory({super.key});
 
@@ -81,7 +193,7 @@ class _NotifPageState extends State<adminTransactionHistory> {
     'Cancelled'
   ];
 
-  // Human-readable “time ago” badge for each mocked timestamp.
+  // small helper to format "time ago"
   String _timeAgoText(DateTime dt) {
     final diff = DateTime.now().difference(dt);
     if (diff.inSeconds < 60) return 'Now';
@@ -90,104 +202,121 @@ class _NotifPageState extends State<adminTransactionHistory> {
     return '${diff.inDays}d ago';
   }
 
-  // Builds a single transaction tile with icon, copy, and status badge.
   Widget buildCard({
     required DateTime createdAt,
     required String status,
+    bool isHighPriority = false,
   }) {
     final timeText = _timeAgoText(createdAt);
     const double cardHeight =
         140.0; 
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      child: SizedBox(
-        height: cardHeight,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFEF9),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.36),
-                blurRadius: 2,
-                spreadRadius: 0,
-                offset: const Offset(2, 2),
-              ),
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 5,
-                spreadRadius: 0,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // icon circle...
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF8F2E2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.local_cafe,
-                    size: 22,
-                    color: Color(0xFF603B17),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      timeText,
-                      style: const TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 12,
-                        color: Color(0xFFC8A888),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Review your order",
-                      style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF603B17),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Your order #999897 was completed.",
-                      style: TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 13,
-                        color: Color(0xFFC8A888),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              StatusBadge(status: status),
-            ],
-          ),
+    final cardBody = SizedBox(
+      height: cardHeight,
+      child: Container(
+        // no outer margin here
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFEF9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.36),
+              blurRadius: 2,
+              spreadRadius: 0,
+              offset: const Offset(2, 2),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 5,
+              spreadRadius: 0,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // icon circle...
+            Container(
+              width: 48,
+              height: 48,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F2E2),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.local_cafe,
+                  size: 22,
+                  color: Color(0xFF603B17),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    timeText,
+                    style: const TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 12,
+                      color: Color(0xFFC8A888),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Review your order",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF603B17),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Your order #999897 was completed.",
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 13,
+                      color: Color(0xFFC8A888),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            StatusBadge(status: status),
+          ],
+        ),
+      ),
+    );
+
+    // Keep the same outer spacing for both types
+    if (!isHighPriority) {
+      return Container(
+          margin: const EdgeInsets.symmetric(vertical: 12), child: cardBody);
+    }
+
+    // For high priority: wrap with PulsingBorder (overlay) and same outer spacing.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: PulsingBorder(
+        minWidth: 1.0,
+        maxWidth: 2.5,
+        duration: const Duration(milliseconds: 900),
+        color: const Color(0xFFE27D19),
+        borderRadius: BorderRadius.circular(12),
+        child: cardBody,
       ),
     );
   }
@@ -200,7 +329,7 @@ class _NotifPageState extends State<adminTransactionHistory> {
         backgroundColor: const Color(0xFF38241D),
         centerTitle: true,
         title: const Text(
-          "Recent Activities",
+          "Notifications",
           style: TextStyle(
             fontFamily: 'Quicksand',
             fontWeight: FontWeight.w700,
@@ -220,9 +349,56 @@ class _NotifPageState extends State<adminTransactionHistory> {
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: ListView(
             children: [
-              // Vertical spacing before the feed.
               const SizedBox(height: 30),
-              // Randomized activity list (acts as placeholder data).
+              const Text(
+                "High Priority",
+                style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // High Priority vertical list (3 items)
+              Column(
+                children: List.generate(3, (index) {
+                  final status =
+                      sampleStatuses[_rand.nextInt(sampleStatuses.length)];
+                  final hoursAgo = _rand.nextInt(12); // 0..11 hours ago
+                  final createdAt =
+                      DateTime.now().subtract(Duration(hours: hoursAgo));
+                  return buildCard(
+                    createdAt: createdAt,
+                    status: status,
+                    isHighPriority: true, // enable pulse here
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Dashed divider
+              CustomPaint(
+                size: const Size(double.infinity, 1),
+                painter: DashedLinePainter(),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Other Notifications title
+              const Text(
+                "Other Notifications",
+                style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+
               Column(
                 children: List.generate(5, (index) {
                   final status =
@@ -239,4 +415,29 @@ class _NotifPageState extends State<adminTransactionHistory> {
       ),
     );
   }
+}
+
+// Custom painter for dashed line
+class DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const dashWidth = 5.0;
+    const dashSpace = 3.0;
+    double startX = 0;
+    final paint = Paint()
+      ..color = Colors.black54
+      ..strokeWidth = 1;
+
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0),
+        Offset(startX + dashWidth, 0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

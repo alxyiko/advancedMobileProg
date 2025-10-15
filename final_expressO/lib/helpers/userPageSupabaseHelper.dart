@@ -1,6 +1,7 @@
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
 import 'package:firebase_nexus/models/product.dart';
+import 'package:firebase_nexus/models/supabaseProduct.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -182,7 +183,7 @@ class UserSupabaseHelper {
     }
   }
 
-  Future<List<Product>> getCart() async {
+  Future<List<SupabaseProduct>> getCart() async {
     return sqlFlite.getCart();
   }
 

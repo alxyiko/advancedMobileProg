@@ -1,5 +1,6 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/appColors.dart';
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/tioPages/login.dart';

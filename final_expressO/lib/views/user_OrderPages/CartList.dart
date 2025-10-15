@@ -1,9 +1,9 @@
-import 'package:firebase_nexus/helpers/local_database_helper.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import '../../models/product.dart';
-import 'orderDetailedView.dart';
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
+import 'package:firebase_nexus/models/supabaseProduct.dart';
 import '../checkout_user.dart';
-import '../user_viewProduct.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -14,21 +14,47 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   bool isEditing = false;
-  List<bool> selectedItems = List.generate(10, (_) => false);
+  List<bool> selectedItems = [];
   SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
+  List<SupabaseProduct> cartList = [];
 
+  @override
+  void initState() {
+    super.initState();
+    _getCart();
+  }
 
+  Future<void> _getCart() async {
+    final cart = await localDBhelper.getCart();
+    setState(() {
+      cartList = cart;
+      selectedItems = List.generate(cart.length, (_) => false);
+    });
+  }
 
+  Future<void> _updateQuantity(int id, bool increment) async {
+    await localDBhelper.updateCartQuantity('Cart', id, increment);
+    await _getCart(); // refresh UI
+  }
 
+  Future<void> _deleteSelectedItems() async {
+    final selectedIds = <int>[];
+    for (int i = 0; i < cartList.length; i++) {
+      if (selectedItems[i]) selectedIds.add(cartList[i].id!);
+    }
+
+    for (final id in selectedIds) {
+      await localDBhelper.deleteRow('Cart', id);
+    }
+
+    await _getCart();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // navigation provider available if needed
-    // final navProvider = Provider.of<NavigationProvider>(context);
-
-    int totalItems = selectedItems.where((e) => e).length;
-    double totalPrice =
-        totalItems * 250; // Replace 250 with your logic per item
+    final totalItems = cartList.fold<int>(0, (sum, e) => sum + e.quantity);
+    final totalPrice =
+        cartList.fold<double>(0, (sum, e) => sum + (e.price * e.quantity));
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
@@ -39,7 +65,6 @@ class _CartPageState extends State<CartPage> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left),
-          color: Colors.white,
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -50,405 +75,248 @@ class _CartPageState extends State<CartPage> {
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                isEditing = !isEditing;
+                if (!isEditing) {
+                  selectedItems = List.generate(cartList.length, (_) => false);
+                }
+              });
+            },
+            child: Text(
+              isEditing ? 'Done' : 'Edit',
+              style: const TextStyle(
+                fontFamily: 'Quicksand',
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: cartList.isEmpty
+          ? const Center(
+              child: Text(
+                'Your cart is empty.',
+                style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+            )
+          : Column(
               children: [
-                const Text(
-                  '3 items',
-                  style: TextStyle(
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isEditing = !isEditing;
-                      // Reset checkboxes when exiting edit mode
-                      if (!isEditing) {
-                        selectedItems =
-                            List.generate(selectedItems.length, (_) => false);
-                      }
-                    });
-                  },
-                  child: Text(
-                    isEditing ? 'Done' : 'Edit',
-                    style: const TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF603B17),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartList.length,
+                    itemBuilder: (context, index) {
+                      final item = cartList[index];
 
-          // Divider
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(
-              color: Color(0xFF603B17),
-              thickness: 1.5,
-              height: 2,
-            ),
-          ),
-
-          // List
-          Expanded(
-            child: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Show checkbox + delete outside the card
-                    if (isEditing)
-                      SizedBox(
-                        height: 200,
-                        width: 60,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Checkbox Container
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (isEditing)
                             SizedBox(
-                              height: 85,
-                              width: 50,
-                              child: Container(
-                                margin: const EdgeInsets.only(top: 1),
-                                decoration: BoxDecoration(
-                                  color: selectedItems[index]
-                                      ? const Color(
-                                          0xFFE27D19) // selected: orange background
-                                      : const Color(
-                                          0xFFFFFFFF), // not selected: light brown background
-                                  border: Border.all(
-                                    color: selectedItems[index]
-                                        ? const Color(0xFFE27D19)
-                                        : const Color(0xFFF1E2D3),
-                                    width: 2,
-                                  ),
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(8),
-                                    topRight: Radius.circular(8),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Checkbox(
+                              height: 120,
+                              width: 60,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Checkbox(
                                     value: selectedItems[index],
                                     onChanged: (value) {
                                       setState(() {
                                         selectedItems[index] = value ?? false;
                                       });
                                     },
-                                    checkColor: const Color(0xFFE27D19),
-                                    fillColor: WidgetStateProperty.resolveWith(
-                                        (states) {
-                                      if (states
-                                          .contains(WidgetState.selected)) {
-                                        return Colors
-                                            .white; // selected: checkbox fill is white
-                                      }
-                                      return const Color(
-                                          0xFFFFFFFF); // not selected: checkbox fill is F1E2D3
-                                    }),
-                                    side: BorderSide(
-                                      color: selectedItems[index]
-                                          ? const Color(0xFFE27D19)
-                                          : const Color(0xFFF1E2D3),
-                                      width: 2,
-                                    ),
+                                    activeColor: const Color(0xFFE27D19),
                                   ),
-                                ),
-                              ),
-                            ),
-
-                            // Delete Button Container
-                            SizedBox(
-                              height: 85,
-                              width: 50,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(
-                                    color: const Color(0xFFF1E2D3),
-                                    width: 2,
-                                  ),
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(8),
-                                    bottomRight: Radius.circular(8),
-                                  ),
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Color(0xFFF1E2D3),
-                                    size: 24,
-                                  ),
-                                  onPressed: selectedItems[index]
-                                      ? () {
-                                          setState(() {
-                                            selectedItems.removeAt(index);
-                                          });
-                                        }
-                                      : null,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    // Slide the card when editing
-                    Expanded(
-                      child: AnimatedPadding(
-                        duration: const Duration(milliseconds: 650),
-                        padding: EdgeInsets.only(left: isEditing ? 0 : 0),
-                        child: InkWell(
-                          onTap: () {
-                            // Temporary test data for product page
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => UserViewProductPage(
-                                  // thahahahahhaha sorry sabog na static muna tayo for tonight whahahahhahahhah
-                                  productData: {
-                                    'name': 'Caramel Macchiato',
-                                    'lowest_price': 250,
-                                    'img': 'https://placehold.co/200x150/png',
-                                    'status': 'Processing',
-                                    'desc': 'A delicious caramel coffee.',
-                                    'category_name': 'Coffee',
-                                    'stock': 10,
-                                    'variations': [],
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            color: const Color(0xFFFCFAF3),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 6),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 12),
-                              child: Row(
-                                children: [
-                                  // COLUMN 1 — Image and Price
-                                  Expanded(
-                                    flex: 2,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                          'assets/images/coffee_img.png',
-                                          height: 60,
-                                          fit: BoxFit.cover,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        const Text(
-                                          '₱250',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // COLUMN 2 — Details
-                                  const Expanded(
-                                    flex: 3,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Caramel Macchiato',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Date',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        Text(
-                                          '09/05/25',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Amount',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        Text(
-                                          '3',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // COLUMN 3 — Add / Minus Buttons
-                                  Expanded(
-                                    flex: 2,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        // Add Button
-                                        IconButton(
-                                          icon: const Icon(Icons.add_circle,
-                                              color: Color(0xFF603B17)),
-                                          onPressed: () {
-                                            // increase logic here
-                                          },
-                                        ),
-                                        // Current Amount
-                                        const Text(
-                                          '1',
-                                          style: TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        // Minus Button (Gray if amount == 1)
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.remove_circle,
-                                            color: 1 == 1
-                                                ? Colors.grey
-                                                : Color(0xFF603B17),
-                                          ),
-                                          onPressed: 1 == 1
-                                              ? null
-                                              : () {
-                                                  // decrease logic here
-                                                },
-                                        ),
-                                      ],
-                                    ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Color(0xFFE27D19)),
+                                    onPressed: selectedItems[index]
+                                        ? () async {
+                                            await localDBhelper.deleteRow(
+                                                'Cart', item.id!);
+                                            await _getCart();
+                                          }
+                                        : null,
                                   ),
                                 ],
                               ),
                             ),
+                          Expanded(
+                            child: Card(
+                              color: const Color(0xFFFCFAF3),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Row(
+                                  children: [
+                                    // Product image
+                                    Image.network(
+                                      item.img as String,
+                                      height: 60,
+                                      width: 60,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    const SizedBox(width: 12),
+
+                                    // Product details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.name,
+                                            style: const TextStyle(
+                                              fontFamily: 'Quicksand',
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${item.category} — ${item.variation}',
+                                            style: const TextStyle(
+                                              fontFamily: 'Quicksand',
+                                              fontSize: 13,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            '₱${item.price.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              fontFamily: 'Quicksand',
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF603B17),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Quantity controls
+                                    Column(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.add_circle,
+                                              color: Color(0xFF603B17)),
+                                          onPressed: () =>
+                                              _updateQuantity(item.id!, true),
+                                        ),
+                                        Text(
+                                          '${item.quantity}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Quicksand',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.remove_circle,
+                                            color: item.quantity <= 1
+                                                ? Colors.grey
+                                                : const Color(0xFF603B17),
+                                          ),
+                                          onPressed: item.quantity <= 1
+                                              ? null
+                                              : () => _updateQuantity(
+                                                  item.id!, false),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+
+                // Bottom summary bar
+                Container(
+                  height: 70,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 5,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Total
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Total Items: $totalItems',
+                            style: const TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            'Total Price: ₱${totalPrice.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontFamily: 'Quicksand',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: Color(0xFF603B17),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Checkout
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE27D19),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
+                        onPressed: cartList.isNotEmpty
+                            ? () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => CheckoutPage()),
+                                )
+                            : null,
+                        child: const Text(
+                          'Check Out',
+                          style: TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          // FIXED BOTTOM CONTAINER
-          Container(
-            height: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Total Items & Price
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Total Items: $totalItems',
-                      style: const TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      'Total Price: ₱$totalPrice',
-                      style: const TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Color(0xFF603B17),
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Checkout Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE27D19),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                  ),
-                  onPressed: totalItems > 0
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CheckoutPage(),
-                            ),
-                          );
-                        }
-                      : null, // disable if no items
-                  child: const Text(
-                    'Check Out',
-                    style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

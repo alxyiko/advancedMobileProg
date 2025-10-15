@@ -1,19 +1,25 @@
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import 'orderDetailedView.dart';
 import '../checkout_user.dart';
 import '../user_viewProduct.dart';
 
-class DummyOrderPage extends StatefulWidget {
-  const DummyOrderPage({super.key});
+class CartPage extends StatefulWidget {
+  const CartPage({super.key});
 
   @override
-  State<DummyOrderPage> createState() => _DummyOrderPageState();
+  State<CartPage> createState() => _CartPageState();
 }
 
-class _DummyOrderPageState extends State<DummyOrderPage> {
+class _CartPageState extends State<CartPage> {
   bool isEditing = false;
   List<bool> selectedItems = List.generate(10, (_) => false);
+  SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
+
+
+
+
 
   @override
   Widget build(BuildContext context) {

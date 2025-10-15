@@ -8,7 +8,7 @@ import 'notifPage.dart';
 import 'orderDetails.dart';
 import '../widgets/user_addtocart_fab.dart';
 import 'user_viewProduct.dart';
-import './user_OrderPages/orderView.dart';
+import 'user_OrderPages/CartList.dart';
 
 class NeilCart extends StatefulWidget {
   const NeilCart({super.key});
@@ -480,7 +480,7 @@ class _NeilCartState extends State<NeilCart> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => const DummyOrderPage(),
+                builder: (_) => const CartPage(),
               ),
             );
           });

@@ -6,7 +6,7 @@ import 'package:firebase_nexus/views/checkout_user.dart';
 import 'package:firebase_nexus/views/dummyCart.dart';
 import 'package:firebase_nexus/views/dummyCartSupa.dart';
 import 'package:firebase_nexus/views/MyHomePage.dart';
-import 'package:firebase_nexus/views/user_OrderPages/orderView.dart';
+import 'package:firebase_nexus/views/user_OrderPages/CartList.dart';
 import 'package:firebase_nexus/views/user_profilePages/userProfile.dart';
 import 'package:firebase_nexus/views/user_OrderPages/orderList.dart';
 

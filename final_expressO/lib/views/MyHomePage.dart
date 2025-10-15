@@ -1,7 +1,7 @@
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/views/UserProducts.dart';
-import 'package:firebase_nexus/views/user_OrderPages/orderView.dart';
+import 'package:firebase_nexus/views/user_OrderPages/CartList.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const DummyOrderPage(),
+                                builder: (context) => const CartPage(),
                               ),
                             );
                           },

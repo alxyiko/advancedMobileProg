@@ -242,55 +242,55 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                                   color: Color(0xFF4B2E19),
                                 ),
                               ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE27D19),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 10),
-                                ),
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      duration: const Duration(seconds: 2),
-                                      backgroundColor: Colors.white,
-                                      behavior: SnackBarBehavior.floating,
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 60, vertical: 400),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.check,
-                                              color: Color(0xFFE27D19),
-                                              size: 28),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'haha added to cart',
-                                            style: const TextStyle(
-                                              color: Colors.black87,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Add to Cart',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              )
+                              // ElevatedButton(
+                              //   style: ElevatedButton.styleFrom(
+                              //     backgroundColor: const Color(0xFFE27D19),
+                              //     shape: RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.circular(12),
+                              //     ),
+                              //     padding: const EdgeInsets.symmetric(
+                              //         horizontal: 20, vertical: 10),
+                              //   ),
+                              //   onPressed: () {
+                              //     ScaffoldMessenger.of(context).showSnackBar(
+                              //       SnackBar(
+                              //         duration: const Duration(seconds: 2),
+                              //         backgroundColor: Colors.white,
+                              //         behavior: SnackBarBehavior.floating,
+                              //         margin: const EdgeInsets.symmetric(
+                              //             horizontal: 60, vertical: 400),
+                              //         shape: RoundedRectangleBorder(
+                              //           borderRadius: BorderRadius.circular(16),
+                              //         ),
+                              //         content: Column(
+                              //           mainAxisSize: MainAxisSize.min,
+                              //           children: [
+                              //             const Icon(Icons.check,
+                              //                 color: Color(0xFFE27D19),
+                              //                 size: 28),
+                              //             const SizedBox(height: 8),
+                              //             Text(
+                              //               'haha added to cart',
+                              //               style: const TextStyle(
+                              //                 color: Colors.black87,
+                              //                 fontWeight: FontWeight.bold,
+                              //                 fontSize: 16,
+                              //               ),
+                              //             ),
+                              //           ],
+                              //         ),
+                              //       ),
+                              //     );
+                              //   },
+                              //   child: const Text(
+                              //     'Add to Cart',
+                              //     style: TextStyle(
+                              //       color: Colors.white,
+                              //       fontWeight: FontWeight.bold,
+                              //       fontSize: 16,
+                              //     ),
+                              //   ),
+                              // )
                             ],
                           ),
                         ],
@@ -414,6 +414,10 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                                   ),
                                 ),
                               );
+
+                              setState(() {
+                                _quantityController.text = '1';
+                              });
                             },
                             child: const Text(
                               'Add to Cart',

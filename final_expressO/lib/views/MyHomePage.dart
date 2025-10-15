@@ -1,7 +1,7 @@
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/views/cartView.dart';
-import 'package:firebase_nexus/views/orderView.dart';
+import 'package:firebase_nexus/views/user_OrderPages/orderView.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

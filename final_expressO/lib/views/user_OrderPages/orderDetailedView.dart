@@ -1,14 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../models/product.dart';
+import '../../models/product.dart';
 
-class OrderDetailedView extends StatelessWidget {
+class UserOrderDetailedView extends StatelessWidget {
   final Product product;
+  final String orderStatus;
 
-  const OrderDetailedView({super.key, required this.product});
+  const UserOrderDetailedView({
+    super.key,
+    required this.product,
+    required this.orderStatus,
+  });
+
+  // Helper method to determine current stage based on orderStatus
+  int _getCurrentStage(String status) {
+    switch (status.toLowerCase()) {
+      case 'for approval':
+        return 0;
+      case 'processing':
+        return 2;
+      case 'completed':
+        return 4;
+      case 'cancelled':
+      case 'rejected':
+        return 0; // Show at start for cancelled/rejected orders
+      default:
+        return 0;
+    }
+  }
+
+  // Helper method to get status color
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'for approval':
+        return Colors.orange;
+      case 'processing':
+        return Colors.blue;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final currentStage = _getCurrentStage(orderStatus);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
       appBar: AppBar(
@@ -42,7 +83,6 @@ class OrderDetailedView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
               width: double.infinity,
-              // extend the white box further down; responsive to screen height
               height: MediaQuery.of(context).size.height * 0.75,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -112,10 +152,10 @@ class OrderDetailedView extends StatelessWidget {
                                   color: Color(0xFF2D1D17),
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Row(
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Order Status: ',
                                     style: TextStyle(
                                       fontFamily: 'Quicksand',
@@ -125,12 +165,12 @@ class OrderDetailedView extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    'Processed',
+                                    orderStatus,
                                     style: TextStyle(
                                       fontFamily: 'Quicksand',
                                       fontWeight: FontWeight.w700,
                                       fontSize: 16,
-                                      color: Colors.green,
+                                      color: _getStatusColor(orderStatus),
                                     ),
                                   ),
                                 ],
@@ -175,7 +215,7 @@ class OrderDetailedView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                       child: _OrderTimeline(
-                        currentStage: 2,
+                        currentStage: currentStage,
                         stages: const [
                           {
                             'title': 'Order Placed',
@@ -207,124 +247,126 @@ class OrderDetailedView extends StatelessWidget {
               ),
             ),
           ),
-          // Cancel Order button area
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 16),
-                    minimumSize: const Size(160, 52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+          // Cancel Order button area (only show if not already cancelled/rejected/completed)
+          if (!['cancelled', 'rejected', 'completed']
+              .contains(orderStatus.toLowerCase()))
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      minimumSize: const Size(160, 52),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      textStyle: const TextStyle(
+                          fontFamily: 'Quicksand',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700),
                     ),
-                    textStyle: const TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700),
-                  ),
-                  onPressed: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        titlePadding: EdgeInsets.zero,
-                        title: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE27D19),
-                                  shape: BoxShape.circle,
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          titlePadding: EdgeInsets.zero,
+                          title: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE27D19),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.report_problem,
+                                      color: Colors.white, size: 20),
                                 ),
-                                child: const Icon(Icons.report_problem,
-                                    color: Colors.white, size: 20),
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  'Cancel Order',
-                                  style: TextStyle(
-                                    fontFamily: 'Quicksand',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Cancel Order',
+                                    style: TextStyle(
+                                      fontFamily: 'Quicksand',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
+                              ],
+                            ),
+                          ),
+                          content: const Padding(
+                            padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
+                            child: Text(
+                              'Are you sure you want to cancel this order? This action cannot be undone.',
+                              style: TextStyle(
+                                  fontFamily: 'Quicksand', fontSize: 14),
+                            ),
+                          ),
+                          actionsPadding:
+                              const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                          actionsAlignment: MainAxisAlignment.end,
+                          actions: [
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF2D1D17),
+                                side:
+                                    const BorderSide(color: Color(0xFFBDB6AE)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                                textStyle: const TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.w600),
                               ),
-                            ],
-                          ),
-                        ),
-                        content: const Padding(
-                          padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
-                          child: Text(
-                            'Are you sure you want to cancel this order? This action cannot be undone.',
-                            style: TextStyle(
-                                fontFamily: 'Quicksand', fontSize: 14),
-                          ),
-                        ),
-                        actionsPadding:
-                            const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        actionsAlignment: MainAxisAlignment.end,
-                        actions: [
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2D1D17),
-                              side: const BorderSide(color: Color(0xFFBDB6AE)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              textStyle: const TextStyle(
-                                  fontFamily: 'Quicksand',
-                                  fontWeight: FontWeight.w600),
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('No'),
                             ),
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('No'),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 18, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              textStyle: const TextStyle(
-                                  fontFamily: 'Quicksand',
-                                  fontWeight: FontWeight.w700),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                                textStyle: const TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.w700),
+                              ),
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Yes, cancel'),
                             ),
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Yes, cancel'),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirmed == true) {
-                      // Show a snackbar briefly then pop
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Order cancelled')),
+                          ],
+                        ),
                       );
-                      // TODO: call backend / update DB to cancel the order
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: const Text('Cancel Order'),
-                ),
-              ],
+
+                      if (confirmed == true && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Order cancelled')),
+                        );
+                        // TODO: call backend / update DB to cancel the order
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: const Text('Cancel Order'),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -335,9 +377,10 @@ class _OrderTimeline extends StatelessWidget {
   final int currentStage;
   final List<Map<String, String>> stages;
 
-  const _OrderTimeline(
-      {Key? key, required this.currentStage, required this.stages})
-      : super(key: key);
+  const _OrderTimeline({
+    required this.currentStage,
+    required this.stages,
+  });
 
   @override
   Widget build(BuildContext context) {

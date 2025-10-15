@@ -3,12 +3,11 @@ import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
-import '../views/orderDetailedView.dart';
+import '../views/user_OrderPages/orderDetailedView.dart';
 import '../helpers/local_database_helper.dart';
 
 class DummyCartPage extends StatefulWidget {
   const DummyCartPage({super.key});
-
 
   @override
   State<DummyCartPage> createState() => _DummyCartPageState();
@@ -69,8 +68,8 @@ class _DummyCartPageState extends State<DummyCartPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => OrderDetailedView(product: product),
-                          ),
+                              builder: (context) => UserOrderDetailedView(
+                                  product: product, orderStatus: 'Processed')),
                         );
                       },
                     ),
@@ -78,9 +77,11 @@ class _DummyCartPageState extends State<DummyCartPage> {
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () async {
                         // print(product.id);
-                        await SQLFliteDatabaseHelper().deleteProduct(product.id);
+                        await SQLFliteDatabaseHelper()
+                            .deleteProduct(product.id);
                         // Refresh UI
-                        setState(() {}); // 🔥 triggers FutureBuilder to run again
+                        setState(
+                            () {}); // 🔥 triggers FutureBuilder to run again
                       },
                     ),
                   ],
@@ -100,7 +101,7 @@ class _DummyCartPageState extends State<DummyCartPage> {
             // id: dummyId,
             name: "Item ${DateTime.now().millisecondsSinceEpoch}",
             price: 199.99,
-            quantity:1,
+            quantity: 1,
           );
           await SQLFliteDatabaseHelper().insertProduct(dummy);
           // Refresh UI

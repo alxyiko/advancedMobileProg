@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../helpers/local_database_helper.dart';
-import 'orderDetailedView.dart';
+import 'user_OrderPages/orderDetailedView.dart';
 
 class SQLitePage extends StatefulWidget {
   const SQLitePage({super.key});
-
 
   @override
   State<SQLitePage> createState() => _SQLitePageState();
@@ -24,7 +23,7 @@ class _SQLitePageState extends State<SQLitePage> {
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
         title: const Text(
-          "Your Cart",  
+          "Your Cart",
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,
@@ -70,7 +69,10 @@ class _SQLitePageState extends State<SQLitePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => OrderDetailedView(product: product),
+                            builder: (context) => UserOrderDetailedView(
+                              product: product,
+                              orderStatus: 'Processed',
+                            ),
                           ),
                         );
                       },
@@ -79,9 +81,11 @@ class _SQLitePageState extends State<SQLitePage> {
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () async {
                         // print(product.id);
-                        await SQLFliteDatabaseHelper().deleteProduct(product.id);
+                        await SQLFliteDatabaseHelper()
+                            .deleteProduct(product.id);
                         // Refresh UI
-                        setState(() {}); // 🔥 triggers FutureBuilder to run again
+                        setState(
+                            () {}); // 🔥 triggers FutureBuilder to run again
                       },
                     ),
                   ],
@@ -90,7 +94,10 @@ class _SQLitePageState extends State<SQLitePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => OrderDetailedView(product: product),
+                      builder: (context) => UserOrderDetailedView(
+                        product: product,
+                        orderStatus: 'Processed',
+                      ),
                     ),
                   );
                 },
@@ -109,7 +116,7 @@ class _SQLitePageState extends State<SQLitePage> {
             // id: dummyId,
             name: "Item ${DateTime.now().millisecondsSinceEpoch}",
             price: 199.99,
-            quantity:1,
+            quantity: 1,
           );
           await SQLFliteDatabaseHelper().insertProduct(dummy);
           // Refresh UI

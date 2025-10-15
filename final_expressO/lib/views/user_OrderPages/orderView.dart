@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import '../../models/product.dart';
 import 'orderDetailedView.dart';
+import '../checkout_user.dart';
+import '../user_viewProduct.dart';
 
 class DummyOrderPage extends StatefulWidget {
   const DummyOrderPage({super.key});
@@ -18,10 +20,15 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
     // navigation provider available if needed
     // final navProvider = Provider.of<NavigationProvider>(context);
 
+    int totalItems = selectedItems.where((e) => e).length;
+    double totalPrice =
+        totalItems * 250; // Replace 250 with your logic per item
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF603B17),
+        backgroundColor: const Color(0xFF2c1d16),
+        elevation: 0,
         foregroundColor: Colors.white,
         centerTitle: true,
         leading: IconButton(
@@ -33,6 +40,7 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
           'Your Cart',
           style: TextStyle(
             fontFamily: 'Quicksand',
+            fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -200,18 +208,23 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                         padding: EdgeInsets.only(left: isEditing ? 0 : 0),
                         child: InkWell(
                           onTap: () {
-                            // Construct a Product from the displayed values and navigate
-                            final product = Product(
-                              id: null,
-                              name: 'Caramel Macchiato',
-                              price: 250.0,
-                              quantity: 3,
-                            );
+                            // Temporary test data for product page
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    OrderDetailedView(product: product),
+                                builder: (_) => UserViewProductPage(
+                                  // thahahahahhaha sorry sabog na static muna tayo for tonight whahahahhahahhah
+                                  productData: {
+                                    'name': 'Caramel Macchiato',
+                                    'lowest_price': 250,
+                                    'img': 'https://placehold.co/200x150/png',
+                                    'status': 'Processing',
+                                    'desc': 'A delicious caramel coffee.',
+                                    'category_name': 'Coffee',
+                                    'stock': 10,
+                                    'variations': [],
+                                  },
+                                ),
                               ),
                             );
                           },
@@ -352,7 +365,82 @@ class _DummyOrderPageState extends State<DummyOrderPage> {
                 );
               },
             ),
-          )
+          ),
+
+          // FIXED BOTTOM CONTAINER
+          Container(
+            height: 70,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Total Items & Price
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Total Items: $totalItems',
+                      style: const TextStyle(
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'Total Price: ₱$totalPrice',
+                      style: const TextStyle(
+                        fontFamily: 'Quicksand',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Color(0xFF603B17),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Checkout Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE27D19),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: totalItems > 0
+                      ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CheckoutPage(),
+                            ),
+                          );
+                        }
+                      : null, // disable if no items
+                  child: const Text(
+                    'Check Out',
+                    style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

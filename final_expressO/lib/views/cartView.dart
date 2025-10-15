@@ -442,39 +442,21 @@ class _NeilCartState extends State<NeilCart> {
                                       icon: const Icon(Icons.add,
                                           color: Colors.white),
                                       onPressed: () {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            duration:
-                                                const Duration(seconds: 2),
-                                            backgroundColor: Colors.white,
-                                            behavior: SnackBarBehavior.floating,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal:
-                                                  80, // spacing from sides
-                                              vertical:
-                                                  300, // approximate distance from top
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(Icons.check,
-                                                    color: Color(0xFFE27D19),
-                                                    size: 28),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  '$name added to cart',
-                                                  style: const TextStyle(
-                                                    color: Colors.black87,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                              ],
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => UserViewProductPage(
+                                              productData: {
+                                                'name': name,
+                                                'lowest_price': price,
+                                                'img': imageUrl,
+                                                'status': 'Processing',
+                                                'desc':
+                                                    'A delicious coffee for testing.',
+                                                'category_name': 'Coffee',
+                                                'stock': 10,
+                                                'variations': [],
+                                              },
                                             ),
                                           ),
                                         );

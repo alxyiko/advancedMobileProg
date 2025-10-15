@@ -131,55 +131,6 @@ class UserSupabaseHelper {
     }
   }
 
-  // // 🔹 Sign in with email and password
-  // Future<AuthResponse?> signIn(String email, String password) async {
-  //   try {
-  //     final response = await _client.auth.signInWithPassword(
-  //       email: email,
-  //       password: password,
-  //     );
-  //     return response; // contains session + user info
-  //   } on AuthException catch (e) {
-  //     print('Auth error: ${e.message}');
-  //     return null;
-  //   } catch (e) {
-  //     print('Unexpected error: $e');
-  //     return null;
-  //   }
-  // }
-
-  // // 🔹 Sign up a new user
-  // Future<AuthResponse?> signUp(String email, String password, String address, String uname, String pnum) async {
-  //   try {
-  //     final response = await _client.auth.signUp(
-  //       email: email,
-  //       password: password,
-  //     );
-
-  //     if (response.user != null) {
-
-  //       await insert('Users', {
-  //         'email': response.user!.email,
-  //         'password': password,
-  //         'address': address,
-  //         'role': 0,
-  //         'username': uname,
-  //         'phone_number': pnum,
-  //       });
-
-  //     }
-
-  //     return response;
-
-  //   } on AuthException catch (e) {
-  //     print('Auth error: ${e.message}');
-  //     return null;
-  //   } catch (e) {
-  //     print('Unexpected error: $e');
-  //     return null;
-  //   }
-  // }
-
   // 🔹 Sign out the current user
   Future<void> signOut() async {
     try {
@@ -189,11 +140,46 @@ class UserSupabaseHelper {
     }
   }
 
-  // 🔹 Get the current user (if logged in)
-  // User? get currentUser => _client.auth.currentUser;
+  Future<List<Map<String, dynamic>>> getCategs() async {
+    try {
+      print("functname start: getCategs");
+      var query =
+          _client.from("Categories").select().isFilter('deleted_at', null);
+      final response = await query;
+      print("functname: getCategs");
 
-  Future<List<Map<String, dynamic>>> getProducts() async {
-    return await mainhelper.getAll('Products');
+      print(response);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("GetAll error: $e");
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getProductsForUser(
+      String? searchTerm) async {
+    try {
+      var query = _client.from('product_overview').select();
+
+      // If a search term and column are provided, apply a filter
+
+      if (searchTerm != null) {
+        query = query.or('name.ilike.%$searchTerm%,desc.ilike.%$searchTerm%');
+      }
+
+      query = query.not('status', 'eq', 'Inactive');
+
+      final response = await query;
+
+      print("functname: getAll");
+      print(response);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("GetAll error: $e");
+      return [];
+    }
   }
 
   Future<List<Product>> getCart() async {

@@ -1,5 +1,6 @@
+import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/appColors.dart';
-import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/AnalyticsSupabaseHelper.dart';
 import 'package:firebase_nexus/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -8,11 +9,14 @@ import 'package:fl_chart/fl_chart.dart';
 import 'adminTransactionHistory.dart';
 import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
-import 'orderList.dart';
+import 'orderPages/orderList.dart';
+import 'package:provider/provider.dart';
+import '../providers/userProvider.dart';
 import 'profileAdmin.dart';
 import 'analyticsView.dart';
 import 'adminNotifPage.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_nexus/widgets/category_lateral.dart';
 
 // Entry point bootstrapping the admin dashboard module.
 void main() {
@@ -20,6 +24,13 @@ void main() {
 }
 
 // Top-level widget hosting the routed admin experience.
+void handleSaveCategory(Category category) {
+  // Example: print the info
+  print('Saved category: ${category.name}, iconIndex: ${category.iconIndex}');
+
+  // TODO: Save to your database here
+}
+
 class AdminHome extends StatelessWidget {
   const AdminHome({super.key});
 
@@ -40,8 +51,7 @@ class AdminHome extends StatelessWidget {
         '/discounts': (c) => const DiscountListPage(),
         '/analytics': (c) => const AnalyticsVIew(),
         '/transactions': (c) => const adminTransactionHistory(),
-        '/profile': (c) => const AdminProfilePage(),
-        '/adminNotifPage': (context) => const AdminNotifPage(),
+        '/profile': (c) => const ShowProfile(),
       },
       initialRoute: '/',
     );
@@ -126,11 +136,24 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // Simulated logout call followed by UI feedback.
   Future<void> _performLogout() async {
-    // example backend call for logout
-    await BackendService.logout();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logged out (demo)')),
-    );
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+      // Clear user data (shared prefs + provider)
+      await userProvider.clearUser(context);
+
+      // Navigate to actual login route
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/tioLogin', (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -602,7 +625,9 @@ class AdminDrawer extends StatelessWidget {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
     final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
     return InkWell(
-      onTap: () => safeNavigate(context, route),
+      // onTap: () => safeNavigate(context, route),
+      onTap: () => onNavigate(route),
+
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -726,12 +751,12 @@ class AdminDrawer extends StatelessWidget {
                           label: 'Products',
                           route: '/products',
                           highlight: selectedRoute == '/products'),
-                      _navItem(
-                          context: context,
-                          icon: Icons.list_alt,
-                          label: 'Categories',
-                          route: '/categories',
-                          highlight: selectedRoute == '/categories'),
+                      // _navItem(
+                      //     context: context,
+                      //     icon: Icons.list_alt,
+                      //     label: 'Categories',
+                      //     route: '/categories',
+                      //     highlight: selectedRoute == '/categories'),
                       _navItem(
                           context: context,
                           icon: Icons.shopping_cart_outlined,
@@ -808,8 +833,8 @@ class PlaceholderPage extends StatelessWidget {
         title: Text(title),
         backgroundColor: const Color(0xFF5D3510),
       ),
-      body:
-          Center(child: Text('This is the emerut $title page (placeholder).')),
+      body: Center(
+          child: Text('This is the emasdasdaderut $title page (placeholder).')),
     );
   }
 }

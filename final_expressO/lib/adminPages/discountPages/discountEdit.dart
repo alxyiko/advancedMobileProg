@@ -1,26 +1,34 @@
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_nexus/appColors.dart';
+import 'package:intl/intl.dart';
 
 class DiscountEdit extends StatefulWidget {
+  final int id;
   final String code;
-  final String description;
-  final String discountType;
-  final String discountValue;
-  final String usageLimit;
-  final DateTime startDate;
-  final DateTime endDate;
-  final bool isAvailable;
+  final String desc;
+  final String type;
+  final double? flat_amount;
+  final int? rate;
+  final String value;
+  final int usage_limit;
+  final DateTime start_date;
+  final DateTime expiry_date;
+  final bool isActive;
 
   const DiscountEdit({
     super.key,
+    required this.id,
     required this.code,
-    required this.description,
-    required this.discountType,
-    required this.discountValue,
-    required this.usageLimit,
-    required this.startDate,
-    required this.endDate,
-    required this.isAvailable,
+    required this.desc,
+    required this.type,
+    this.rate,
+    this.flat_amount,
+    required this.value,
+    required this.usage_limit,
+    required this.start_date,
+    required this.expiry_date,
+    required this.isActive,
   });
 
   @override
@@ -34,45 +42,148 @@ class _DiscountEditState extends State<DiscountEdit> {
   late TextEditingController _descController;
   late TextEditingController _discountValueController;
   late TextEditingController _usageLimitController;
+  final DateFormat _formatter = DateFormat('yyyy-MM-dd HH:mm');
+  final supabaseHelper = AdminSupabaseHelper();
 
   String? _selectedDiscountType;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isAvailable = true;
+  bool _submitLoading = false;
 
   @override
   void initState() {
     super.initState();
     _codeController = TextEditingController(text: widget.code);
-    _descController = TextEditingController(text: widget.description);
-    _discountValueController =
-        TextEditingController(text: widget.discountValue);
-    _usageLimitController = TextEditingController(text: widget.usageLimit);
+    _descController = TextEditingController(text: widget.desc);
+    _discountValueController = TextEditingController(
+        text: (widget.type == 'percentage' ? widget.rate : widget.flat_amount)
+            .toString());
+    _usageLimitController =
+        TextEditingController(text: widget.usage_limit.toString());
 
-    _selectedDiscountType = widget.discountType;
-    _startDate = widget.startDate;
-    _endDate = widget.endDate;
-    _isAvailable = widget.isAvailable;
+    _selectedDiscountType = widget.type;
+    _startDate = widget.start_date;
+    _endDate = widget.expiry_date;
+    _isAvailable = widget.isActive;
   }
 
-  // date picker helper
   Future<void> _pickDate(BuildContext context, bool isStart) async {
     final now = DateTime.now();
-    final DateTime? picked = await showDatePicker(
+    // Pick the date first
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: isStart ? (_startDate ?? now) : (_endDate ?? now),
-      firstDate: DateTime(2020),
+      initialDate:
+          isStart ? (_startDate ?? now) : (_endDate ?? _startDate ?? now),
+      firstDate: isStart ? DateTime(2020) : (_startDate ?? DateTime(2020)),
       lastDate: DateTime(2100),
     );
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          _startDate = picked;
-        } else {
-          _endDate = picked;
+
+    if (pickedDate == null) return; // user canceled
+
+    // Then pick the time
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(now),
+    );
+
+    if (pickedTime == null) return; // user canceled
+
+    // Combine date + time
+    final DateTime fullDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    // Convert to UTC (for timestampz)
+    final DateTime utcDateTime = fullDateTime.toUtc();
+
+    setState(() {
+      if (isStart) {
+        _startDate = utcDateTime;
+
+        // optional: reset expiry_date if it's before start_date
+        if (_endDate != null && _endDate!.isBefore(utcDateTime)) {
+          _endDate = null;
         }
-      });
+      } else {
+        _endDate = utcDateTime;
+      }
+    });
+
+    // Debug print
+    print(
+        '${isStart ? 'Start' : 'End'} date selected: $utcDateTime'); // ISO format: 2025-10-14T13:25:00Z
+  }
+
+  Future<void> _finalSubmit() async {
+    try {
+      print(
+          '--------------------------------------------------------------------------------------------');
+
+      print(_startDate);
+      print(_endDate);
+
+      // Prepare data map
+      final Map<String, dynamic> updateData = {
+        'type': _selectedDiscountType,
+        'flat_amount': _selectedDiscountType == 'fixed'
+            ? int.parse(_discountValueController.text)
+            : null,
+        'rate': _selectedDiscountType == 'percentage'
+            ? int.parse(_discountValueController.text)
+            : null,
+        'desc': _descController.text,
+        'usage_limit': _usageLimitController.text.isNotEmpty
+            ? int.parse(_usageLimitController.text)
+            : null,
+        'isActive': _isAvailable,
+        'start_date': _startDate?.toUtc().toIso8601String(),
+        'expiry_date': _endDate?.toUtc().toIso8601String(),
+        'code': _codeController.text,
+      };
+      final response = await supabaseHelper.update(
+          "Discounts", "id", widget.id.toString(), updateData);
+
+      print(response);
+      print(response['data']['id']);
+
+      if (response['status'] != 'success') {
+        setState(() {
+          _submitLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Eror happened...."),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setState(() => _submitLoading = false);
+          return;
+        });
+      } else {
+        _confirmSuccess();
+      }
+    } catch (e) {
+      print("Error submitting final submit: $e");
+      setState(() => _submitLoading = false);
     }
+  }
+
+  void _confirmSuccess() {
+    setState(() {
+      _submitLoading = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Discount edited!"),
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pushNamedAndRemoveUntil(context, '/discounts', (r) => false);
   }
 
   InputDecoration inputStyle(String label, IconData icon) {
@@ -129,14 +240,13 @@ class _DiscountEditState extends State<DiscountEdit> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
-          "Edit Discount",
+          "Add Discount",
           style: TextStyle(fontSize: 16, color: Colors.white),
         ),
         centerTitle: true,
@@ -175,7 +285,7 @@ class _DiscountEditState extends State<DiscountEdit> {
                 maxLines: 4,
                 decoration: inputStyle("", Icons.short_text_outlined),
                 validator: (val) =>
-                    val == null || val.isEmpty ? "Enter description" : null,
+                    val == null || val.isEmpty ? "Enter desc" : null,
               ),
               const SizedBox(height: 16),
 
@@ -192,15 +302,11 @@ class _DiscountEditState extends State<DiscountEdit> {
                 items: const [
                   DropdownMenuItem(
                     value: "percentage",
-                    child: Text("Percentage (10% off)"),
+                    child: Text("Percentage (example: 10% off)"),
                   ),
                   DropdownMenuItem(
                     value: "fixed",
-                    child: Text("Fixed amount (\$50 off)"),
-                  ),
-                  DropdownMenuItem(
-                    value: "codeName",
-                    child: Text("Discount Code Name"),
+                    child: Text("Fixed amount (example: \$50 off)"),
                   ),
                 ],
                 onChanged: (value) {
@@ -223,9 +329,31 @@ class _DiscountEditState extends State<DiscountEdit> {
               TextFormField(
                 controller: _discountValueController,
                 keyboardType: TextInputType.number,
-                decoration: inputStyle("", Icons.money_off_csred_outlined),
-                validator: (val) =>
-                    val == null || val.isEmpty ? "Enter discount value" : null,
+                decoration: inputStyle(
+                    "",
+                    _selectedDiscountType == 'percentage'
+                        ? Icons.percent
+                        : Icons.money_off_csred_outlined),
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Enter discount value";
+                  }
+
+                  final value = double.tryParse(val);
+                  if (value == null) {
+                    return "Enter a valid number";
+                  }
+
+                  if (_selectedDiscountType == 'percentage' && value > 100) {
+                    return "Rate discounts can't be over 100%";
+                  }
+
+                  if (value <= 0) {
+                    return "Discount must be greater than zero";
+                  }
+
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
@@ -252,75 +380,68 @@ class _DiscountEditState extends State<DiscountEdit> {
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary)),
               const SizedBox(height: 4),
-              Row(
+
+              Column(
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _pickDate(context, true),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            hintText: "Start Date",
-                            suffixIcon: const Icon(Icons.calendar_today,
-                                color: Colors.brown),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
+                  GestureDetector(
+                    onTap: () => _pickDate(context, true),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: "Start Date & Time",
+                          suffixIcon: const Icon(Icons.calendar_today,
+                              color: Colors.brown),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          controller: TextEditingController(
-                              text: _startDate == null
-                                  ? ""
-                                  : "${_startDate!.toLocal()}".split(' ')[0]),
-                          validator: (val) => val == null || val.isEmpty
-                              ? "Select start date"
-                              : null,
                         ),
+                        controller: TextEditingController(
+                          text: _startDate == null
+                              ? ""
+                              : _formatter.format(_startDate!.toLocal()),
+                        ),
+                        validator: (val) => val == null || val.isEmpty
+                            ? "Select start date"
+                            : null,
                       ),
                     ),
                   ),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text("—"),
+                    padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+                    child: Text("To"),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _pickDate(context, false),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            hintText: "End Date",
-                            suffixIcon: const Icon(Icons.calendar_today,
-                                color: Colors.brown),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
+                  GestureDetector(
+                    onTap: () => _pickDate(context, false),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: "End Date & Time",
+                          suffixIcon: const Icon(Icons.calendar_today,
+                              color: Colors.brown),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          controller: TextEditingController(
-                              text: _endDate == null
-                                  ? ""
-                                  : "${_endDate!.toLocal()}".split(' ')[0]),
-                          validator: (val) => val == null || val.isEmpty
-                              ? "Select end date"
-                              : null,
                         ),
+                        controller: TextEditingController(
+                          text: _endDate == null
+                              ? ""
+                              : _formatter.format(_endDate!.toLocal()),
+                        ),
+                        validator: (val) => val == null || val.isEmpty
+                            ? "Select end date"
+                            : null,
                       ),
                     ),
                   ),
@@ -340,7 +461,7 @@ class _DiscountEditState extends State<DiscountEdit> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      "Available by Default",
+                      "Available",
                       style: TextStyle(
                         fontFamily: 'Quicksand',
                         fontWeight: FontWeight.w600,
@@ -354,8 +475,9 @@ class _DiscountEditState extends State<DiscountEdit> {
                           _isAvailable = val;
                         });
                       },
-                      activeColor: Colors.white,
-                      activeTrackColor: AppColors.primary,
+                      activeColor: Colors.white, // thumb color when ON
+                      activeTrackColor:
+                          AppColors.primary, // track color when ON
                       inactiveThumbColor: Colors.white,
                       inactiveTrackColor: Colors.grey.shade300,
                     ),
@@ -365,7 +487,7 @@ class _DiscountEditState extends State<DiscountEdit> {
 
               const SizedBox(height: 24),
 
-              // Submit Buttons
+              // Submit Button
               Row(
                 children: [
                   // Cancel Button
@@ -373,11 +495,12 @@ class _DiscountEditState extends State<DiscountEdit> {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.secondary,
-                        backgroundColor: Colors.white,
+                        backgroundColor: Colors.white, // <-- white background
                         side: const BorderSide(color: Color(0xFFC8A888)),
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius:
+                              BorderRadius.circular(15), // 15px radius
                         ),
                       ),
                       onPressed: () {
@@ -390,28 +513,41 @@ class _DiscountEditState extends State<DiscountEdit> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Save Button
+                  // Finalize Button
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius:
+                              BorderRadius.circular(15), // 15px radius
                         ),
                       ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Discount updated!")),
-                          );
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text(
-                        "Save Changes",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                      onPressed: _submitLoading
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                setState(() {
+                                  _submitLoading = true;
+                                });
+                                _finalSubmit();
+                              }
+                            },
+                      child: _submitLoading
+                          ? const SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              "Finalize Discount",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16),
+                            ),
                     ),
                   ),
                 ],

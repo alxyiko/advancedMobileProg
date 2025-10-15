@@ -1,8 +1,10 @@
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
+import 'package:firebase_nexus/views/cartView.dart';
+import 'package:firebase_nexus/views/user_OrderPages/orderView.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'admin_homepage.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -77,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AdminHomepage(),
+                                builder: (context) => const DummyOrderPage(),
                               ),
                             );
                           },

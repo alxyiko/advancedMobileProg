@@ -215,26 +215,26 @@ class DiscountViewPage extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiscountEdit(
-                    code: "SAVE10",
-                    description: "10% off on all items",
-                    discountType: "percentage",
-                    discountValue: "10",
-                    usageLimit: "5",
-                    startDate: DateTime.now(),
-                    endDate: DateTime.now().add(const Duration(days: 30)),
-                    isAvailable: true,
-                  ),
-                ),
-              );
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.edit, color: Colors.white),
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => DiscountEdit(
+          //           code: "SAVE10",
+          //           description: "10% off on all items",
+          //           discountType: "percentage",
+          //           discountValue: "10",
+          //           usageLimit: "5",
+          //           startDate: DateTime.now(),
+          //           endDate: DateTime.now().add(const Duration(days: 30)),
+          //           isAvailable: true,
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
         ],
       ),
       body: Padding(

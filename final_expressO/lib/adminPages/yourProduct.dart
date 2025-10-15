@@ -1,7 +1,17 @@
 import 'package:firebase_nexus/adminPages/AddProduct.dart';
+import 'package:firebase_nexus/adminPages/EditProductFlow.dart';
+import 'package:firebase_nexus/adminPages/addProductFlow.dart';
 import 'package:firebase_nexus/adminPages/editProduct.dart';
 import 'package:firebase_nexus/adminPages/viewProduct.dart';
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import 'package:firebase_nexus/widgets/category_lateral.dart';
+
+import './adminHome.dart';
 
 class YourProductPage extends StatefulWidget {
   final String title;
@@ -13,179 +23,29 @@ class YourProductPage extends StatefulWidget {
 
 class _YourProductPageState extends State<YourProductPage> {
   String _selectedCategory = 'All';
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  final List<Map<String, dynamic>> allProducts = [
-    {
-      'name': 'Americano',
-      'desc': 'Strong black coffee made by forcing steam through finely ground coffee beans',
-      'price': '₱ 110.00',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://media.istockphoto.com/id/1430762697/photo/americano-coffee-cup-isolated-on-a-white-background.jpg?s=612x612&w=0&k=20&c=g1bRAshn2DMGDBUUwVr-Bl78TBnNBni8f8ILbK8O87E=',
-      'category': 'Hot Coffee',
-    },
-    {
-      'name': 'Cafe latte',
-      'price': '₱ 120.00',
-      'desc': 'Espresso with steamed milk and a light layer of foam',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://t4.ftcdn.net/jpg/13/19/43/79/360_F_1319437943_nDYiP1Op6yRvFOchgDfE5UurwhxKiqTa.jpg',
-      'category': 'Hot Coffee',
-    },
-    {
-      'name': 'Cappucino',
-      'price': '₱ 125.00',
-      'desc': 'Equal parts espresso, steamed milk, and milk foam',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://static.vecteezy.com/system/resources/previews/006/898/248/non_2x/hot-cappuccino-coffee-in-a-white-cup-isolated-on-white-background-free-photo.jpg',
-      'category': 'Hot Coffee',
-    },
-    {
-      'name': 'Caramel Macchiato',
-      'price': '₱ 130.00',
-      'desc': 'Espresso with vanilla syrup, steamed milk, and caramel drizzle',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://static.wixstatic.com/media/ed1e06_ddc7f75c547b4c7684451a31d2970729~mv2.jpg/v1/fill/w_750,h_500,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ed1e06_ddc7f75c547b4c7684451a31d2970729~mv2.jpg',
-      'category': 'Hot Coffee',
-    },
-    {
-      'name': 'Hot Mocha',
-      'price': '₱ 135.00',
-      'desc': 'Chocolate-flavored coffee with espresso and steamed milk',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://static.vecteezy.com/system/resources/previews/026/553/418/large_2x/peppermint-mocha-in-a-white-cup-isolated-on-white-background-free-photo.jpg',
-      'category': 'Hot Coffee',
-    },
-    {
-      'name': 'Espresso',
-      'price': '₱ 100.00',
-      'desc': 'Concentrated coffee brewed by forcing hot water through finely-ground beans',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://png.pngtree.com/thumb_back/fh260/background/20240722/pngtree-espresso-coffee-isolated-illustration-generative-ai-photo-image_16081220.jpg',
-      'category': 'Hot Coffee',
-    },
-    {
-      'name': 'Iced Americano',
-      'price': '₱ 120.00',
-      'desc': 'Chilled Americano coffee served with ice cubes',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://lh3.googleusercontent.com/ptN4PvpkUuViHmfAYlYuWxicJukzkc8y0NRgZneATzIRe6kFs0xPnbn5kFYmmBkdalTGH8Iwc6xqoFHo0wGnF813EtTqZ_Tf3RVfuM54',
-      'category': 'Iced Coffee',
-    },
-    {
-      'name': 'Iced Cafe Latte',
-      'price': '₱ 125.00',
-      'desc': 'Chilled latte with espresso and cold milk over ice',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://www.shutterstock.com/image-photo/glass-iced-latte-on-white-600nw-2478087601.jpg',
-      'category': 'Iced Coffee',
-    },
-    {
-      'name': 'Iced Cappucino',
-      'price': '₱ 130.00',
-      'desc': 'Cold version of cappuccino with ice and frothed milk',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://thumbs.dreamstime.com/b/iced-cappuccino-coffee-mixed-sweetened-condensed-milk-fresh-milk-topped-creamy-soft-milk-froth-cocoa-powder-196983132.jpg',
-      'category': 'Iced Coffee',
-    },
-    {
-      'name': 'Lemon Tea',
-      'price': '₱ 125.00',
-      'desc': 'Refreshing tea with lemon flavor and citrus notes',
-      'status': 'Inactive',
-      'statusColor': Color(0xFFE0E0E0),
-      'statusTextColor': Color(0xFF757575),
-      'image': 'https://thumbs.dreamstime.com/b/glass-ice-tea-lemon-white-background-fresh-cold-sliced-mint-isolated-34739219.jpg',
-      'category': 'Tea',
-    },
-    {
-      'name': 'Butterfly Pea',
-      'price': '₱ 125.00',
-      'desc': 'Traditional Japanese green tea with a delicate flavor',
-      'status': 'Inactive',
-      'statusColor': Color(0xFFE0E0E0),
-      'statusTextColor': Color(0xFF757575),
-      'image': 'https://www.shutterstock.com/image-vector/butterfly-pea-flower-lemonade-tea-600nw-2210535173.jpg',
-      'category': 'Tea',
-    },
-    {
-      'name': 'Strawberry Milkshake',
-      'price': '₱ 120.00',
-      'desc': 'Creamy milkshake with fresh strawberry flavor',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://t3.ftcdn.net/jpg/09/14/18/00/360_F_914180005_Xartj1IbbxF7wCczzTEHokUelWrXLSJ7.jpg',
-      'category': 'Non-Coffee',
-    },
-    {
-      'name': 'Vanilla Milkshake',
-      'price': '₱ 120.00',
-      'desc': 'Smooth and creamy vanilla flavored milkshake',
-      'status': 'Inactive',
-      'statusColor': Color(0xFFE0E0E0),
-      'statusTextColor': Color(0xFF757575),
-      'image': 'https://st2.depositphotos.com/1817018/7191/i/950/depositphotos_71913083-stock-photo-milk-shakes-vanilla-flavor-with.jpg',
-      'category': 'Non-Coffee',
-    },
-    {
-      'name': 'Croissant',
-      'price': '₱ 120.00',
-      'desc': 'Buttery, flaky pastry with a light texture',
-      'status': 'Inactive',
-      'statusColor': Color(0xFFE0E0E0),
-      'statusTextColor': Color(0xFF757575),
-      'image': 'https://st2.depositphotos.com/1008077/11643/i/950/depositphotos_116438620-stock-photo-croissant-with-white-background.jpg',
-      'category': 'Pastries',
-    },
-    {
-      'name': 'Blueberry Cheesecake',
-      'price': '₱ 210.00',
-      'desc': 'Rich cheesecake with blueberry topping',
-      'status': 'Active',
-      'statusColor': Color(0xFFB6EAC7),
-      'statusTextColor': Color(0xFF2E7D32),
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQP7AlY1xuzv-cFAVgDYPKPHK3KWK2R7hLapA&s',
-      'category': 'Pastries',
-    },
-  ];
+  int _selectedIconIndex = 0;
+  final TextEditingController _categoryNameController = TextEditingController();
 
-  final categories = [
-    'All',
-    'Hot Coffee',
-    'Iced Coffee',
-    'Tea',
-    'Non-Coffee',
-    'Pastries'
-  ];
+  final supabaseHelper = AdminSupabaseHelper();
+  bool _loading = true;
+  final List<String> _categories = ['All'];
+  List<Map<String, dynamic>> _products = [];
+  final FocusNode _searchFocusNode = FocusNode();
 
   List<Map<String, dynamic>> get filteredProducts {
-    List<Map<String, dynamic>> filtered = allProducts;
-    
+    List<Map<String, dynamic>> filtered = _products;
+
     // Apply category filter
     if (_selectedCategory != 'All') {
-      filtered = filtered.where((product) => product['category'] == _selectedCategory).toList();
+      filtered = filtered
+          .where((product) => product['category_name'] == _selectedCategory)
+          .toList();
     }
-    
+
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((product) {
@@ -195,142 +55,241 @@ class _YourProductPageState extends State<YourProductPage> {
         return name.contains(query) || desc.contains(query);
       }).toList();
     }
-    
+
     return filtered;
   }
 
   @override
   void initState() {
     super.initState();
+    print('STARTING INIT STATE');
+    _loadInitialData();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text;
       });
     });
+
+    _searchFocusNode.addListener(() {
+      if (!_searchFocusNode.hasFocus) {
+        // Trigger search when focus is lost
+        // basically when the user stops typing and closes the keyboard
+        _performSearch();
+      }
+    });
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      print('STARTED');
+
+      final categories = await supabaseHelper.getAll("Categories", null, null);
+      final products =
+          await supabaseHelper.getAll("product_overview", null, null);
+      if (categories.isNotEmpty) {
+        print('Categoried loaded!');
+        print(categories);
+      }
+
+      if (products.isNotEmpty) {
+        print('products loaded!');
+        print(products);
+      }
+      // _categories = categories;
+
+      setState(() {
+        _loading = false;
+        _categories.addAll(categories.map((e) => e['name'] as String).toList());
+        _products = products;
+      });
+    } catch (e) {
+      print("Error fetching categories: $e");
+      setState(() => _loading = false);
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
+  Future<void> _performSearch() async {
+    setState(() => _loading = true);
+
+    try {
+      final products = await supabaseHelper.getAll(
+        "product_overview",
+        _searchQuery.isNotEmpty ? _searchQuery : null,
+        _searchQuery.isNotEmpty
+            ? "name"
+            : null, // 🔍 column to search (you can change this)
+      );
+
+      setState(() {
+        _products = products;
+        _loading = false;
+      });
+    } catch (e) {
+      print("Search error: $e");
+      setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // 🔶 LOADING OVERLAY
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F6ED),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4B2E19),
+        backgroundColor: const Color(0xFF38241D),
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        toolbarHeight: 68, // slightly taller for breathing room
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: const Text(
-          'Your Products',
+          'Products',
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.list, color: Colors.white),
-            onPressed: () {},
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              // onTap: () => _showCategoriesPanel(context),
+              onTap: () => showCategoryLateral(context, handleSaveCategory),
+              child: const Icon(
+                Icons.sort_by_alpha,
+                size: 24,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
-      ),
-      body: Column(
-        children: [
-          Container(
-            color: const Color(0xFF4B2E19),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
+
+        // Search bar + category chips below AppBar
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(120),
+          child: Container(
+            color: const Color(0xFF38241D),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFF6B4F2A),
-                      hintText: 'Search here...',
-                      hintStyle: const TextStyle(color: Colors.white70),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                // 🔍 Search bar + filter
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFF503228),
+                            hintText: 'Search here...',
+                            hintStyle: const TextStyle(color: Colors.white70),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.white70,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                        ), 
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFB84C),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.filter_alt_outlined,
-                        color: Color(0xFF4B2E19)),
-                    onPressed: () {},
+
+                const SizedBox(height: 15),
+
+                // 🏷️ Category list
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: _categories.map((cat) {
+                      final isSelected = cat == _selectedCategory;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedCategory = cat),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          child: Column(
+                            children: [
+                              Text(
+                                cat,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFFE27D19)
+                                      : Colors.white,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              if (isSelected)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  height: 3,
+                                  width: 24,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE27D19),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            color: const Color(0xFF4B2E19),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: categories.map((cat) {
-                  final isSelected = cat == _selectedCategory;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = cat;
-                      });
-                    },
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Column(
-                        children: [
-                          Text(
-                            cat,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFFB84C)
-                                  : Colors.white,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                          if (isSelected)
-                            Container(
-                              margin: const EdgeInsets.only(top: 4),
-                              height: 3,
-                              width: 24,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFB84C),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
+        ),
+      ),
+      drawer: AdminDrawer(
+        profileFuture: fetchUserProfile(), // <-- your future method
+
+        selectedRoute: "/products", // mark this as active/highlighted
+        onNavigate: (route) {
+          Navigator.pushNamed(context, route);
+        },
+      ),
+      body: Column(
+        children: [
           Expanded(
             child: filteredProducts.isEmpty
                 ? Center(
@@ -363,8 +322,8 @@ class _YourProductPageState extends State<YourProductPage> {
                     ),
                   )
                 : ListView.builder(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     itemCount: filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = filteredProducts[index];
@@ -374,7 +333,8 @@ class _YourProductPageState extends State<YourProductPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ViewProductPage(productData: product),
+                              builder: (context) =>
+                                  ViewProductPage(productData: product),
                             ),
                           );
                         },
@@ -398,7 +358,7 @@ class _YourProductPageState extends State<YourProductPage> {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: Image.network(
-                                    product['image'] as String,
+                                    product['img'] ?? '',
                                     width: 80,
                                     height: 80,
                                     fit: BoxFit.cover,
@@ -415,13 +375,16 @@ class _YourProductPageState extends State<YourProductPage> {
                               ),
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Price - not bold, normal weight
                                       Text(
-                                        product['price'] as String,
+                                        "Php ${product['lowest_price'].toString()}",
+                                        // product['price'] as String,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.normal,
                                           color: Color(0xFF4B2E19),
@@ -445,13 +408,18 @@ class _YourProductPageState extends State<YourProductPage> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: product['statusColor'] as Color,
-                                              borderRadius: BorderRadius.circular(8),
+                                              color: getStatColor(
+                                                      product['status'])[
+                                                  'labelColor'],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               product['status'] as String,
                                               style: TextStyle(
-                                                color: product['statusTextColor'] as Color,
+                                                color: getStatColor(
+                                                        product['status'])[
+                                                    'textColor'],
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -490,7 +458,9 @@ class _YourProductPageState extends State<YourProductPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => EditProduct(productData: product),
+                                        builder: (context) => Editproductflow(
+                                          productID: product['id'],
+                                        ),
                                       ),
                                     );
                                   },
@@ -506,13 +476,13 @@ class _YourProductPageState extends State<YourProductPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFFFB84C),
+        backgroundColor: const Color(0xFFE27D19),
         child: const Icon(Icons.add, color: Colors.white, size: 32),
         onPressed: () {
           // Navigate to the AddProduct screen
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddProduct()),
+            MaterialPageRoute(builder: (context) => const AddProductFlow()),
           );
         },
       ),

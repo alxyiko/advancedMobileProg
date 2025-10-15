@@ -1,23 +1,23 @@
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:flutter/material.dart';
 
-class ViewProductPage extends StatefulWidget {
+class UserViewProductPage extends StatefulWidget {
   final Map<String, dynamic> productData;
 
-  const ViewProductPage({Key? key, required this.productData})
+  const UserViewProductPage({Key? key, required this.productData})
       : super(key: key);
 
   @override
-  State<ViewProductPage> createState() => _ViewProductPageState();
+  State<UserViewProductPage> createState() => _UserViewProductPageState();
 }
 
-class _ViewProductPageState extends State<ViewProductPage> {
+class _UserViewProductPageState extends State<UserViewProductPage> {
   Map<String, dynamic>? _selectedVariation;
 
   @override
   void initState() {
-    print(widget.productData);
     super.initState();
+    print(widget.productData);
   }
 
   @override
@@ -114,47 +114,6 @@ class _ViewProductPageState extends State<ViewProductPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Price and Status Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _selectedVariation != null
-                                ? '₱${_selectedVariation!['price']}'
-                                : '₱${productData['lowest_price'] ?? '--'}',
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF4B2E19),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: getStatColor(
-                                      productData['status'])['labelColor'] ??
-                                  Color(0xFFE0E0E0),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: getStatColor(
-                                        productData['status'])['textColor'] ??
-                                    Color(0xFF757575),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              productData['status'] as String,
-                              style: TextStyle(
-                                color: getStatColor(
-                                        productData['status'])['textColor'] ??
-                                    Color(0xFF757575),
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
 
                       const SizedBox(height: 16),
 
@@ -222,34 +181,13 @@ class _ViewProductPageState extends State<ViewProductPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Stock
-                          RichText(
-                            text: TextSpan(
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Color(0xFF4B2E19),
-                                fontWeight: FontWeight.w600,
-                              ),
-                              children: [
-                                const TextSpan(text: 'Stock  '),
-                                TextSpan(
-                                  text: productData['stock']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
                           const SizedBox(height: 16),
 
                           // Variations as Chips
                           const Text(
-                            'Available Sizes',
+                            'Size',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF4B2E19),
                             ),
@@ -281,6 +219,29 @@ class _ViewProductPageState extends State<ViewProductPage> {
                                     const Color(0xFF4B2E19).withOpacity(0.05),
                               );
                             }).toList(),
+                          ),
+                          const Text(
+                            'Price',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4B2E19),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _selectedVariation != null
+                                    ? '₱${_selectedVariation!['price']}'
+                                    : '₱${productData['lowest_price'] ?? '--'}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF4B2E19),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

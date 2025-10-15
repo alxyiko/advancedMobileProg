@@ -329,6 +329,7 @@ class _NeilCartState extends State<NeilCart> {
                         MaterialPageRoute(
                           builder: (_) => UserViewProductPage(
                             productData: {
+                              'id': product['id'],
                               'name': name,
                               'lowest_price': price,
                               'img': imageUrl,

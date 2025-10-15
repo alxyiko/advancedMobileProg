@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
+import 'package:firebase_nexus/models/supabaseProduct.dart';
 import 'package:flutter/material.dart';
 
 class UserViewProductPage extends StatefulWidget {
@@ -14,11 +18,89 @@ class UserViewProductPage extends StatefulWidget {
 class _UserViewProductPageState extends State<UserViewProductPage> {
   Map<String, dynamic>? _selectedVariation;
   final _quantityController = TextEditingController();
+  SQLFliteDatabaseHelper sqlFliteDatabaseHelper = SQLFliteDatabaseHelper();
+  // late SupabaseProduct supaprod;
+  late File? file;
 
   @override
   void initState() {
     super.initState();
+    print('widget.productData');
     print(widget.productData);
+    setState(() {
+      _quantityController.text = '1';
+    });
+    // sqlFliteDatabaseHelper.resetDatabase();
+    // _getFile();
+  }
+
+  // void _getFile() async {
+  //   try {
+  //     File? fetched = await fileFromSupabase(widget.productData['img']);
+  //     setState(() {
+  //       file = fetched;
+  //     });
+  //   } catch (e) {
+  //     print("Error $e");
+  //   }
+  // }
+
+  void _storeToCart() async {
+    final quant = int.tryParse(_quantityController.text) ?? 1;
+    final name = widget.productData['name'];
+    final variationName = _selectedVariation?["name"] ?? '';
+    final product = SupabaseProduct(
+      prodId: widget.productData['id'],
+      name: name,
+      category: widget.productData['category_name'],
+      quantity: quant,
+      variation: _selectedVariation!['name'],
+      price: _selectedVariation!['price'],
+      img: widget.productData['img'],
+    );
+
+    final result = await sqlFliteDatabaseHelper.insertCart('cart', product);
+    final isSuccess = result['success'] == true;
+
+    _showSnackBar(
+      icon: isSuccess ? Icons.check : Icons.error,
+      iconColor: isSuccess ? const Color(0xFFE27D19) : Colors.red,
+      message: isSuccess
+          ? '$quant $variationName $name${quant > 1 ? 's' : ''} added to cart!'
+          : 'There was a problem on our end, please try again later!',
+    );
+  }
+
+  void _showSnackBar({
+    required IconData icon,
+    required Color iconColor,
+    required String message,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.white,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 80, vertical: 300),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: iconColor, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -349,76 +431,51 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () {
-                              final stock = productData['stock'] ?? 0;
-                              final inputText = _quantityController.text;
-                              final inputQuantity =
-                                  int.tryParse(inputText) ?? 0;
-                              final name = productData['name'] ?? 'Product';
+                            onPressed: _selectedVariation == null
+                                ? null
+                                : () async {
+                                    final stock = productData['stock'] ?? 0;
+                                    final inputText = _quantityController.text;
+                                    final inputQuantity =
+                                        int.tryParse(inputText) ?? 0;
+                                    final name =
+                                        productData['name'] ?? 'Product';
 
-                              print(inputQuantity);
-                              print(inputText);
+                                    print(inputQuantity);
+                                    print(inputText);
 
-                              if (inputQuantity <= 0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Please enter a valid quantity.'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              if (inputQuantity > stock) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Not enough stock available.'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              // TODO: Insert your add-to-cart logic here
-                              // e.g. LocalDatabaseHelper.addToCart(productData, inputQuantity);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  duration: const Duration(seconds: 2),
-                                  backgroundColor: Colors.white,
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 80,
-                                    vertical: 300,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.check,
-                                          color: Color(0xFFE27D19), size: 28),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        '$inputQuantity ${_selectedVariation?["name"]} $name${inputQuantity > 1 ? '(s)' : ''}  added to cart!',
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                    if (inputQuantity <= 0) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Please enter a valid quantity.'),
+                                          duration: Duration(seconds: 2),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
+                                      );
+                                      return;
+                                    }
 
-                              setState(() {
-                                _quantityController.text = '1';
-                              });
-                            },
+                                    if (inputQuantity > stock) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Not enough stock available.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    // TODO: Insert your add-to-cart logic here
+                                    // e.g. LocalDatabaseHelper.addToCart(productData, inputQuantity);
+                                    _storeToCart();
+
+                                    setState(() {
+                                      _quantityController.text = '1';
+                                    });
+                                  },
                             child: const Text(
                               'Add to Cart',
                               style: TextStyle(fontWeight: FontWeight.bold),

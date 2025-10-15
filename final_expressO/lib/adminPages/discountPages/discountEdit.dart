@@ -246,7 +246,7 @@ class _DiscountEditState extends State<DiscountEdit> {
         backgroundColor: AppColors.secondary,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
-          "Add Discount",
+          "Edit Discount",
           style: TextStyle(fontSize: 16, color: Colors.white),
         ),
         centerTitle: true,

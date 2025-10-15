@@ -1,7 +1,7 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/adminPages/dummyCart.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
-import 'package:firebase_nexus/views/cartView.dart';
+import 'package:firebase_nexus/views/UserProducts.dart';
 import 'package:firebase_nexus/views/checkout_user.dart';
 import 'package:firebase_nexus/views/dummyCart.dart';
 import 'package:firebase_nexus/views/dummyCartSupa.dart';

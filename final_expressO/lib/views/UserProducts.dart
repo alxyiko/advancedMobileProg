@@ -232,20 +232,6 @@ class _NeilCartState extends State<NeilCart> {
                         ),
                       ),
                     ),
-                    // const SizedBox(width: 10),
-                    // Container(
-                    //   height: 48,
-                    //   width: 48,
-                    //   decoration: BoxDecoration(
-                    //     color: const Color(0xFFE27D19),
-                    //     borderRadius: BorderRadius.circular(8),
-                    //   ),
-                    //   child: IconButton(
-                    //     icon: const Icon(Icons.filter_list,
-                    //         color: Color(0xFF603B17)),
-                    //     onPressed: () {},
-                    //   ),
-                    // ),
                   ],
                 ),
 
@@ -325,6 +311,7 @@ class _NeilCartState extends State<NeilCart> {
               itemCount: filteredProducts.length,
               itemBuilder: (context, index) {
                 final product = filteredProducts[index];
+                final variations = product['variations'] ?? 'Unknown';
                 final name = product['name'] ?? 'Unknown';
                 final price = product['lowest_price']?.toString() ?? 'N/A';
                 final imageUrl =
@@ -345,11 +332,11 @@ class _NeilCartState extends State<NeilCart> {
                               'name': name,
                               'lowest_price': price,
                               'img': imageUrl,
-                              'status': 'Processing',
-                              'desc': 'A delicious coffee for testing.',
-                              'category_name': 'Coffee',
-                              'stock': 10,
-                              'variations': [],
+                              'status': product['status'],
+                              'desc': product['desc'],
+                              'category_name': product['category_name'],
+                              'stock': product['stock'],
+                              'variations': variations,
                             },
                           ),
                         ),

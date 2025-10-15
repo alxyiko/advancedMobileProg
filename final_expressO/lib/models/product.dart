@@ -1,12 +1,18 @@
+import 'dart:io';
+
 class Product {
   final int? id;
   final String name;
+  final File? img;
+  final Map<String, num>? variation;
   final double price;
   final int quantity;
 
   Product({
     this.id,
     required this.name,
+    this.img,
+    this.variation,
     required this.price,
     required this.quantity,
   });

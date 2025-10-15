@@ -13,6 +13,7 @@ class UserViewProductPage extends StatefulWidget {
 
 class _UserViewProductPageState extends State<UserViewProductPage> {
   Map<String, dynamic>? _selectedVariation;
+  final _quantityController = TextEditingController();
 
   @override
   void initState() {
@@ -242,6 +243,133 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                                 ),
                               ),
                             ],
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+// Quantity Input + Add to Cart Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Quantity Input
+                          Expanded(
+                            child: TextFormField(
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Quantity',
+                                labelStyle:
+                                    const TextStyle(color: Color(0xFF4B2E19)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFF4B2E19)),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                suffixText: '/ ${productData['stock']}',
+                              ),
+                              onChanged: (val) {
+                                final value = int.tryParse(val) ?? 0;
+                                if (value > (productData['stock'] ?? 0)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Quantity exceeds available stock.'),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              },
+                              controller: _quantityController,
+                            ),
+                          ),
+
+                          const SizedBox(width: 16),
+
+                          // Add to Cart Button
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE27D19),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              final stock = productData['stock'] ?? 0;
+                              final inputText = _quantityController.text;
+                              final inputQuantity =
+                                  int.tryParse(inputText) ?? 0;
+                              final name = productData['name'] ?? 'Product';
+
+                              print(inputQuantity);
+                              print(inputText);
+
+                              if (inputQuantity <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Please enter a valid quantity.'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              if (inputQuantity > stock) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Not enough stock available.'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              // TODO: Insert your add-to-cart logic here
+                              // e.g. LocalDatabaseHelper.addToCart(productData, inputQuantity);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  duration: const Duration(seconds: 2),
+                                  backgroundColor: Colors.white,
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 80,
+                                    vertical: 300,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.check,
+                                          color: Color(0xFFE27D19), size: 28),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        '$inputQuantity ${_selectedVariation?["name"]} $name${inputQuantity > 1 ? '(s)' : ''}  added to cart!',
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Add to Cart',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),

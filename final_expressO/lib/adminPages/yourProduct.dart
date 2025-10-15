@@ -5,6 +5,7 @@ import 'package:firebase_nexus/adminPages/editProduct.dart';
 import 'package:firebase_nexus/adminPages/viewProduct.dart';
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
+import 'package:firebase_nexus/widgets/delete_modal.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -225,7 +226,7 @@ class _YourProductPageState extends State<YourProductPage> {
                             ),
                           ),
                           style: const TextStyle(color: Colors.white),
-                        ), 
+                        ),
                       ),
                     ),
                   ],
@@ -447,23 +448,75 @@ class _YourProductPageState extends State<YourProductPage> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    color: Color(0xFF4B2E19),
-                                    size: 24,
-                                  ),
-                                  onPressed: () {
-                                    // Navigate to EditProduct screen with product data
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Editproductflow(
-                                          productID: product['id'],
-                                        ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    // ✏️ Edit button
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        color: Color(0xFF4B2E19),
+                                        size: 24,
                                       ),
-                                    );
-                                  },
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => EditProduct(
+                                                productData: product),
+                                          ),
+                                        );
+                                      },
+                                    ),
+
+                                    // 🗑️ Delete button
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.redAccent,
+                                        size: 24,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => DeleteModal(
+                                            title: 'Delete Product',
+                                            message:
+                                                'Are you sure you want to delete this product?',
+                                            onConfirm: () async {
+                                              // 🧹 Delete logic here
+                                              // await deleteProduct(product['id']);
+
+                                              // ✅ Floating snackbar confirmation
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: const Text(
+                                                    'Order deleted',
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                  backgroundColor:
+                                                      Colors.redAccent,
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
+                                                  margin:
+                                                      const EdgeInsets.all(16),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                  duration: const Duration(
+                                                      seconds: 2),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  ],
                                 ),
                               ),
                             ],

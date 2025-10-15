@@ -132,17 +132,20 @@ class _AddProductStep1State extends State<AddProductStep1> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBrown,
+        backgroundColor: const Color(0xFF38241D),
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        toolbarHeight: 68, // slightly taller for breathing room
+        elevation: 0,
         title: Text(
           _editMode ? "Edit Product" : "Add Product",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
             color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
           ),
         ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -444,14 +447,19 @@ class _AddProductStep2State extends State<AddProductStep2> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primaryBrown,
-        title: Text(
-          _editMode ? "Edit Product" : "Add Product",
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
-        ),
-        centerTitle: true,
+        backgroundColor: const Color(0xFF38241D),
         iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        toolbarHeight: 68, // slightly taller for breathing room
+        elevation: 0,
+        title: Text(
+          _editMode ? "Edits Product" : "Adds Product",
+          style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Quicksand',
+              fontSize: 16,
+              color: Colors.white),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

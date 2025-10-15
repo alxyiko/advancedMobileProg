@@ -156,7 +156,7 @@ class DiscountCard extends StatelessWidget {
                   children: [
                     StatusBadge(status: status),
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.white),
+                      icon: const Icon(Icons.edit, color: Color(0xFF2c1d16)),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -244,7 +244,7 @@ class _DiscountListPageState extends State<DiscountListPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.secondary,
-        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         title: const Text(
           "Discount Codes",
           style: TextStyle(

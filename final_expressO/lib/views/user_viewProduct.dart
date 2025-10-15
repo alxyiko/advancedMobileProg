@@ -27,6 +27,9 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
     super.initState();
     print('widget.productData');
     print(widget.productData);
+    setState(() {
+      _quantityController.text = '1';
+    });
     // sqlFliteDatabaseHelper.resetDatabase();
     // _getFile();
   }
@@ -428,46 +431,51 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () async {
-                              final stock = productData['stock'] ?? 0;
-                              final inputText = _quantityController.text;
-                              final inputQuantity =
-                                  int.tryParse(inputText) ?? 0;
-                              final name = productData['name'] ?? 'Product';
+                            onPressed: _selectedVariation == null
+                                ? null
+                                : () async {
+                                    final stock = productData['stock'] ?? 0;
+                                    final inputText = _quantityController.text;
+                                    final inputQuantity =
+                                        int.tryParse(inputText) ?? 0;
+                                    final name =
+                                        productData['name'] ?? 'Product';
 
-                              print(inputQuantity);
-                              print(inputText);
+                                    print(inputQuantity);
+                                    print(inputText);
 
-                              if (inputQuantity <= 0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Please enter a valid quantity.'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                                return;
-                              }
+                                    if (inputQuantity <= 0) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Please enter a valid quantity.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
 
-                              if (inputQuantity > stock) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Not enough stock available.'),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                                return;
-                              }
+                                    if (inputQuantity > stock) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Not enough stock available.'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
 
-                              // TODO: Insert your add-to-cart logic here
-                              // e.g. LocalDatabaseHelper.addToCart(productData, inputQuantity);
-                              _storeToCart();
+                                    // TODO: Insert your add-to-cart logic here
+                                    // e.g. LocalDatabaseHelper.addToCart(productData, inputQuantity);
+                                    _storeToCart();
 
-                              setState(() {
-                                _quantityController.text = '1';
-                              });
-                            },
+                                    setState(() {
+                                      _quantityController.text = '1';
+                                    });
+                                  },
                             child: const Text(
                               'Add to Cart',
                               style: TextStyle(fontWeight: FontWeight.bold),

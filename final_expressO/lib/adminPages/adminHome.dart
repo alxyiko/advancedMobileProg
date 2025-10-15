@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/appColors.dart';
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -9,11 +10,16 @@ import 'yourProduct.dart';
 import 'discountPages/discountList.dart';
 import 'orderList.dart';
 import 'profileAdmin.dart';
+import 'analyticsView.dart';
+import 'adminNotifPage.dart';
+import 'package:intl/intl.dart';
 
+// Entry point bootstrapping the admin dashboard module.
 void main() {
   runApp(const AdminHome());
 }
 
+// Top-level widget hosting the routed admin experience.
 class AdminHome extends StatelessWidget {
   const AdminHome({super.key});
 
@@ -34,13 +40,15 @@ class AdminHome extends StatelessWidget {
         '/discounts': (c) => const DiscountListPage(),
         '/analytics': (c) => const AnalyticsVIew(),
         '/transactions': (c) => const adminTransactionHistory(),
-         '/profile': (c) => const AdminProfilePage(), 
+        '/profile': (c) => const AdminProfilePage(),
+        '/adminNotifPage': (context) => const AdminNotifPage(),
       },
       initialRoute: '/',
     );
   }
 }
 
+// Simulated profile/logout endpoints for the drawer header.
 class BackendService {
   static Future<UserProfile> getProfile() async {
     await Future.delayed(const Duration(milliseconds: 300));
@@ -57,6 +65,7 @@ class BackendService {
   }
 }
 
+// Simple immutable profile container used by the drawer.
 class UserProfile {
   final String displayName;
   final String email;
@@ -65,107 +74,7 @@ class UserProfile {
   UserProfile({required this.displayName, required this.email, this.avatarUrl});
 }
 
-//donut models
-class DonutSegment {
-  final String label;
-  final double value;
-  final Color color;
-
-  DonutSegment({required this.label, required this.value, required this.color});
-
-  factory DonutSegment.fromJson(Map<String, dynamic> json) {
-    return DonutSegment(
-      label: json['label'] as String,
-      value: (json['value'] as num).toDouble(),
-      color: Color(int.parse(json['color'] ?? '0xFFF6A048')),
-    );
-  }
-}
-
-class StatsOverview {
-  final double totalSales;
-  final int totalCustomers;
-
-  StatsOverview({required this.totalSales, required this.totalCustomers});
-
-  factory StatsOverview.fromJson(Map<String, dynamic> json) => StatsOverview(
-        totalSales: (json['totalSales'] as num).toDouble(),
-        totalCustomers: (json['totalCustomers'] as num).toInt(),
-      );
-}
-
-class PendingOrder {
-  final String id;
-  final String name;
-  final String itemsSummary;
-  final double price;
-
-  PendingOrder(
-      {required this.id,
-      required this.name,
-      required this.itemsSummary,
-      required this.price});
-
-  factory PendingOrder.fromJson(Map<String, dynamic> json) => PendingOrder(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        itemsSummary: json['itemsSummary'] as String,
-        price: (json['price'] as num).toDouble(),
-      );
-}
-
-class DashboardData {
-  final List<DonutSegment> donutSegments;
-  final int totalOrders;
-  final StatsOverview stats;
-  final List<PendingOrder> pendingOrders;
-
-  DashboardData(
-      {required this.donutSegments,
-      required this.totalOrders,
-      required this.stats,
-      required this.pendingOrders});
-
-  factory DashboardData.fromJson(Map<String, dynamic> json) {
-    final donut = (json['donut'] as List<dynamic>)
-        .map((e) => DonutSegment.fromJson(e as Map<String, dynamic>))
-        .toList();
-    final stats = StatsOverview.fromJson(json['stats'] as Map<String, dynamic>);
-    final pending = (json['pendingOrders'] as List<dynamic>)
-        .map((e) => PendingOrder.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return DashboardData(
-        donutSegments: donut,
-        totalOrders: (json['totalOrders'] as num).toInt(),
-        stats: stats,
-        pendingOrders: pending);
-  }
-}
-
-class DummyData {
-  static const _sampleJson = '''
-  {
-    "donut": [
-      {"label": "Coffee", "value": 55, "color": "0xFFF09425"},
-      {"label": "Pastry", "value": 25, "color": "0xFFF6B57D"},
-      {"label": "Others", "value": 20, "color": "0xFF8E4B0E"}
-    ],
-    "totalOrders": 65,
-    "stats": {"totalSales": 2500, "totalCustomers": 70},
-    "pendingOrders": [
-      {"id": "ORD123", "name": "Ruel GG", "itemsSummary": "Matcha Latte, Chocolate Croissant", "price": 240},
-      {"id": "ORD124", "name": "Anna Cruz", "itemsSummary": "Americano", "price": 120}
-    ]
-  }
-  ''';
-
-  static Future<DashboardData> fetchDashboard() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    final parsed = json.decode(_sampleJson) as Map<String, dynamic>;
-    return DashboardData.fromJson(parsed);
-  }
-}
-
+// Stateful screen that loads analytics + pending orders from Supabase.
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -174,21 +83,34 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  late Future<DashboardData> _dashboardFuture;
+  final AdminSupabaseHelper _helper = AdminSupabaseHelper();
+  final NumberFormat _currencyFormat =
+      NumberFormat.currency(locale: 'en_PH', symbol: '₱');
+  late Future<_DashboardSnapshot> _dashboardFuture;
   late Future<UserProfile> _profileFuture;
   String _currentRoute = '/';
 
   @override
   void initState() {
+    // Prepare profile + analytics fetches.
     super.initState();
     _loadData();
     _profileFuture = BackendService.getProfile();
   }
 
+  // Triggers a fresh Supabase pull for analytics and pending orders.
   void _loadData() {
-    _dashboardFuture = DummyData.fetchDashboard();
+    _dashboardFuture = _fetchDashboard();
   }
 
+  // Aggregates analytics snapshot plus filtered “For Approval” orders.
+  Future<_DashboardSnapshot> _fetchDashboard() async {
+    final analytics = await _helper.fetchAnalyticsReport();
+    final pending = await _helper.fetchPendingOrdersForApproval();
+    return _DashboardSnapshot(analytics: analytics, pending: pending);
+  }
+
+  // Drawer navigation helper (handles logout as a special route).
   void _onNavigate(String route) {
     // close drawer then navigate
     Navigator.of(context).pop();
@@ -202,6 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // Simulated logout call followed by UI feedback.
   Future<void> _performLogout() async {
     // example backend call for logout
     await BackendService.logout();
@@ -212,6 +135,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Shell containing drawer + analytics body.
     const safePadding = 16.0;
     return Scaffold(
       // attach a Drawer
@@ -223,7 +147,7 @@ class _DashboardPageState extends State<DashboardPage> {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: safePadding),
-          child: FutureBuilder<DashboardData>(
+          child: FutureBuilder<_DashboardSnapshot>(
             future: _dashboardFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -232,8 +156,8 @@ class _DashboardPageState extends State<DashboardPage> {
               if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
-              final data = snapshot.data!;
-
+              final analytics = snapshot.data!.analytics;
+              final pendingOrders = snapshot.data!.pending;
               return SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,13 +165,13 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 12),
                     _buildTopBar(),
                     const SizedBox(height: 12),
-                    _buildDonutCard(data),
+                    _buildDonutCard(analytics),
                     const SizedBox(height: 16),
                     _buildShortcutsRow(),
                     const SizedBox(height: 18),
-                    _buildStatisticsOverview(data),
+                    _buildStatisticsOverview(analytics),
                     const SizedBox(height: 18),
-                    _buildPendingOrders(data),
+                    _buildPendingOrders(pendingOrders),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -259,6 +183,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // Header row with menu button, greeting, and avatar.
   Widget _buildTopBar() {
     return Row(
       children: [
@@ -271,21 +196,76 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }),
         const SizedBox(width: 6),
-        const Text('Hello, Admin',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        const Text(
+          'Hello, Admin',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
         const Spacer(),
+        IconButton(
+          icon: const Icon(Icons.notifications_none_rounded),
+          onPressed: () {
+            Navigator.pushNamed(context, '/adminNotifPage');
+          },
+        ),
         const CircleAvatar(
           radius: 18,
           backgroundColor: Color(0xFFF08F2A),
-          child: Text('AD',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: Text(
+            'AD',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildDonutCard(DashboardData data) {
+  // Renders category-based donut chart using analytics totals.
+  Widget _buildDonutCard(AdminAnalyticsReport analytics) {
+    final stats = analytics.categoryStats;
+    final palette = [
+      const Color(0xFFE27D19),
+      const Color(0xFFFFAF5F),
+      const Color(0xFFB35900),
+      const Color(0xFFE7B188),
+      const Color(0xFF8E5A2C),
+      const Color(0xFF6F3A12),
+    ];
+
+    final sections = stats.isEmpty
+        ? [
+            PieChartSectionData(
+              value: 1,
+              radius: 46,
+              showTitle: false,
+              color: Colors.grey.shade300,
+            )
+          ]
+        : List.generate(stats.length, (index) {
+            final stat = stats[index];
+            return PieChartSectionData(
+              value: stat.itemCount.toDouble(),
+              radius: 46,
+              showTitle: false,
+              color: palette[index % palette.length],
+            );
+          });
+
+    final legendEntries = stats.isEmpty
+        ? <_LegendEntry>[_LegendEntry('No data', Colors.grey.shade300)]
+        : List.generate(stats.length, (index) {
+            final stat = stats[index];
+            final label = stat.categoryName?.isNotEmpty == true
+                ? stat.categoryName!
+                : 'Category ${stat.categoryId}';
+            return _LegendEntry(
+              '$label (${stat.itemCount})',
+              palette[index % palette.length],
+            );
+          });
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       elevation: 6,
@@ -298,7 +278,9 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Center(child: _buildDonutChart(data)),
+                    child: Center(
+                        child:
+                            _buildDonutChart(analytics.totalOrders, sections)),
                   ),
                 ],
               ),
@@ -306,8 +288,8 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: data.donutSegments
-                  .map((seg) => _buildLegendItem(seg))
+              children: legendEntries
+                  .map((entry) => _buildLegendItem(entry))
                   .toList(),
             )
           ],
@@ -316,25 +298,29 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildLegendItem(DonutSegment seg) {
+  // Legend chip helper for donut categories.
+  Widget _buildLegendItem(_LegendEntry entry) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Row(
         children: [
           Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                  color: seg.color, borderRadius: BorderRadius.circular(3))),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: entry.color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
           const SizedBox(width: 6),
-          Text(seg.label, style: const TextStyle(fontSize: 13)),
+          Text(entry.label, style: const TextStyle(fontSize: 13)),
         ],
       ),
     );
   }
 
-  Widget _buildDonutChart(DashboardData data) {
-    final total = data.donutSegments.fold<double>(0.0, (p, e) => p + e.value);
+  // Pie chart widget showing total completed orders in the center.
+  Widget _buildDonutChart(int totalOrders, List<PieChartSectionData> sections) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -343,20 +329,13 @@ class _DashboardPageState extends State<DashboardPage> {
             borderData: FlBorderData(show: false),
             sectionsSpace: 2,
             centerSpaceRadius: 46,
-            sections: data.donutSegments.map((seg) {
-              return PieChartSectionData(
-                value: seg.value,
-                radius: 46,
-                showTitle: false,
-                color: seg.color,
-              );
-            }).toList(),
+            sections: sections,
           ),
         ),
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${data.totalOrders}',
+            Text('$totalOrders',
                 style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -370,6 +349,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // Shortcut cards that deep-link to other admin modules.
   Widget _buildShortcutsRow() {
     final items = [
       _ShortcutItem(
@@ -395,6 +375,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // Individual shortcut tile renderer.
   Widget _buildShortcutCard(_ShortcutItem item) {
     return Expanded(
       child: Padding(
@@ -427,7 +408,8 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildStatisticsOverview(DashboardData data) {
+  // Two-card summary: total sales and total customers from Supabase.
+  Widget _buildStatisticsOverview(AdminAnalyticsReport analytics) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -457,11 +439,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w600)),
                           const SizedBox(height: 6),
-                          Text('₱ ${data.stats.totalSales.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold)),
+                          Text(
+                            _currencyFormat.format(analytics.totalSales),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ],
                       )
                     ],
@@ -492,11 +476,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                   color: Colors.black54,
                                   fontWeight: FontWeight.w600)),
                           const SizedBox(height: 6),
-                          Text('${data.stats.totalCustomers}',
-                              style: const TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold)),
+                          Text(
+                            '${analytics.totalCustomers}',
+                            style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ],
                       )
                     ],
@@ -510,7 +496,8 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildPendingOrders(DashboardData data) {
+  // Pending orders list filtered to “For Approval” statuses.
+  Widget _buildPendingOrders(List<AdminPendingOrderSummary> pendingOrders) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -519,21 +506,35 @@ class _DashboardPageState extends State<DashboardPage> {
             const Text('Pending Orders',
                 style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(width: 8),
-            Text('· ${data.pendingOrders.length}',
+            Text('· ${pendingOrders.length}',
                 style: const TextStyle(color: Colors.black54)),
           ],
         ),
         const SizedBox(height: 8),
-        Column(
-          children: data.pendingOrders
-              .map((ord) => _buildPendingOrderCard(ord))
-              .toList(),
-        ),
+        if (pendingOrders.isEmpty)
+          Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: const ListTile(
+              title: Text('No orders awaiting approval'),
+              subtitle: Text('You are all caught up.'),
+            ),
+          )
+        else
+          Column(
+            children: pendingOrders
+                .map((ord) => _buildPendingOrderCard(ord))
+                .toList(),
+          ),
       ],
     );
   }
 
-  Widget _buildPendingOrderCard(PendingOrder ord) {
+  // Single pending-order card with amount and timestamp.
+  Widget _buildPendingOrderCard(AdminPendingOrderSummary ord) {
+    final formattedDate =
+        DateFormat('MMM d, yyyy • h:mm a').format(ord.createdAt.toLocal());
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -543,22 +544,30 @@ class _DashboardPageState extends State<DashboardPage> {
         title: Row(
           children: [
             Expanded(
-                child: Text(ord.name,
+                child: Text(ord.customerName,
                     style: const TextStyle(fontWeight: FontWeight.bold))),
-            Text('₱ ${ord.price.toStringAsFixed(0)}',
+            Text(_currencyFormat.format(ord.total),
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: Color(0xFF5D3510))),
           ],
         ),
-        subtitle: Text('${ord.id} • ${ord.itemsSummary}',
-            style: const TextStyle(color: Colors.black45)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${ord.orderId} • ${ord.itemsSummary}',
+                style: const TextStyle(color: Colors.black45)),
+            Text(formattedDate,
+                style: const TextStyle(color: Colors.black38, fontSize: 12)),
+          ],
+        ),
         onTap: () => ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Open order ${ord.id}'))),
+            .showSnackBar(SnackBar(content: Text('Open order ${ord.orderId}'))),
       ),
     );
   }
 }
 
+// Lightweight struct for shortcut metadata.
 class _ShortcutItem {
   final IconData icon;
   final String label;
@@ -566,7 +575,7 @@ class _ShortcutItem {
   _ShortcutItem({required this.icon, required this.label, required this.route});
 }
 
-/// ---------------------- Admin Drawer Widget (styled to match screenshot) ----------------------
+// Drawer widget wrapping navigation items and profile header.
 class AdminDrawer extends StatelessWidget {
   final Future<UserProfile> profileFuture;
   final String selectedRoute;
@@ -582,12 +591,14 @@ class AdminDrawer extends StatelessWidget {
   static const Color _headerBrown = Color(0xFF3F2B23);
   static const Color _accentOrange = Color(0xFFF08F2A);
 
-  Widget _navItem(
-      {required BuildContext context,
-      required IconData icon,
-      required String label,
-      required String route,
-      bool highlight = false}) {
+  // Shared builder for drawer navigation rows.
+  Widget _navItem({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String route,
+    bool highlight = false,
+  }) {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
     final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
     return InkWell(
@@ -785,7 +796,7 @@ class AdminDrawer extends StatelessWidget {
   }
 }
 
-/// ---------------------- Placeholder page used by routes in this demo ----------------------
+// Placeholder routed pages used while real screens are under development.
 class PlaceholderPage extends StatelessWidget {
   final String title;
   const PlaceholderPage({super.key, required this.title});
@@ -801,4 +812,19 @@ class PlaceholderPage extends StatelessWidget {
           Center(child: Text('This is the emerut $title page (placeholder).')),
     );
   }
+}
+
+// Legend entry model for donut chart labeling.
+class _LegendEntry {
+  final String label;
+  final Color color;
+  _LegendEntry(this.label, this.color);
+}
+
+// Container returned by _fetchDashboard with analytics + pending orders.
+class _DashboardSnapshot {
+  final AdminAnalyticsReport analytics;
+  final List<AdminPendingOrderSummary> pending;
+
+  _DashboardSnapshot({required this.analytics, required this.pending});
 }

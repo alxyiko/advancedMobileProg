@@ -13,7 +13,7 @@ import 'orderPages/orderList.dart';
 import 'package:provider/provider.dart';
 import '../providers/userProvider.dart';
 import 'profileAdmin.dart';
-import 'analyticsView.dart';
+import 'analyticsVIew.dart';
 import 'adminNotifPage.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_nexus/widgets/category_lateral.dart';
@@ -46,8 +46,7 @@ class AdminHome extends StatelessWidget {
       routes: {
         '/': (c) => const DashboardPage(),
         '/products': (c) => const YourProductPage(title: 'Products'),
-        '/categories': (c) => const PlaceholderPage(title: 'Categories'),
-        '/orders': (c) => const PlaceholderPage(title: 'Orders'),
+        '/orders': (c) => const OrderListPage(),
         '/discounts': (c) => const DiscountListPage(),
         '/analytics': (c) => const AnalyticsVIew(),
         '/transactions': (c) => const adminTransactionHistory(),
@@ -376,14 +375,16 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildShortcutsRow() {
     final items = [
       _ShortcutItem(
-          icon: Icons.person_outline, label: 'Customers', route: '/customers'),
-      _ShortcutItem(
         icon: Icons.coffee_outlined,
         label: 'Products',
         route: '/products', // This will navigate to YourProductPage
       ),
       _ShortcutItem(
           icon: Icons.receipt_long, label: 'Orders', route: '/orders'),
+      _ShortcutItem(
+          icon: Icons.local_offer_outlined,
+          label: 'Discounts',
+          route: '/discounts'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

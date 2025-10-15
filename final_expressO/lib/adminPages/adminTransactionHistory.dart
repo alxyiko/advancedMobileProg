@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import './adminHome.dart';
+
 /// Modular status badge placed outside NotifPage so it can be reused.
 class StatusBadge extends StatelessWidget {
   final String status;
@@ -96,8 +98,7 @@ class _NotifPageState extends State<adminTransactionHistory> {
     required String status,
   }) {
     final timeText = _timeAgoText(createdAt);
-    const double cardHeight =
-        140.0; 
+    const double cardHeight = 140.0;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 12),
@@ -192,6 +193,17 @@ class _NotifPageState extends State<adminTransactionHistory> {
     );
   }
 
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,21 +211,27 @@ class _NotifPageState extends State<adminTransactionHistory> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        toolbarHeight: 68, // slightly taller for breathing room
+        elevation: 0,
+
         title: const Text(
           "Recent Activities",
           style: TextStyle(
-            fontFamily: 'Quicksand',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
             color: Colors.white,
+            fontSize: 16,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+      ),
+      drawer: AdminDrawer(
+        profileFuture: fetchUserProfile(), // <-- your future method
+
+        selectedRoute: "/transactions", // mark this as active/highlighted
+        onNavigate: (route) {
+          Navigator.pushNamed(context, route);
+        },
       ),
       body: SafeArea(
         child: Padding(

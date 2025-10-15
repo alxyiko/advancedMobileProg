@@ -1,5 +1,5 @@
 import 'package:firebase_nexus/appColors.dart';
-import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/AnalyticsSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';

@@ -155,17 +155,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
               content: _buildProfileDetails(),
             ),
 
-            // About Us Section
-            _buildProfileSection(
-              title: "About Us",
-              isExpanded: _isAboutExpanded,
-              onTap: () {
-                setState(() {
-                  _isAboutExpanded = !_isAboutExpanded;
-                });
-              },
-              content: _buildAboutUs(),
-            ),
+            // // About Us Section
+            // _buildProfileSection(
+            //   title: "About Us",
+            //   isExpanded: _isAboutExpanded,
+            //   onTap: () {
+            //     setState(() {
+            //       _isAboutExpanded = !_isAboutExpanded;
+            //     });
+            //   },
+            //   content: _buildAboutUs(),
+            // ),
 
             // Recent Activities Section
             _buildProfileSection(
@@ -339,47 +339,47 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildAboutUs() {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: Color(0xFF603B17),
-            size: 20,
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "About Us",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "Add your about us content here...",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[700],
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildAboutUs() {
+  //   return Container(
+  //     color: Colors.white,
+  //     padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
+  //     child: Row(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Icon(
+  //           Icons.info_outline,
+  //           color: Color(0xFF603B17),
+  //           size: 20,
+  //         ),
+  //         SizedBox(width: 12),
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 "About Us",
+  //                 style: TextStyle(
+  //                   fontSize: 16,
+  //                   fontWeight: FontWeight.w500,
+  //                   color: Colors.black87,
+  //                 ),
+  //               ),
+  //               SizedBox(height: 8),
+  //               Text(
+  //                 "Add your about us content here...",
+  //                 style: TextStyle(
+  //                   fontSize: 15,
+  //                   color: Colors.grey[700],
+  //                   height: 1.5,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildRecentActivities() {
     return Container(

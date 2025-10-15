@@ -1,3 +1,4 @@
+import 'package:firebase_nexus/widgets/editprofile_modal.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_nexus/providers/userProvider.dart';
@@ -198,7 +199,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 title: Text('Edit Profile'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Add edit profile functionality
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => EditProfileModal(
+                      user: {
+                        'name': 'Ano Boss',
+                        'email': 'anoboss@gmail.com',
+                        'address':
+                            'Blk 1 Lt 2 Ph 2 Maple Street Diamond Ville\nSalawag Dasmarinas Cavite',
+                        'phone_number': '09123456789',
+                      },
+                    ),
+                  );
                 },
               ),
               ListTile(

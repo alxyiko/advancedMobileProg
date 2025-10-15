@@ -1,7 +1,11 @@
 import 'package:firebase_nexus/appColors.dart';
+import 'package:firebase_nexus/helpers/AnalyticsSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 const brownDark = Color(0xFF3E2016);
 const lightBeige = Color(0xFFF6F0E6);
@@ -24,93 +28,6 @@ class AnalyticsVIew extends StatelessWidget {
   }
 }
 
-class Product {
-  final String id;
-  final String name;
-  final String category;
-  final double price;
-  final String imageUrl;
-
-  Product({
-    required this.id,
-    required this.name,
-    required this.category,
-    required this.price,
-    required this.imageUrl,
-  });
-}
-
-class OrderSummary {
-  final String id;
-  final String userId;
-  final String status;
-  final double total;
-  final DateTime createdAt;
-
-  OrderSummary({
-    required this.id,
-    required this.userId,
-    required this.status,
-    required this.total,
-    required this.createdAt,
-  });
-}
-
-/// --- Dummy data
-final List<Product> dummyProducts = [
-  Product(
-    id: 'p1',
-    name: 'Matcha Latte',
-    category: 'Coffee',
-    price: 150.0,
-    imageUrl:
-        'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=200&h=200&fit=crop',
-  ),
-  Product(
-    id: 'p2',
-    name: 'Chocolate Pastry',
-    category: 'Pastry',
-    price: 85.0,
-    imageUrl:
-        'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=200&h=200&fit=crop',
-  ),
-  Product(
-    id: 'p3',
-    name: 'Iced Americano',
-    category: 'Coffee',
-    price: 120.0,
-    imageUrl:
-        'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop',
-  ),
-];
-
-final List<OrderSummary> dummyOrders = [
-  OrderSummary(
-      id: 'o1',
-      userId: 'u1',
-      status: 'Completed',
-      total: 2500,
-      createdAt: DateTime.now().subtract(const Duration(days: 1))),
-  OrderSummary(
-      id: 'o2',
-      userId: 'u2',
-      status: 'Cancelled',
-      total: 150,
-      createdAt: DateTime.now().subtract(const Duration(days: 2))),
-  OrderSummary(
-      id: 'o3',
-      userId: 'u2',
-      status: 'Rejected',
-      total: 150,
-      createdAt: DateTime.now().subtract(const Duration(days: 3))),
-  OrderSummary(
-      id: 'o4',
-      userId: 'u3',
-      status: 'Cancelled',
-      total: 150,
-      createdAt: DateTime.now().subtract(const Duration(days: 4))),
-];
-
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
 
@@ -120,37 +37,21 @@ class AnalyticsPage extends StatefulWidget {
 
 class _AnalyticsPageState extends State<AnalyticsPage>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  // Replace with real fetched values
-  int totalOrders = 65;
-  double totalSales = 2500;
-  int totalCustomers = 70;
-
-  // Sample category breakdown for successful orders
-  final List<_ChartData> _successChartData = [
-    _ChartData('Coffee', 40, const Color(0xFFE27D19)),
-    _ChartData('Pastry', 15, const Color(0xFFFFAF5F)),
-    _ChartData('Others', 10, const Color(0xFFB35900)),
-  ];
-
-  // Sample failed orders breakdown
-  final List<_ChartData> _failedChartData = [
-    _ChartData('Cancelled', 3, const Color(0xFFA42E1E)),
-    _ChartData('Rejected', 2, const Color(0xFFF0D0CB)),
-  ];
+  late final TabController _tabController;
+  final AdminSupabaseHelper _adminHelper = AdminSupabaseHelper();
+  late Future<AdminAnalyticsReport> _analyticsFuture;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    // TODO: call fetchInitialData() to populate data from Supabase
+    _analyticsFuture = _adminHelper.fetchAnalyticsReport();
   }
 
-  Future<void> fetchInitialData() async {
-    // final resp = await Supabase.instance.client.from('orders').select().execute();
-    // parse and setState(...)
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -167,7 +68,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         ),
         title: const Text(
           'Analytics',
-          style: TextStyle(color: Colors.white), 
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
@@ -192,24 +93,38 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             ),
           ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildSuccessfulTab(),
-                  _buildFailedTab(),
-                ],
-              ),
+            child: FutureBuilder<AdminAnalyticsReport>(
+              future: _analyticsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Failed to load analytics',
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                  );
+                }
+                final report = snapshot.data!;
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildSuccessfulTab(report),
+                    _buildFailedTab(report),
+                  ],
+                );
+              },
             ),
           ),
         ],
       ),
-     
     );
   }
 
-  Widget _buildSuccessfulTab() {
+  Widget _buildSuccessfulTab(AdminAnalyticsReport report) {
+    final categorySlices = _categoryChartSlices(report);
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -224,14 +139,12 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                     children: [
                       PieChart(
                         PieChartData(
-                          sections: _successChartData
+                          sections: categorySlices
                               .map((d) => PieChartSectionData(
                                     value: d.y.toDouble(),
                                     color: d.color,
                                     title: '',
                                     radius: 30,
-                                    titleStyle: const TextStyle(
-                                        fontSize: 0), // hide inline titles
                                   ))
                               .toList(),
                           centerSpaceRadius: 60,
@@ -244,7 +157,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '$totalOrders',
+                            '${report.totalOrders}',
                             style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -262,15 +175,13 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 const SizedBox(height: 8),
                 // Legend row
                 Padding(
-                  padding:
-                      const EdgeInsets.only(bottom: 16.0),
+                  padding: const EdgeInsets.only(bottom: 16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: _successChartData
+                    children: categorySlices
                         .map(
                           (d) => Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Row(
                               children: [
                                 Container(
@@ -282,7 +193,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                                   ),
                                 ),
                                 const SizedBox(width: 6),
-                                Text(d.x),
+                                Text('${d.x} (${d.y})'),
                               ],
                             ),
                           ),
@@ -300,7 +211,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               children: [
                 Expanded(
                   child: AspectRatio(
-                    aspectRatio: 1, // keeps it a square
+                    aspectRatio: 1,
                     child: _roundedCard(
                       color: Colors.orange[600]!,
                       child: Padding(
@@ -320,7 +231,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                             Text(
                               NumberFormat.currency(
                                       locale: 'en_PH', symbol: '₱')
-                                  .format(totalSales),
+                                  .format(report.totalSales),
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
@@ -354,7 +265,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              '$totalCustomers',
+                              '${report.totalCustomers}',
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
@@ -370,9 +281,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
               ],
             ),
           ),
-
           const SizedBox(height: 25),
-
           // Top-selling products
           Align(
             alignment: Alignment.centerLeft,
@@ -387,18 +296,20 @@ class _AnalyticsPageState extends State<AnalyticsPage>
             ),
           ),
           const SizedBox(height: 8),
-
           _roundedCard(
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-              child: Column(
-                children: dummyProducts
-                    .map((p) => _productListTile(p,
-                        sold:
-                            50)) // pass sold count (dummy) GAWING TOP 5 yung lalabas tnx pi
-                    .toList(),
-              ),
+              child: report.topProducts.isEmpty
+                  ? const SizedBox(
+                      height: 60,
+                      child: Center(child: Text('No sales data yet')),
+                    )
+                  : Column(
+                      children: report.topProducts
+                          .map((stat) => _productListTile(stat))
+                          .toList(),
+                    ),
             ),
           ),
         ],
@@ -406,11 +317,9 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     );
   }
 
-  Widget _buildFailedTab() {
-    final failedOrders = dummyOrders
-        .where((o) => o.status == 'Cancelled' || o.status == 'Rejected')
-        .toList();
-
+  Widget _buildFailedTab(AdminAnalyticsReport report) {
+    final failedOrders = report.failedOrders;
+    final failedSlices = _failedChartSlices(report);
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -422,19 +331,21 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      PieChart(PieChartData(
-                        sections: _failedChartData
-                            .map((d) => PieChartSectionData(
-                                  value: d.y.toDouble(),
-                                  color: d.color,
-                                  title: '',
-                                  radius: 30,
-                                ))
-                            .toList(),
-                        centerSpaceRadius: 60,
-                        sectionsSpace: 4,
-                        startDegreeOffset: -90,
-                      )),
+                      PieChart(
+                        PieChartData(
+                          sections: failedSlices
+                              .map((d) => PieChartSectionData(
+                                    value: d.y.toDouble(),
+                                    color: d.color,
+                                    title: '',
+                                    radius: 30,
+                                  ))
+                              .toList(),
+                          centerSpaceRadius: 60,
+                          sectionsSpace: 4,
+                          startDegreeOffset: -90,
+                        ),
+                      ),
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -456,10 +367,10 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                 ),
                 const SizedBox(height: 8),
                 Padding(
-                  padding: const EdgeInsets.all(12.0), 
+                  padding: const EdgeInsets.all(12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: _failedChartData
+                    children: failedSlices
                         .map((d) => Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8.0),
@@ -480,22 +391,91 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                             ))
                         .toList(),
                   ),
-                )
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          Column(
-            children: failedOrders.map((o) => _failedOrderCard(o)).toList(),
-          ),
+          if (report.topCancellingCustomers.isNotEmpty)
+            _roundedCard(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Top Cancelling Customers',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: brownDark,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...report.topCancellingCustomers.asMap().entries.map(
+                      (entry) => _topCancellingTile(
+                        entry.key + 1,
+                        entry.value,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ...failedOrders.map((o) => _failedOrderCard(o)),
         ],
       ),
     );
   }
 
-  Widget _productListTile(Product p, {required int sold}) {
+  List<_ChartData> _categoryChartSlices(AdminAnalyticsReport report) {
+    final stats = report.categoryStats;
+    if (stats.isEmpty) {
+      return [ _ChartData('No data', 1, Colors.grey.shade300) ];
+    }
+    final palette = [
+      const Color(0xFFE27D19),
+      const Color(0xFFFFAF5F),
+      const Color(0xFFB35900),
+      const Color(0xFFE7B188),
+      const Color(0xFF8E5A2C),
+      const Color(0xFF6F3A12),
+    ];
+    return List.generate(stats.length, (index) {
+      final stat = stats[index];
+      final label = stat.categoryName?.isNotEmpty == true
+          ? stat.categoryName!
+          : 'Category ${stat.categoryId}';
+      return _ChartData(
+        label,
+        stat.itemCount,
+        palette[index % palette.length],
+      );
+    });
+  }
+
+  List<_ChartData> _failedChartSlices(AdminAnalyticsReport report) {
+    final cancelled = report.failedOrders
+        .where((o) => o.status == 'Cancelled')
+        .length;
+    final rejected = report.failedOrders
+        .where((o) => o.status == 'Rejected')
+        .length;
+    final slices = <_ChartData>[];
+    if (cancelled > 0) {
+      slices.add(_ChartData('Cancelled', cancelled, const Color(0xFFA42E1E)));
+    }
+    if (rejected > 0) {
+      slices.add(_ChartData('Rejected', rejected, const Color(0xFFF0D0CB)));
+    }
+    return slices.isEmpty
+        ? [ _ChartData('No data', 1, Colors.grey.shade300) ]
+        : slices;
+  }
+
+  Widget _productListTile(AdminTopProductStat stat) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10), 
+      margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE9E9E9), width: 1),
@@ -510,68 +490,55 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         ],
       ),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      child: Container(
-        padding: const EdgeInsets.all(8), 
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8), 
-        ),
-        child: Row(
-          children: [
-         
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey, width: 1),
-                color: Colors.grey[100],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: ClipOval(
-                  child: Image.network(
-                    p.imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    errorBuilder: (_, __, ___) =>
-                        Icon(Icons.image, color: Colors.grey[400]),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey, width: 1),
+              color: Colors.grey[100],
+            ),
+            child: stat.imageUrl == null
+                ? Icon(Icons.image, color: Colors.grey[400])
+                : ClipOval(
+                    child: Image.network(
+                      stat.imageUrl!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (_, __, ___) =>
+                          Icon(Icons.image, color: Colors.grey[400]),
+                    ),
                   ),
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 16),
-
-            // product name
-            Expanded(
-              child: Text(
-                p.name,
-                style: const TextStyle(
-                  color: brownDark,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                  height: 1.05,
-                ),
-              ),
-            ),
-
-            // sold count
-            Text(
-              '$sold sold',
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              stat.name,
               style: const TextStyle(
                 color: brownDark,
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.w500,
+                height: 1.05,
               ),
             ),
-          ],
-        ),
+          ),
+          Text(
+            '${stat.quantitySold} sold',
+            style: const TextStyle(
+              color: brownDark,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _failedOrderCard(OrderSummary o) {
+  Widget _failedOrderCard(AdminFailedOrderInfo order) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: _roundedCard(
@@ -583,24 +550,63 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           leading: CircleAvatar(
             backgroundColor: const Color(0xFFE27D19),
             child: Text(
-              'JD',
+              order.customerName.isNotEmpty
+                  ? order.customerName.characters.first.toUpperCase()
+                  : '#',
               style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
-          title: const Text('Juan Dela Cruz'), // replace with user fetch
-          subtitle: Text('Matcha Latte, Caramel Macchiato...'),
+          title: Text(order.customerName),
+          subtitle: Text(order.itemsSummary.isEmpty
+              ? 'No items captured'
+              : order.itemsSummary),
           trailing: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _statusBadge(o.status),
+              _statusBadge(order.status),
               const SizedBox(height: 4),
               Text(NumberFormat.currency(locale: 'en_PH', symbol: '₱')
-                  .format(o.total)),
+                  .format(order.total)),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _topCancellingTile(int rank, AdminCustomerCancellationStat stat) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: const Color(0xFFE27D19),
+            child: Text(
+              '$rank',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              stat.customerName,
+              style: const TextStyle(
+                color: brownDark,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Text(
+            '${stat.cancelledCount}x',
+            style: const TextStyle(
+              color: brownDark,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

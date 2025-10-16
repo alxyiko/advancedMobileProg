@@ -185,7 +185,7 @@ class UserSupabaseHelper {
 
   Future<List<Map<String, dynamic>>> getOrdersForUser(int userId) async {
     try {
-      var query = _client.from('orderaggregate').select().eq('user_id', userId);
+      var query = _client.from('new_orderoverview').select().eq('user_id', userId);
 
       final response = await query;
 

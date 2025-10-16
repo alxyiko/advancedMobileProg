@@ -38,7 +38,7 @@ class _OrderListPageState extends State<OrderListPage>
   List<String> _selectedStatuses = [];
   DateTimeRange? _selectedDateRange;
   double _minPrice = 0;
-  double _maxPrice = 1000;
+  double _maxPrice = 10000;
 
   // Add Category variables
   int _selectedIconIndex = 0;
@@ -284,6 +284,7 @@ class _OrderListPageState extends State<OrderListPage>
                 return GestureDetector(
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => UserOrderDetailedView(
+                          order: item,
                           product: item.items.first,
                           orderStatus: item.status))),
                   child: Container(
@@ -357,7 +358,7 @@ class _OrderListPageState extends State<OrderListPage>
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                '${item.items.first.name}, x${item.items.first.quantity}',
+                                '${item.items.first.size} ${item.items.first.name}, x${item.items.first.quantity}',
                                 style: const TextStyle(
                                     color: Color(0xFFB99F92),
                                     fontFamily: 'Quicksand'),
@@ -526,7 +527,7 @@ class _OrderListPageState extends State<OrderListPage>
                       _selectedStatuses.clear();
                       _selectedDateRange = null;
                       _minPrice = 0;
-                      _maxPrice = 1000;
+                      _maxPrice = 10000;
                     });
                   },
                   child: const Text('Clear All',

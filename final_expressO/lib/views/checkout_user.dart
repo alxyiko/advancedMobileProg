@@ -259,8 +259,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
               child: Column(
                 children: [
                   RadioListTile<bool>(
-                    title: const Text("Cash On Delivery"),
-                    secondary: const Icon(Icons.delivery_dining_sharp),
+                    title: const Text("Pay at the counter"),
+                    secondary: const Icon(Icons.store),
                     activeColor: brown,
                     value: false,
                     groupValue: isOnlinePayment,

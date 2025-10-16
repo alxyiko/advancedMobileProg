@@ -284,6 +284,7 @@ class _OrderListPageState extends State<OrderListPage>
                 return GestureDetector(
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => UserOrderDetailedView(
+                          order: item,
                           product: item.items.first,
                           orderStatus: item.status))),
                   child: Container(

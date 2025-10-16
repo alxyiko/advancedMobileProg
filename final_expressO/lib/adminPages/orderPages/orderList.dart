@@ -92,7 +92,7 @@ class _OrderListPageState extends State<OrderListPage>
       print('Orders fetched: $rawOrders');
 
       final orders = (rawOrders as List)
-          .map((o) =>  Order.fromJson(Map<String, dynamic>.from(o)))
+          .map((o) => Order.fromJson(Map<String, dynamic>.from(o)))
           .toList();
 
       setState(() {
@@ -282,6 +282,7 @@ class _OrderListPageState extends State<OrderListPage>
                 return GestureDetector(
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => AdminOrderDetailedPage(
+                          order: item,
                           product: item.items.first,
                           orderStatus: item.status))),
                   child: Container(

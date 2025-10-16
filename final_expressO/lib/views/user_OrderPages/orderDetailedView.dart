@@ -1,17 +1,21 @@
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/models/order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/product.dart';
 import '../../widgets/order_cancel_fab.dart';
 
 class UserOrderDetailedView extends StatefulWidget {
+  final Order order;
   final Product product;
   final String orderStatus;
 
   const UserOrderDetailedView({
-    Key? key,
+    super.key,
+    required this.order,
     required this.product,
     this.orderStatus = 'Processing',
-  }) : super(key: key);
+  });
 
   @override
   State<UserOrderDetailedView> createState() => _UserOrderDetailedViewState();
@@ -24,7 +28,12 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
   bool _isCustomerInfoExpanded = true;
   bool _isOrderItemsExpanded = true;
   bool _isTimelineExpanded = true;
+  bool _loading = false;
   bool _isPaymentDetailsExpanded = true;
+
+  late List<Map<String, dynamic>> _updates = [];
+
+  final supabaseHelper = AdminSupabaseHelper();
 
   @override
   void initState() {
@@ -35,6 +44,23 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      print('INIT STARTED');
+      final updates = await supabaseHelper.getOrdersForUser(widget.order.id);
+
+      setState(() {
+        _loading = false;
+        _updates = updates;
+      });
+
+      print('Parsed updates: $updates');
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() => _loading = false);
+    }
   }
 
   @override

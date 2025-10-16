@@ -1,17 +1,22 @@
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/models/order.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/product.dart';
 import '../../widgets/order_status_fab.dart';
 
 class AdminOrderDetailedPage extends StatefulWidget {
+  final Order order;
   final Product product;
   final String orderStatus;
 
   const AdminOrderDetailedPage({
-    Key? key,
+    super.key,
+    required this.order,
     required this.product,
     this.orderStatus = 'Processing',
-  }) : super(key: key);
+  });
 
   @override
   State<AdminOrderDetailedPage> createState() => _AdminOrderDetailedPageState();
@@ -24,11 +29,21 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
   bool _isCustomerInfoExpanded = true;
   bool _isOrderItemsExpanded = true;
   bool _isTimelineExpanded = true;
+  bool _loading = false;
   bool _isPaymentDetailsExpanded = true;
 
+  late List<Map<String, dynamic>> _updates = [];
+  double get totalPayment =>
+      (widget.order.discount?['code'] != null
+          ? widget.order.discounted
+          : widget.order.totalPrice) +
+      50;
+
+  final supabaseHelper = AdminSupabaseHelper();
   @override
   void initState() {
     super.initState();
+    _loadInitialData();
     _currentStatus = widget.orderStatus;
   }
 
@@ -37,8 +52,32 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
     super.dispose();
   }
 
+  Future<void> _loadInitialData() async {
+    try {
+      print('INIT STARTED');
+      final updates = await supabaseHelper.getOrdersForUser(widget.order.id);
+
+      setState(() {
+        _loading = false;
+        _updates = updates;
+      });
+
+      print('Parsed updates: $updates');
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
       appBar: AppBar(
@@ -169,8 +208,8 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
               child: Column(
                 children: [
                   // Customer Name
-                  const Text(
-                    'Juan Dela Cruz',
+                  Text(
+                    widget.order.username,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -179,8 +218,8 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'admin123@gmail.com',
+                  Text(
+                    widget.order.email,
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: 'Quicksand',
@@ -222,68 +261,52 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
 
                   // Customer Details
                   _buildInfoRow(
-                      Icons.email_outlined, 'Email', 'bossjuan@gmail.com'),
+                      Icons.email_outlined, 'Email', widget.order.email),
                   const SizedBox(height: 12),
-                  _buildInfoRow(Icons.phone_outlined, 'Number', '09123456789'),
+                  _buildInfoRow(Icons.phone_outlined, 'Number',
+                      widget.order.phone_number),
                   const SizedBox(height: 12),
                   _buildInfoRow(Icons.location_on_outlined, 'Address',
-                      'Blk 1 Lt 2 Ph 2 Maple Street\nDiamond Ville Salawag\nDasmarinas Cavite'),
+                      widget.order.address),
                   const SizedBox(height: 12),
                   _buildMethodRow(),
                   const SizedBox(height: 12),
 
                   // Vouchers
-                  Row(
-                    children: [
-                      const Icon(Icons.local_offer_outlined,
-                          color: Color(0xFF8E4B0E), size: 20),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Voucher(s)',
-                        style: TextStyle(
-                          color: Color(0xFF8E4B0E),
-                          fontFamily: 'Quicksand',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF6EA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'SAVE50',
+                  if (widget.order.discount?['code'] != null)
+                    Row(
+                      children: [
+                        const Icon(Icons.local_offer_outlined,
+                            color: Color(0xFF8E4B0E), size: 20),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Discount:',
                           style: TextStyle(
-                            color: Color(0xFF7B5B3C),
+                            color: Color(0xFF8E4B0E),
                             fontFamily: 'Quicksand',
-                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF6EA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'BUY1GET1',
-                          style: TextStyle(
-                            color: Color(0xFF7B5B3C),
-                            fontFamily: 'Quicksand',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAF6EA),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                          child: Text(
+                            widget.order.discount?['code'],
+                            style: TextStyle(
+                              color: Color(0xFF7B5B3C),
+                              fontFamily: 'Quicksand',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -449,7 +472,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: 3, // Mock 3 items
+              itemCount: widget.order.items.length,
               separatorBuilder: (context, index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 child: const Divider(
@@ -459,6 +482,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                 ),
               ),
               itemBuilder: (context, index) {
+                final item = widget.order.items[index];
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -469,7 +493,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '₱${widget.product.price.toStringAsFixed(0)}',
+                              '₱${item.price.toStringAsFixed(0)}',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -478,8 +502,8 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'Caramel Macchiato',
+                            Text(
+                              '${item.name} (${item.size})',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -503,10 +527,16 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/coffee_order_pic.png',
-                            fit: BoxFit.cover,
-                          ),
+                          child: item.img != null
+                              ? Image.network(
+                                  item.img ??
+                                      'https://placehold.co/200x150/png',
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  'assets/images/coffee_order_pic.png',
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                     ],
@@ -844,10 +874,12 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                 children: [
                   _buildPaymentRow('Shipping', '₱ 50.00'),
                   const SizedBox(height: 12),
-                  _buildPaymentRow('Subtotal', '₱ 500.00'),
+                  _buildPaymentRow('Subtotal', '₱ ${widget.order.totalPrice}'),
                   const SizedBox(height: 12),
-                  _buildPaymentRow('Voucher Applied', '₱ -500.00',
-                      isVoucher: true),
+                  if (widget.order.discount?['code'] != null)
+                    _buildPaymentRow('Voucher Applied',
+                        '₱ ${(widget.order.discounted - widget.order.totalPrice)}',
+                        isVoucher: true),
                   const SizedBox(height: 16),
                   const Divider(color: Color(0xFFE7D3B4)),
                   const SizedBox(height: 16),
@@ -864,7 +896,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                       ),
                       const Spacer(),
                       Text(
-                        '₱ ${widget.product.price.toStringAsFixed(2)}',
+                        '₱ ${totalPayment.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

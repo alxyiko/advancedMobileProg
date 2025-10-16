@@ -32,12 +32,10 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
   bool _loading = false;
   bool _isPaymentDetailsExpanded = true;
 
+  double _discount = 0;
+
   late List<Map<String, dynamic>> _updates = [];
-  double get totalPayment =>
-      (widget.order.discount?['code'] != null
-          ? widget.order.discounted
-          : widget.order.totalPrice) +
-      50;
+  double get totalPayment => (widget.order.totalPrice + 50) - _discount;
 
   final supabaseHelper = AdminSupabaseHelper();
   @override
@@ -57,7 +55,18 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
       print('INIT STARTED');
       final updates = await supabaseHelper.getOrdersForUser(widget.order.id);
 
+      double discount = 0;
+      if (widget.order.discount?['code'] != null) {
+        if (widget.order.discount?['type'] == 'percentage') {
+          final rate = (widget.order.discount?['value'] ?? 0).toDouble();
+          discount = widget.order.totalPrice * (rate / 100);
+        } else if (widget.order.discount?['type'] == 'fixed') {
+          discount = (widget.order.discount?['value'] ?? 0).toDouble();
+        }
+      }
+
       setState(() {
+        _discount = discount;
         _loading = false;
         _updates = updates;
       });
@@ -877,8 +886,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                   _buildPaymentRow('Subtotal', '₱ ${widget.order.totalPrice}'),
                   const SizedBox(height: 12),
                   if (widget.order.discount?['code'] != null)
-                    _buildPaymentRow('Voucher Applied',
-                        '₱ ${(widget.order.discounted - widget.order.totalPrice)}',
+                    _buildPaymentRow('Voucher Applied', '-₱ $_discount ',
                         isVoucher: true),
                   const SizedBox(height: 16),
                   const Divider(color: Color(0xFFE7D3B4)),

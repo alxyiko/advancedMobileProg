@@ -199,6 +199,29 @@ class UserSupabaseHelper {
     }
   }
 
+  Future<Map<String, dynamic>?> checkCoupon(String code) async {
+    try {
+      final response = await _client
+          .from('Discounts')
+          .select()
+          .eq('code', code)
+          .isFilter('deleted_at', null)
+          .maybeSingle();
+      return {
+        'success': true,
+        'message': 'coupon found!',
+        'data': response,
+      };
+    } catch (e) {
+      print("GetById error: $e");
+      return {
+        'success': false,
+        'message': e.toString(),
+        'data': null,
+      };
+    }
+  }
+
   Future<Map<String, dynamic>?> insert(
       String table, Map<String, dynamic> data) async {
     try {
@@ -207,6 +230,31 @@ class UserSupabaseHelper {
     } catch (e) {
       print("Insert error: $e");
       return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> insertOrder(
+      Map<String, dynamic> orderData) async {
+    try {
+      final response = await _client.rpc('create_order_with_items', params: {
+        'p_user_id': orderData['user_id'],
+        'p_payment_method': orderData['payment_method'],
+        'p_discount_id': orderData['discount_id'],
+        'p_items': orderData['items'], // must be a List<Map<String, dynamic>>
+      });
+
+      return {
+        'success': true,
+        'message': 'Order created successfully.',
+        'data': response,
+      };
+    } catch (e) {
+      print('⚠️ Transaction failed: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+        'data': null,
+      };
     }
   }
 

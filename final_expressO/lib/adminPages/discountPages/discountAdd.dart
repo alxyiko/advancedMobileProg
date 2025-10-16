@@ -14,6 +14,7 @@ class _discountAddState extends State<discountAdd> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _minimumSpendController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _discountValueController =
       TextEditingController();
@@ -94,8 +95,9 @@ class _discountAddState extends State<discountAdd> {
 
       final response = await supabaseHelper.insert('Discounts', {
         'type': _selectedDiscountType,
+        'minimumSpend': int.parse(_minimumSpendController.text),
         'flat_amount': _selectedDiscountType == 'fixed'
-            ? int.parse(_discountValueController.text)
+            ? double.parse(_discountValueController.text)
             : null,
         'rate': _selectedDiscountType == 'percentage'
             ? int.parse(_discountValueController.text)
@@ -320,6 +322,31 @@ class _discountAddState extends State<discountAdd> {
               ),
               const SizedBox(height: 16),
 
+              // Minimum Spend Value
+              const Text("Minimum Spend",
+                  style: TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondary)),
+              const SizedBox(height: 4),
+              TextFormField(
+                controller: _minimumSpendController,
+                keyboardType: TextInputType.number,
+                decoration: inputStyle("", Icons.price_check_outlined),
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Enter discount value";
+                  }
+
+                  final value = double.tryParse(val);
+                  if (value == null) {
+                    return "Enter a valid number";
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
               // Usage Limit
               const Text("Usage Limit (Per Customer)",
                   style: TextStyle(

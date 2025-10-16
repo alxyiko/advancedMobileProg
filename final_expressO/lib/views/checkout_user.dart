@@ -1,46 +1,149 @@
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
+import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/models/supabaseProduct.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CheckoutPage(),
-    );
-  }
-}
+import 'package:provider/provider.dart';
 
 class CheckoutPage extends StatefulWidget {
-  const CheckoutPage({super.key});
-
+  final List<SupabaseProduct> checkOutItems;
+  const CheckoutPage({super.key, required this.checkOutItems});
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  bool loading = false;
   bool isOnlinePayment = false;
   bool showDiscountField = false;
   bool discountApplied = false;
+  int? couponID = null;
   final TextEditingController discountController = TextEditingController();
+  UserSupabaseHelper userSupabaseHelper = UserSupabaseHelper();
+  SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
 
-  final double itemPrice = 250.0;
-  final int itemCount = 3;
   final double shippingFee = 50.0;
   double voucherDiscount = 0.0;
 
-  double get subtotal => itemPrice * itemCount;
+  double get subtotal => widget.checkOutItems
+      .fold(0, (sum, item) => sum + (item.price * item.quantity));
   double get totalPayment => (subtotal + shippingFee) - voucherDiscount;
 
   @override
+  void initState() {
+    print(widget.checkOutItems.map((item) => item.toMap()).toList());
+    // TODO: implement initState
+    super.initState();
+  }
+
+  void _checkCoupon(String code) async {
+    final response = await userSupabaseHelper.checkCoupon(code);
+    String message;
+    bool success = false;
+
+    if (response?['success'] == true && response?['data'] != null) {
+      final coupon = response?['data'];
+      final now = DateTime.now();
+      final startDate = DateTime.parse(coupon['start_date']);
+      final expiryDate = DateTime.parse(coupon['expiry_date']);
+
+      print(coupon);
+
+      if (coupon['isActive'] != true) {
+        message = "This discount is no longer active.";
+      } else if (now.isBefore(startDate)) {
+        message = "This coupon isn't active yet.";
+      } else if (now.isAfter(expiryDate)) {
+        message = "This coupon has expired.";
+      } else if (subtotal < (coupon['minimumSpend'] ?? 0)) {
+        message =
+            "Minimum spend of ₱${(coupon['minimumSpend'] ?? 0).toStringAsFixed(2)} required.";
+      } else {
+        // ✅ Valid coupon
+
+        double discount = 0;
+        if (coupon['type'] == 'percentage') {
+          final rate = (coupon['rate'] ?? 0).toDouble();
+          discount = subtotal * (rate / 100);
+        } else if (coupon['type'] == 'fixed') {
+          discount = (coupon['flat_amount'] ?? 0).toDouble();
+        }
+
+        // Prevent negative total
+        final newTotal = (subtotal + shippingFee) - discount;
+        if (newTotal < 0) discount = subtotal + shippingFee;
+
+        setState(() {
+          couponID = coupon['id'];
+          voucherDiscount = discount;
+          discountApplied = true;
+        });
+
+        message = "Discount applied successfully!";
+        success = true;
+      }
+    } else {
+      message = "Invalid discount code.";
+    }
+
+    // ✅ UI feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: success ? Colors.green : Colors.red,
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _insertOrder(Map<String, dynamic> orderData) async {
+    print(orderData['items']);
+    final response = await userSupabaseHelper.insertOrder(orderData);
+    String message;
+    bool success = response['success'] == true;
+
+    print(response['success'] == true);
+    print(response['data'] != null);
+    print(widget.checkOutItems);
+
+    if (response['success'] == true && response['data'] != null) {
+      message = "Order inserted successfully!";
+
+      for (final item in widget.checkOutItems) {
+        print('-------------------------------------');
+        print(item);
+        print('-------------------------------------');
+        await localDBhelper.deleteRow('cart', item.id);
+      }
+    } else {
+      message = "Invalid discount code.";
+    }
+
+    // ✅ UI feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: success ? Colors.green : Colors.red,
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final brown = const Color(0xFF38241D);
-    final background = const Color(0xFFFFF9F2);
+    const brown = Color(0xFF38241D);
+    const background = Color(0xFFFFF9F2);
+
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (!userProvider.isLoaded || userProvider.user == null) {
+      userProvider.loadUser(context);
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final user = userProvider.user;
 
     return Scaffold(
       backgroundColor: background,
@@ -59,9 +162,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
-          onPressed: () {
-            Navigator.pop(context); // goes back to DummyOrderPage
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
@@ -72,8 +173,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _buildSection(
               title: "Address",
               icon: Icons.location_on_outlined,
-              child: const Text(
-                "Blk 1 Lt 2 Golden Ville Salitran II Dasmariñas City Cavite",
+              child: Text(
+                user?['address'],
                 style: TextStyle(fontSize: 14, color: Colors.black87),
               ),
             ),
@@ -82,36 +183,53 @@ class _CheckoutPageState extends State<CheckoutPage> {
               title: "Items",
               icon: Icons.coffee_outlined,
               child: Column(
-                children: List.generate(
-                  itemCount,
-                  (index) => Padding(
+                children: widget.checkOutItems.map((item) {
+                  return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        // Product Info
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("₱250",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87)),
-                              SizedBox(height: 4),
-                              Text("Caramel Macchiato",
-                                  style: TextStyle(color: Colors.black54)),
+                            children: [
+                              Text(
+                                "₱${item.price.toStringAsFixed(2)}  x${item.quantity}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "${item.name}   ",
+                                style: const TextStyle(color: Colors.black54),
+                              ),
+                              Text(
+                                "${item.category} • ${item.variation}",
+                                style: const TextStyle(
+                                  color: Colors.black45,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        const CircleAvatar(
-                          radius: 24,
-                          backgroundImage: NetworkImage(
-                              "https://cdn-icons-png.flaticon.com/512/415/415733.png"),
+                        // Product Image
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundImage: item.img != null
+                              ? NetworkImage(item.img!)
+                              : const AssetImage(
+                                      'assets/images/placeholder.png')
+                                  as ImageProvider,
                           backgroundColor: Colors.transparent,
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: 12),
@@ -123,15 +241,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
               child: Column(
                 children: [
                   RadioListTile<bool>(
-                    title: const Text("Pay at the counter"),
-                    secondary: const Icon(Icons.store_outlined),
+                    title: const Text("Cash On Delivery"),
+                    secondary: const Icon(Icons.delivery_dining_sharp),
                     activeColor: brown,
                     value: false,
                     groupValue: isOnlinePayment,
                     onChanged: (val) => setState(() => isOnlinePayment = val!),
                   ),
                   RadioListTile<bool>(
-                    title: const Text("Online Payment"),
+                    title: const Text("Gcash"),
                     secondary: const Icon(Icons.payment_outlined),
                     activeColor: brown,
                     value: true,
@@ -159,7 +277,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             const SizedBox(height: 20),
-            _buildBottomSummary(brown),
+            _buildBottomSummary(
+                brown,
+                user,
+                widget.checkOutItems,
+                isOnlinePayment ? 'Gcash' : 'Cash on Delivery',
+                couponID,
+                loading),
           ],
         ),
       ),
@@ -173,7 +297,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     required IconData icon,
     required Widget child,
   }) {
-    final brown = const Color(0xFF38241D);
+    const brown = Color(0xFF38241D);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -260,24 +384,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () {
-                setState(() {
-                  if (discountController.text.trim().toUpperCase() ==
-                      "SAVE50") {
-                    voucherDiscount = 500.0;
-                    discountApplied = true;
-                  } else {
-                    voucherDiscount = 0.0;
-                    discountApplied = false;
-                  }
-                });
+                _checkCoupon(discountController.text);
 
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  backgroundColor: discountApplied ? Colors.green : Colors.red,
-                  content: Text(discountApplied
-                      ? "Discount Applied Successfully!"
-                      : "Invalid Discount Code"),
-                  duration: const Duration(seconds: 2),
-                ));
+                // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                //   backgroundColor: discountApplied ? Colors.green : Colors.red,
+                //   content: Text(discountApplied
+                //       ? "Discount Applied Successfully!"
+                //       : "Invalid Discount Code"),
+                //   duration: const Duration(seconds: 2),
+                // ));
               },
               child: const Text("Apply",
                   style: TextStyle(color: Colors.white, fontSize: 14)),
@@ -311,7 +426,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _buildBottomSummary(Color brown) {
+  Widget _buildBottomSummary(
+      Color brown,
+      Map<String, dynamic>? user,
+      List<SupabaseProduct> items,
+      String payment_method,
+      int? discountId,
+      bool loading) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -332,7 +453,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
               style:
                   const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: loading
+                ? null
+                : () {
+                    setState(() {
+                      loading = true;
+                    });
+                    _insertOrder({
+                      'user_id': user?['id'],
+                      'payment_method': payment_method,
+                      'items': items.map((item) => item.toMap()).toList(),
+                      'discount_id': couponID,
+                    });
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFCF8C47),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

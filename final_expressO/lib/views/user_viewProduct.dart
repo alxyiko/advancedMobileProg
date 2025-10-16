@@ -31,7 +31,7 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
       _quantityController.text = '1';
     });
     // sqlFliteDatabaseHelper.resetDatabase();
-    // _getFile();
+    // _getFile();j
   }
 
   // void _getFile() async {
@@ -52,6 +52,7 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
     final product = SupabaseProduct(
       prodId: widget.productData['id'],
       name: name,
+      included: true,
       category: widget.productData['category_name'],
       quantity: quant,
       variation: _selectedVariation!['name'],

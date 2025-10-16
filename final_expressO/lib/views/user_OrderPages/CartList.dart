@@ -13,8 +13,8 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  bool isEditing = false;
-  List<bool> selectedItems = [];
+  bool isEditing = true;
+  List<SupabaseProduct> selectedItems = [];
   SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
   List<SupabaseProduct> cartList = [];
 
@@ -28,7 +28,7 @@ class _CartPageState extends State<CartPage> {
     final cart = await localDBhelper.getCart();
     setState(() {
       cartList = cart;
-      selectedItems = List.generate(cart.length, (_) => false);
+      selectedItems = cart.where((item) => item.included!).toList();
     });
   }
 
@@ -37,24 +37,11 @@ class _CartPageState extends State<CartPage> {
     await _getCart(); // refresh UI
   }
 
-  Future<void> _deleteSelectedItems() async {
-    final selectedIds = <int>[];
-    for (int i = 0; i < cartList.length; i++) {
-      if (selectedItems[i]) selectedIds.add(cartList[i].id!);
-    }
-
-    for (final id in selectedIds) {
-      await localDBhelper.deleteRow('Cart', id);
-    }
-
-    await _getCart();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final totalItems = cartList.fold<int>(0, (sum, e) => sum + e.quantity);
+    final totalItems = selectedItems.fold<int>(0, (sum, e) => sum + e.quantity);
     final totalPrice =
-        cartList.fold<double>(0, (sum, e) => sum + (e.price * e.quantity));
+        selectedItems.fold<double>(0, (sum, e) => sum + (e.price * e.quantity));
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
@@ -75,26 +62,26 @@ class _CartPageState extends State<CartPage> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                isEditing = !isEditing;
-                if (!isEditing) {
-                  selectedItems = List.generate(cartList.length, (_) => false);
-                }
-              });
-            },
-            child: Text(
-              isEditing ? 'Done' : 'Edit',
-              style: const TextStyle(
-                fontFamily: 'Quicksand',
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
+        // actions: [
+        //   TextButton(
+        //     onPressed: () {
+        //       setState(() {
+        //         isEditing = !isEditing;
+        //         if (!isEditing) {
+        //           selectedItems = List.generate(cartList.length, (_) => false);
+        //         }
+        //       });
+        //     },
+        //     child: Text(
+        //       isEditing ? 'Done' : 'Edit',
+        //       style: const TextStyle(
+        //         fontFamily: 'Quicksand',
+        //         color: Colors.white,
+        //         fontWeight: FontWeight.w600,
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ),
       body: cartList.isEmpty
           ? const Center(
@@ -126,10 +113,12 @@ class _CartPageState extends State<CartPage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Checkbox(
-                                    value: selectedItems[index],
+                                    value: item.included!,
                                     onChanged: (value) {
-                                      setState(() {
-                                        selectedItems[index] = value ?? false;
+                                      setState(() async {
+                                        await localDBhelper.includeCheckout(
+                                            item.id!, !item.included!);
+                                        await _getCart(); // refresh UI
                                       });
                                     },
                                     activeColor: const Color(0xFFE27D19),
@@ -137,13 +126,11 @@ class _CartPageState extends State<CartPage> {
                                   IconButton(
                                     icon: const Icon(Icons.delete,
                                         color: Color(0xFFE27D19)),
-                                    onPressed: selectedItems[index]
-                                        ? () async {
-                                            await localDBhelper.deleteRow(
-                                                'Cart', item.id!);
-                                            await _getCart();
-                                          }
-                                        : null,
+                                    onPressed: () async {
+                                      await localDBhelper.deleteRow(
+                                          'cart', item.id!);
+                                      await _getCart();
+                                    },
                                   ),
                                 ],
                               ),
@@ -299,7 +286,9 @@ class _CartPageState extends State<CartPage> {
                             ? () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => CheckoutPage()),
+                                      builder: (context) => CheckoutPage(
+                                            checkOutItems: selectedItems,
+                                          )),
                                 )
                             : null,
                         child: const Text(

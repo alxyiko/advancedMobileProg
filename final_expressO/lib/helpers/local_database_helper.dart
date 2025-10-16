@@ -57,6 +57,7 @@ class SQLFliteDatabaseHelper {
     CREATE TABLE cart (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       prodId INTEGER ,
+      included INTEGER NOT NULL CHECK (included IN (0, 1)),
       name TEXT NOT NULL,
       category TEXT NOT NULL,
       img_path TEXT,                          -- store image URL or path
@@ -187,6 +188,27 @@ class SQLFliteDatabaseHelper {
         whereArgs: [id],
       );
     }
+  }
+
+  Future<void> includeCheckout(int id, bool include) async {
+    final db = await database;
+
+    // Fetch the row
+    final result = await db.query(
+      'cart',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isEmpty) return; // No such item
+
+    await db.update(
+      'cart',
+      {'included': include ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   //Insert Product

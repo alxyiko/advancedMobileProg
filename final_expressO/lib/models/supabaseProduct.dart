@@ -4,6 +4,7 @@ import 'dart:io';
 class SupabaseProduct {
   final int? id;
   final int? prodId;
+  final bool? included;
   final String name;
   final num price;
   final String variation;
@@ -14,6 +15,7 @@ class SupabaseProduct {
 
   const SupabaseProduct({
     this.id,
+    this.included,
     this.prodId,
     required this.price,
     required this.variation,
@@ -26,6 +28,7 @@ class SupabaseProduct {
   Map<String, dynamic> toMap() {
     return {
       'price': price,
+      'included': included as bool ? 1 : 0,
       'variation': variation,
       'prodId': prodId,
       'name': name,
@@ -40,6 +43,7 @@ class SupabaseProduct {
       price: map['price'] as num,
       variation: map['variation'] as String,
       id: map['id'] as int?,
+      included: map['included'] as int == 1,
       prodId: map['prodId'] as int?,
       name: map['name'] as String,
       category: map['category'] as String,

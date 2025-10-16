@@ -96,12 +96,7 @@ class _discountAddState extends State<discountAdd> {
       final response = await supabaseHelper.insert('Discounts', {
         'type': _selectedDiscountType,
         'minimumSpend': int.parse(_minimumSpendController.text),
-        'flat_amount': _selectedDiscountType == 'fixed'
-            ? double.parse(_discountValueController.text)
-            : null,
-        'rate': _selectedDiscountType == 'percentage'
-            ? int.parse(_discountValueController.text)
-            : null,
+        'value': int.parse(_discountValueController.text),
         'desc': _descController.text,
         'usage_limit': _usageLimitController.text.isNotEmpty
             ? int.parse(_usageLimitController.text)

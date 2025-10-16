@@ -8,9 +8,7 @@ class DiscountEdit extends StatefulWidget {
   final String code;
   final String desc;
   final String type;
-  final double? flat_amount;
-  final int? rate;
-  final String value;
+  final num value;
   final int usage_limit;
   final DateTime start_date;
   final DateTime expiry_date;
@@ -22,8 +20,6 @@ class DiscountEdit extends StatefulWidget {
     required this.code,
     required this.desc,
     required this.type,
-    this.rate,
-    this.flat_amount,
     required this.value,
     required this.usage_limit,
     required this.start_date,
@@ -56,9 +52,8 @@ class _DiscountEditState extends State<DiscountEdit> {
     super.initState();
     _codeController = TextEditingController(text: widget.code);
     _descController = TextEditingController(text: widget.desc);
-    _discountValueController = TextEditingController(
-        text: (widget.type == 'percentage' ? widget.rate : widget.flat_amount)
-            .toString());
+    _discountValueController =
+        TextEditingController(text: widget.value.toString());
     _usageLimitController =
         TextEditingController(text: widget.usage_limit.toString());
 
@@ -130,12 +125,7 @@ class _DiscountEditState extends State<DiscountEdit> {
       // Prepare data map
       final Map<String, dynamic> updateData = {
         'type': _selectedDiscountType,
-        'flat_amount': _selectedDiscountType == 'fixed'
-            ? int.parse(_discountValueController.text)
-            : null,
-        'rate': _selectedDiscountType == 'percentage'
-            ? int.parse(_discountValueController.text)
-            : null,
+        'value': int.parse(_discountValueController.text),
         'desc': _descController.text,
         'usage_limit': _usageLimitController.text.isNotEmpty
             ? int.parse(_usageLimitController.text)

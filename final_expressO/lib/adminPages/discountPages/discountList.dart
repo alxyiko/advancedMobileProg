@@ -65,9 +65,8 @@ class DiscountCard extends StatelessWidget {
   final String discountType;
   final String description;
   final String status;
-  final String value;
-  final int? rate;
-  final double? flat_amount;
+  final String displayValue;
+  final num value;
   final int usage_limit;
   final DateTime start_date;
   final DateTime expiry_date;
@@ -84,8 +83,7 @@ class DiscountCard extends StatelessWidget {
     required this.usage_limit,
     required this.description,
     required this.value,
-    this.flat_amount,
-    this.rate,
+    required this.displayValue,
     required this.status,
     required this.isActive,
     required this.createdAt,
@@ -124,7 +122,7 @@ class DiscountCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${discountCode}: ${value} OFF',
+                  Text('${discountCode}: ${displayValue} OFF',
                       style: const TextStyle(
                           fontFamily: 'Quicksand',
                           fontWeight: FontWeight.bold,
@@ -166,8 +164,6 @@ class DiscountCard extends StatelessWidget {
                               code: discountCode,
                               desc: desc,
                               type: discountType,
-                              rate: rate,
-                              flat_amount: flat_amount,
                               value: value,
                               usage_limit: usage_limit,
                               start_date: start_date,
@@ -291,9 +287,10 @@ class _DiscountListPageState extends State<DiscountListPage> {
                 final discount = _discounts[index];
 
                 final type = discount['type'] ?? 'fixed';
-                final value = type == 'percentage'
-                    ? "${discount['rate']}%"
-                    : "₱${discount['flat_amount']}";
+                final value = discount['value'];
+                final displayValue = type == 'percentage'
+                    ? "${discount['value']}%"
+                    : "₱${discount['value']}";
                 final code = discount['code'] ?? "N/A";
                 final desc = discount['desc'] ?? "";
                 final isActive = discount['isActive'] ?? false;
@@ -327,14 +324,13 @@ class _DiscountListPageState extends State<DiscountListPage> {
                     icon: Icons.local_offer,
                     discountType: type,
                     value: value,
+                    displayValue: displayValue,
                     desc: desc,
                     isActive: discount['isActive'],
                     discountCode: code,
                     description: desc,
                     status: status,
                     createdAt: createdAt,
-                    flat_amount: discount['flat_amount'],
-                    rate: discount['rate'],
                     usage_limit: discount['usage_limit'],
                     start_date: DateTime.tryParse(discount['start_date'] ??
                             DateTime.now().toString()) ??

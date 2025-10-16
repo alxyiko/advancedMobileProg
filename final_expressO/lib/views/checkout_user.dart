@@ -63,12 +63,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
         double discount = 0;
         if (coupon['type'] == 'percentage') {
-          final rate = (coupon['rate'] ?? 0).toDouble();
+          final rate = (coupon['value'] ?? 0).toDouble();
           discount = subtotal * (rate / 100);
         } else if (coupon['type'] == 'fixed') {
-          discount = (coupon['flat_amount'] ?? 0).toDouble();
+          discount = (coupon['value'] ?? 0).toDouble();
         }
-
+  
         // Prevent negative total
         final newTotal = (subtotal + shippingFee) - discount;
         if (newTotal < 0) discount = subtotal + shippingFee;

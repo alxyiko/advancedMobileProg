@@ -5,7 +5,7 @@ import 'package:firebase_nexus/adminPages/editProduct.dart';
 import 'package:firebase_nexus/adminPages/viewProduct.dart';
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
-import 'package:firebase_nexus/widgets/delete_modal.dart';
+import 'package:firebase_nexus/widgets/confirm_modal.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -479,38 +479,12 @@ class _YourProductPageState extends State<YourProductPage> {
                                       onPressed: () {
                                         showDialog(
                                           context: context,
-                                          builder: (context) => DeleteModal(
-                                            title: 'Delete Product',
-                                            message:
-                                                'Are you sure you want to delete this product?',
-                                            onConfirm: () async {
-                                              // 🧹 Delete logic here
-                                              // await deleteProduct(product['id']);
-
-                                              // ✅ Floating snackbar confirmation
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                  content: const Text(
-                                                    'Order deleted',
-                                                    style: TextStyle(
-                                                        color: Colors.white),
-                                                  ),
-                                                  backgroundColor:
-                                                      Colors.redAccent,
-                                                  behavior:
-                                                      SnackBarBehavior.floating,
-                                                  margin:
-                                                      const EdgeInsets.all(16),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                  duration: const Duration(
-                                                      seconds: 2),
-                                                ),
-                                              );
+                                          builder: (context) =>
+                                              ConfirmationModal(
+                                            type: ConfirmationModalType.delete,
+                                            onConfirm: () {
+                                              // Your delete logic here
+                                              print('Item deleted!');
                                             },
                                           ),
                                         );

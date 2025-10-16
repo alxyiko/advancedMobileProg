@@ -1,513 +1,911 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/product.dart';
+import '../../widgets/order_cancel_fab.dart';
 
-class UserOrderDetailedView extends StatelessWidget {
+class UserOrderDetailedView extends StatefulWidget {
   final Product product;
   final String orderStatus;
 
   const UserOrderDetailedView({
-    super.key,
+    Key? key,
     required this.product,
-    required this.orderStatus,
-  });
+    this.orderStatus = 'Processing',
+  }) : super(key: key);
 
-  // Helper method to determine current stage based on orderStatus
-  int _getCurrentStage(String status) {
-    switch (status.toLowerCase()) {
-      case 'for approval':
-        return 0;
-      case 'processing':
-        return 2;
-      case 'completed':
-        return 4;
-      case 'cancelled':
-      case 'rejected':
-        return 0; // Show at start for cancelled/rejected orders
-      default:
-        return 0;
-    }
+  @override
+  State<UserOrderDetailedView> createState() => _UserOrderDetailedViewState();
+}
+
+class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
+    with TickerProviderStateMixin {
+  late String _currentStatus;
+  String _deliveryMethod = 'Walk-in'; // or get from order data
+  bool _isCustomerInfoExpanded = true;
+  bool _isOrderItemsExpanded = true;
+  bool _isTimelineExpanded = true;
+  bool _isPaymentDetailsExpanded = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentStatus = widget.orderStatus;
   }
 
-  // Helper method to get status color
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'for approval':
-        return Colors.orange;
-      case 'processing':
-        return Colors.blue;
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentStage = _getCurrentStage(orderStatus);
-
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFAF6EA),
+        backgroundColor: const Color(0xFF38241D),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          iconSize: 32,
-          color: const Color(0xFF2D1D17),
+          icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        title: const Text(
+          'Order Details',
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildCustomerInfoCard(),
+            const SizedBox(height: 16),
+            _buildOrderItemsCard(),
+            const SizedBox(height: 16),
+            _buildOrderTimelineCard(),
+            const SizedBox(height: 16),
+            _buildPaymentDetailsCard(),
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
+      floatingActionButton: CancelOrderFab(
+        orderStatus: _currentStatus,
+        orderId: widget.product.id?.toString(),
+        onCancel: () {
+          print('Order ${widget.product.id} cancelled');
+          setState(() {
+            _currentStatus = 'Cancelled';
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildCustomerInfoCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF603B17),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 32, 24, 8),
-            child: Text(
-              'Track Order#:',
-              style: TextStyle(
-                fontFamily: 'Quicksand',
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-                color: Color(0xFF2D1D17),
+          // Header with dropdown
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isCustomerInfoExpanded = !_isCustomerInfoExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                border: _isCustomerInfoExpanded
+                    ? const Border(
+                        bottom: BorderSide(color: Color(0xFFE7D3B4), width: 1),
+                      )
+                    : null,
+                borderRadius: _isCustomerInfoExpanded
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Text(
+                    'Order Information',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Quicksand',
+                      color: Color(0xFF38241D),
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    _isCustomerInfoExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: const Color(0xFF8E4B0E),
+                  ),
+                ],
               ),
             ),
           ),
 
-          // Main container with all sections
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.75,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(
-                  color: const Color(0xFF2D1D17),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+          // Expandable content
+          if (_isCustomerInfoExpanded) ...[
+            Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Order ID section
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-                    child: Text(
-                      'Order#: ${product.id ?? "N/A"}',
-                      style: const TextStyle(
-                        fontFamily: 'Quicksand',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 20,
-                        color: Color(0xFF2D1D17),
-                      ),
+                  Text(
+                    'Order#: ${widget.product.id}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Quicksand',
+                      color: Color(0xFF38241D),
                     ),
                   ),
-                  // Divider
-                  const Divider(
-                    color: Color(0xFF2D1D17),
-                    thickness: 1.5,
-                    height: 0,
-                  ),
-                  // Order details + image
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                  const SizedBox(height: 4),
+
+                  // Payment Method Badge
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3F2FD),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Order info
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product.name,
-                                style: const TextStyle(
-                                  fontFamily: 'Quicksand',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 18,
-                                  color: Color(0xFF2D1D17),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '₱${product.price.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontFamily: 'Quicksand',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 20,
-                                  color: Color(0xFF2D1D17),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  const Text(
-                                    'Order Status: ',
-                                    style: TextStyle(
-                                      fontFamily: 'Quicksand',
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                      color: Color(0xFF2D1D17),
-                                    ),
-                                  ),
-                                  Text(
-                                    orderStatus,
-                                    style: TextStyle(
-                                      fontFamily: 'Quicksand',
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                      color: _getStatusColor(orderStatus),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                        SvgPicture.asset(
+                          'assets/images/qricon.svg',
+                          width: 16,
+                          height: 16,
+                          color: const Color(0xFF1976D2),
                         ),
-                        // Coffee image
-                        Padding(
-                          padding: const EdgeInsets.only(left: 12),
-                          child: Image.asset(
-                            'assets/images/coffee_img.png',
-                            height: 70,
-                            width: 70,
-                            fit: BoxFit.cover,
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Online Payment',
+                          style: TextStyle(
+                            color: Color(0xFF1976D2),
+                            fontFamily: 'Quicksand',
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  // Divider
-                  const Divider(
-                    color: Color(0xFF2D1D17),
-                    thickness: 1.5,
-                    height: 0,
+                  const SizedBox(height: 20),
+
+                  // Customer Details
+                  _buildInfoRow(
+                      Icons.email_outlined, 'Email', 'bossjuan@gmail.com'),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(Icons.phone_outlined, 'Number', '09123456789'),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(Icons.location_on_outlined, 'Address',
+                      'Blk 1 Lt 2 Ph 2 Maple Street\nDiamond Ville Salawag\nDasmarinas Cavite'),
+                  const SizedBox(height: 12),
+                  _buildMethodRow(),
+                  const SizedBox(height: 12),
+
+                  // Vouchers
+                  Row(
+                    children: [
+                      const Icon(Icons.local_offer_outlined,
+                          color: Color(0xFF8E4B0E), size: 20),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Voucher(s)',
+                        style: TextStyle(
+                          color: Color(0xFF8E4B0E),
+                          fontFamily: 'Quicksand',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAF6EA),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'SAVE50',
+                          style: TextStyle(
+                            color: Color(0xFF7B5B3C),
+                            fontFamily: 'Quicksand',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAF6EA),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'BUY1GET1',
+                          style: TextStyle(
+                            color: Color(0xFF7B5B3C),
+                            fontFamily: 'Quicksand',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  // Track your order title
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: const Color(0xFF8E4B0E), size: 20),
+        const SizedBox(width: 12),
+        SizedBox(
+          width: 80,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF8E4B0E),
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Color(0xFF38241D),
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMethodRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.local_shipping_outlined,
+            color: Color(0xFF8E4B0E), size: 20),
+        const SizedBox(width: 12),
+        const SizedBox(
+          width: 80,
+          child: Text(
+            'Method',
+            style: TextStyle(
+              color: Color(0xFF8E4B0E),
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 20),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE1BEE7),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            _deliveryMethod,
+            style: const TextStyle(
+              color: Color(0xFF7B1FA2),
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrderItemsCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF603B17),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isOrderItemsExpanded = !_isOrderItemsExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: _isOrderItemsExpanded
+                    ? const Border(
+                        bottom: BorderSide(color: Color(0xFFE7D3B4), width: 1))
+                    : null,
+                borderRadius: _isOrderItemsExpanded
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'Items',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Quicksand',
+                      color: Color(0xFF603B17),
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(_currentStatus).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Text(
-                      'Track your order',
+                      _currentStatus,
                       style: TextStyle(
+                        color: _getStatusColor(_currentStatus),
                         fontFamily: 'Quicksand',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                        color: Color(0xFF603B17),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
                       ),
                     ),
                   ),
-                  // Order tracker timeline
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                      child: _OrderTimeline(
-                        currentStage: currentStage,
-                        stages: const [
-                          {
-                            'title': 'Order Placed',
-                            'subtitle':
-                                'We have received your order on 16-Aug-2025'
-                          },
-                          {
-                            'title': 'Order Confirmed',
-                            'subtitle': 'We has been confirmed\n16-Aug-2025'
-                          },
-                          {
-                            'title': 'Order Processed',
-                            'subtitle': 'We are now preparing your order.'
-                          },
-                          {
-                            'title': 'Ready to Serve',
-                            'subtitle': 'Your Order is ready to serve.'
-                          },
-                          {
-                            'title': 'Order Completed',
-                            'subtitle':
-                                'Your Order is completed on 16-Aug-2025, 15:03 PM'
-                          },
-                        ],
-                      ),
-                    ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _isOrderItemsExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: const Color(0xFF8E4B0E),
                   ),
                 ],
               ),
             ),
           ),
-          // Cancel Order button area (only show if not already cancelled/rejected/completed)
-          if (!['cancelled', 'rejected', 'completed']
-              .contains(orderStatus.toLowerCase()))
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
-                      minimumSize: const Size(160, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      textStyle: const TextStyle(
-                          fontFamily: 'Quicksand',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    ),
-                    onPressed: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          titlePadding: EdgeInsets.zero,
-                          title: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFE27D19),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.report_problem,
-                                      color: Colors.white, size: 20),
-                                ),
-                                const SizedBox(width: 12),
-                                const Expanded(
-                                  child: Text(
-                                    'Cancel Order',
-                                    style: TextStyle(
-                                      fontFamily: 'Quicksand',
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
+
+          // Order Items
+          if (_isOrderItemsExpanded)
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 3, // Mock 3 items
+              separatorBuilder: (context, index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: const Divider(
+                  color: Color(0xFFE7D3B4),
+                  height: 1,
+                  thickness: 1,
+                ),
+              ),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      // Item Details (Left side)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '₱${widget.product.price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF603B17),
+                                fontFamily: 'Quicksand',
+                              ),
                             ),
-                          ),
-                          content: const Padding(
-                            padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
-                            child: Text(
-                              'Are you sure you want to cancel this order? This action cannot be undone.',
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Caramel Macchiato',
                               style: TextStyle(
-                                  fontFamily: 'Quicksand', fontSize: 14),
-                            ),
-                          ),
-                          actionsPadding:
-                              const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                          actionsAlignment: MainAxisAlignment.end,
-                          actions: [
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF2D1D17),
-                                side:
-                                    const BorderSide(color: Color(0xFFBDB6AE)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                textStyle: const TextStyle(
-                                    fontFamily: 'Quicksand',
-                                    fontWeight: FontWeight.w600),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF603B17),
+                                fontFamily: 'Quicksand',
                               ),
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('No'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                textStyle: const TextStyle(
-                                    fontFamily: 'Quicksand',
-                                    fontWeight: FontWeight.w700),
-                              ),
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Yes, cancel'),
                             ),
                           ],
                         ),
-                      );
+                      ),
 
-                      if (confirmed == true && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Order cancelled')),
-                        );
-                        // TODO: call backend / update DB to cancel the order
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Text('Cancel Order'),
+                      const SizedBox(width: 16),
+
+                      // Coffee Image (Right side)
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF7F2EC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/coffee_order_pic.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
         ],
       ),
     );
   }
-}
 
-class _OrderTimeline extends StatelessWidget {
-  final int currentStage;
-  final List<Map<String, String>> stages;
+  // Helper to determine if status is completed
+  bool _isStatusCompleted(String timelineStatus) {
+    if (_currentStatus.isEmpty) return false;
 
-  const _OrderTimeline({
-    required this.currentStage,
-    required this.stages,
-  });
+    String current = _currentStatus.toLowerCase().trim();
+    String timeline = timelineStatus.toLowerCase().trim();
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: stages.length,
-      itemBuilder: (context, index) {
-        final isActive = index <= currentStage;
-        final stage = stages[index];
+    // Rejected or Cancelled orders
+    if (current == 'rejected' || current == 'cancelled') {
+      return timeline == 'order placed';
+    }
 
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    // Normal flow
+    List<String> statusOrder = [
+      'order placed',
+      'for approval',
+      'processing',
+      _deliveryMethod.toLowerCase().trim() == 'walk-in'
+          ? 'ready to pickup'
+          : 'for delivery',
+      'completed'
+    ];
+
+    int currentIndex = -1;
+    int timelineIndex = -1;
+
+    for (int i = 0; i < statusOrder.length; i++) {
+      if (statusOrder[i] == current) currentIndex = i;
+      if (statusOrder[i] == timeline) timelineIndex = i;
+    }
+
+    // If current status not found in order, return false
+    if (currentIndex == -1) return false;
+
+    return timelineIndex <= currentIndex;
+  }
+
+  Widget _buildOrderTimelineCard() {
+    bool isWalkIn = _deliveryMethod.toLowerCase() == 'walk-in';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF603B17),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isTimelineExpanded = !_isTimelineExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                border: _isTimelineExpanded
+                    ? const Border(
+                        bottom: BorderSide(color: Color(0xFFE7D3B4), width: 1),
+                      )
+                    : null,
+                borderRadius: _isTimelineExpanded
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Text(
+                    'Order Timeline',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Quicksand',
+                      color: Color(0xFF603B17),
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    _isTimelineExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: const Color(0xFF8E4B0E),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isTimelineExpanded) ...[
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // Order Placed
+                  _buildTimelineItem(
+                    _isStatusCompleted('Order Placed'),
+                    _isStatusCompleted('Order Placed')
+                        ? const Color(0xFFE27D19)
+                        : Colors.grey,
+                    Icons.shopping_cart_checkout,
+                    'Order Placed',
+                    'We have received your order on\n16 Aug 2025',
+                    isLast: false,
+                  ),
+
+                  // For Approval
+                  _buildTimelineItem(
+                    _isStatusCompleted('For Approval'),
+                    _isStatusCompleted('For Approval')
+                        ? const Color(0xFFFF9800)
+                        : Colors.grey,
+                    Icons.pending_actions,
+                    'For Approval',
+                    'Your order is awaiting approval',
+                    isLast: false,
+                  ),
+
+                  // Processing
+                  _buildTimelineItem(
+                    _isStatusCompleted('Processing'),
+                    _isStatusCompleted('Processing')
+                        ? const Color(0xFF2196F3)
+                        : Colors.grey,
+                    Icons.autorenew,
+                    'Processing',
+                    'We are now processing your order',
+                    isLast: false,
+                  ),
+
+                  // For Delivery / Ready to Pickup
+                  _buildTimelineItem(
+                    _isStatusCompleted(
+                        isWalkIn ? 'Ready to Pickup' : 'For Delivery'),
+                    _isStatusCompleted(
+                            isWalkIn ? 'Ready to Pickup' : 'For Delivery')
+                        ? (isWalkIn
+                            ? const Color(0xFFFF9800)
+                            : const Color(0xFF9C27B0))
+                        : Colors.grey,
+                    isWalkIn ? Icons.store : Icons.local_shipping,
+                    isWalkIn ? 'Ready to Pickup' : 'For Delivery',
+                    isWalkIn
+                        ? 'Your order is ready for pickup'
+                        : 'Your order is out for delivery',
+                    isLast: false,
+                  ),
+
+                  // Completed
+                  _buildTimelineItem(
+                    _isStatusCompleted('Completed'),
+                    _isStatusCompleted('Completed')
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey,
+                    Icons.check_circle,
+                    'Completed',
+                    'Your order is completed on 16\nAug 2025, 10:35 PM',
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimelineItem(
+    bool isCompleted,
+    Color color,
+    IconData icon,
+    String title,
+    String subtitle, {
+    required bool isLast,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline Indicator
+          Column(
             children: [
-              // Left margin
-              const SizedBox(width: 8),
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: Colors.white,
+                ),
+              ),
+              if (!isLast)
+                Container(
+                  width: 2,
+                  height: 30,
+                  color: isCompleted ? color : Colors.grey.shade300,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                ),
+            ],
+          ),
+          const SizedBox(width: 16),
 
-              // Small dot and vertical line column
-              Column(
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isCompleted ? const Color(0xFF38241D) : Colors.grey,
+                    fontFamily: 'Quicksand',
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isCompleted ? const Color(0xFF8E4B0E) : Colors.grey,
+                    fontFamily: 'Quicksand',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentDetailsCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF603B17),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isPaymentDetailsExpanded = !_isPaymentDetailsExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                border: _isPaymentDetailsExpanded
+                    ? const Border(
+                        bottom: BorderSide(color: Color(0xFFE7D3B4), width: 1),
+                      )
+                    : null,
+                borderRadius: _isPaymentDetailsExpanded
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(16),
+              ),
+              child: Row(
                 children: [
-                  const SizedBox(height: 14),
-                  // Small dot on the line
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? const Color(0xFFE27D19)
-                          : const Color(0xFFDCD6D0),
-                      shape: BoxShape.circle,
+                  const Icon(Icons.receipt, color: Color(0xFFE27D19), size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Payment Details',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Quicksand',
+                      color: Color(0xFF603B17),
                     ),
                   ),
-
-                  // Vertical connector
-                  if (index != stages.length - 1)
-                    Expanded(
-                      child: Container(
-                        width: 2,
-                        margin: const EdgeInsets.only(top: 8),
-                        color: (isActive && index < currentStage)
-                            ? const Color(0xFFE27D19)
-                            : const Color(0xFFDCD6D0),
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(width: 12),
-
-              // Large circular icon column (to the right of the line)
-              Column(
-                children: [
-                  const SizedBox(height: 6),
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? const Color(0xFFE27D19)
-                          : const Color(0xFFDCD6D0),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: _svgForIndex(index),
-                    ),
+                  const Spacer(),
+                  Icon(
+                    _isPaymentDetailsExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: const Color(0xFF8E4B0E),
                   ),
                 ],
               ),
-
-              const SizedBox(width: 16),
-
-              // Content column with extra spacing before title
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 24, top: 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          if (_isPaymentDetailsExpanded) ...[
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _buildPaymentRow('Shipping', '₱ 50.00'),
+                  const SizedBox(height: 12),
+                  _buildPaymentRow('Subtotal', '₱ 500.00'),
+                  const SizedBox(height: 12),
+                  _buildPaymentRow('Voucher Applied', '₱ -500.00',
+                      isVoucher: true),
+                  const SizedBox(height: 16),
+                  const Divider(color: Color(0xFFE7D3B4)),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      const SizedBox(height: 6),
-                      Text(
-                        stage['title']!,
-                        style: const TextStyle(
+                      const Text(
+                        'Total Payment',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                           fontFamily: 'Quicksand',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                          color: Color(0xFF2D1D17),
+                          color: Color(0xFF38241D),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const Spacer(),
                       Text(
-                        stage['subtitle']!,
-                        style: TextStyle(
+                        '₱ ${widget.product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                           fontFamily: 'Quicksand',
-                          fontSize: 14,
-                          color: const Color(0xFF2D1D17).withOpacity(0.8),
+                          color: Color(0xFF38241D),
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            ),
+          ],
+        ],
+      ),
     );
   }
 
-  // Return an SvgPicture for each stage using assets in assets/images/
-  Widget _svgForIndex(int i) {
-    switch (i) {
-      case 0:
-        return SvgPicture.asset('assets/images/orderplacedicon.svg',
-            width: 28, height: 28);
-      case 1:
-        return SvgPicture.asset('assets/images/orderconfirmed.svg',
-            width: 36, height: 36);
-      case 2:
-        return SvgPicture.asset('assets/images/orderprocessed.svg',
-            width: 32, height: 32);
-      case 3:
-        return SvgPicture.asset('assets/images/readytoserve.svg',
-            width: 32, height: 32);
-      case 4:
-        // Use a white check mark icon for completed
-        return const Icon(Icons.check, color: Colors.white, size: 28);
+  Widget _buildPaymentRow(String label, String amount,
+      {bool isVoucher = false}) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontFamily: 'Quicksand',
+            color: Color(0xFF8E4B0E),
+          ),
+        ),
+        const Spacer(),
+        Text(
+          amount,
+          style: TextStyle(
+            fontSize: 14,
+            fontFamily: 'Quicksand',
+            color: isVoucher ? Colors.red : const Color(0xFF38241D),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'for approval':
+        return const Color(0xFFFF9800);
+      case 'processing':
+        return const Color(0xFF2196F3);
+      case 'for delivery':
+        return const Color(0xFF9C27B0);
+      case 'ready to pickup':
+        return const Color(0xFFFF9800);
+      case 'completed':
+        return const Color(0xFF4CAF50);
+      case 'cancelled':
+        return const Color(0xFFF44336);
+      case 'rejected':
+        return const Color(0xFFF44336);
       default:
-        return const SizedBox.shrink();
+        return const Color(0xFF8E4B0E);
     }
   }
 }

@@ -15,7 +15,7 @@
 //   // Helper method to determine current stage based on orderStatus
 //   int _getCurrentStage(String status) {
 //     switch (status.toLowerCase()) {
-//       case 'for approval':
+//       case 'Pending':
 //         return 0;
 //       case 'processing':
 //         return 2;
@@ -32,7 +32,7 @@
 //   // Helper method to get status color
 //   Color _getStatusColor(String status) {
 //     switch (status.toLowerCase()) {
-//       case 'for approval':
+//       case 'Pending':
 //         return Colors.orange;
 //       case 'processing':
 //         return Colors.blue;

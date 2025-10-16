@@ -13,7 +13,7 @@ class OrderListPage extends StatefulWidget {
 class _OrderItem {
   final Product product;
   final String
-      status; // 'All','For Approval','Processing','Completed','Cancelled','pastry'
+      status; // 'All','Pending','Processing','Completed','Cancelled','pastry'
 
   _OrderItem({required this.product, required this.status});
 }
@@ -35,7 +35,7 @@ class _OrderListPageState extends State<OrderListPage>
 
   final tabs = [
     'All',
-    'For Approval',
+    'Pending',
     'Processing',
     'Completed',
     'Cancelled',
@@ -45,7 +45,7 @@ class _OrderListPageState extends State<OrderListPage>
   // create mock orders with statuses
   List<_OrderItem> get _mockOrders {
     final statuses = [
-      'For Approval',
+      'Pending',
       'Processing',
       'Completed',
       'Cancelled',
@@ -122,7 +122,7 @@ class _OrderListPageState extends State<OrderListPage>
                     Wrap(
                       spacing: 8,
                       children: [
-                        'For Approval',
+                        'Pending',
                         'Processing',
                         'Completed',
                         'Cancelled',

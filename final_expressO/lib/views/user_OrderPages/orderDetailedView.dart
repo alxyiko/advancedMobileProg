@@ -513,7 +513,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
     // Normal flow
     List<String> statusOrder = [
       'order placed',
-      'for approval',
+      'Pending',
       'processing',
       _deliveryMethod.toLowerCase().trim() == 'walk-in'
           ? 'ready to pickup'
@@ -618,14 +618,14 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                     isLast: false,
                   ),
 
-                  // For Approval
+                  // Pending
                   _buildTimelineItem(
-                    _isStatusCompleted('For Approval'),
-                    _isStatusCompleted('For Approval')
+                    _isStatusCompleted('Pending'),
+                    _isStatusCompleted('Pending')
                         ? const Color(0xFFFF9800)
                         : Colors.grey,
                     Icons.pending_actions,
-                    'For Approval',
+                    'Pending',
                     'Your order is awaiting approval',
                     isLast: false,
                   ),
@@ -890,7 +890,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'for approval':
+      case 'Pending':
         return const Color(0xFFFF9800);
       case 'processing':
         return const Color(0xFF2196F3);

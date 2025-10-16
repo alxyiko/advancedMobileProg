@@ -112,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _dashboardFuture = _fetchDashboard();
   }
 
-  // Aggregates analytics snapshot plus filtered “For Approval” orders.
+  // Aggregates analytics snapshot plus filtered “Pending” orders.
   Future<_DashboardSnapshot> _fetchDashboard() async {
     final analytics = await _helper.fetchAnalyticsReport();
     final pending = await _helper.fetchPendingOrdersForApproval();
@@ -520,7 +520,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Pending orders list filtered to “For Approval” statuses.
+  // Pending orders list filtered to “Pending” statuses.
   Widget _buildPendingOrders(List<AdminPendingOrderSummary> pendingOrders) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

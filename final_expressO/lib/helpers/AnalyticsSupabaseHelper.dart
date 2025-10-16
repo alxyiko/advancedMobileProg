@@ -87,7 +87,7 @@ class AdminCustomerCancellationStat {
   });
 }
 
-// Pending order summary for orders that are "For Approval".
+// Pending order summary for orders that are "Pending".
 class AdminPendingOrderSummary {
   final String orderId;
   final String customerName;
@@ -616,7 +616,7 @@ class AdminSupabaseHelper {
     }
   }
 
-  // Fetches pending orders that are "For Approval".
+  // Fetches pending orders that are "Pending".
   Future<List<AdminPendingOrderSummary>> fetchPendingOrdersForApproval() async {
     try {
       final rawOrders = await client.from('Orders').select('''
@@ -646,7 +646,7 @@ class AdminSupabaseHelper {
         final rawStatus =
             updates.isEmpty ? null : updates.last['status'] as String?;
         final normalizedStatus = rawStatus?.toString().trim().toLowerCase() ?? '';
-        if (normalizedStatus != 'for approval') continue;
+        if (normalizedStatus != 'Pending') continue;
 
         final userData = order['Users'] as Map<String, dynamic>?;
         final int? userId = (order['user_id'] as num?)?.toInt();

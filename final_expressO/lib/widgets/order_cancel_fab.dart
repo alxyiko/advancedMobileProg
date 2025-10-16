@@ -14,11 +14,11 @@ class CancelOrderFab extends StatelessWidget {
     required this.onCancel,
   });
 
-  bool get _canCancel => orderStatus.toLowerCase() == 'for approval';
+  bool get _canCancel => orderStatus.toLowerCase() == 'Pending';
 
   @override
   Widget build(BuildContext context) {
-    // Only show if status is "For Approval"
+    // Only show if status is "Pending"
     if (!_canCancel) return const SizedBox.shrink();
 
     return Padding(

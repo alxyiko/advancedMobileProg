@@ -50,7 +50,7 @@ class _OrderStatusFabState extends State<OrderStatusFab>
       return const SizedBox.shrink();
     }
 
-    bool isForApproval = status == 'for approval';
+    bool isForApproval = status == 'Pending';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -156,7 +156,7 @@ class _OrderStatusFabState extends State<OrderStatusFab>
     return 'Processing';
   }
 
-  // Modal for Approval (For Approval -> Processing)
+  // Modal Pending (Pending -> Processing)
   void _showApprovalModal() {
     _closeFab();
     final TextEditingController remarksController = TextEditingController();

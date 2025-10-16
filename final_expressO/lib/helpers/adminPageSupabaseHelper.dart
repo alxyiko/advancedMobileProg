@@ -104,6 +104,28 @@ class AdminSupabaseHelper {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getOrdersForUser(int? userId) async {
+    try {
+      var query =
+          client.from('new_orderoverview').select().not('total_price', 'is', null);
+
+      // If a search term and column are provided, apply a filter
+      if (userId != null) {
+        query = query.eq('user_id', userId);
+      }
+
+      final response = await query;
+
+      print("functname:getOrders");
+      print(response);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("GetAll error: $e");
+      return [];
+    }
+  }
+
   Future<Map<String, dynamic>> update(String table, String idColumn, String id,
       Map<String, dynamic> data) async {
     try {

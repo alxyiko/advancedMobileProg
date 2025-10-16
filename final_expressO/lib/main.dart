@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
+import 'package:firebase_nexus/adminPages/adminHome.dart';
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/supabase_helper.dart';
@@ -216,10 +217,7 @@ final Map<String, WidgetBuilder> routes = {
   '/register': (_) => const Register(),
   '/home': (_) => const MainScreen(),
   '/profile': (_) => const ShowProfile(),
-  '/adminHome': (_) => const AdminMainScreen(),
-  '/adminAnalytics': (_) => const AdminMainScreen(),
-  '/adminProducts': (_) => const AdminMainScreen(),
-  '/adminOrders': (_) => const AdminMainScreen(),
+  '/adminHome': (_) => const AdminHome(),
 };
 
 Future<void> safeNavigate(BuildContext context, String route) async {
@@ -258,7 +256,7 @@ Widget guardedRoute(BuildContext context, String? routeName) {
   // Logged in → if trying to go to login/welcome, redirect to home
   if (user != null && isPublicRoute) {
     if (user['role'] == 1) {
-      return AdminMainScreen();
+      return AdminHome();
     } else {
       return MainScreen();
     }

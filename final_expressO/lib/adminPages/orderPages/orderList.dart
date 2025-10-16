@@ -1,12 +1,16 @@
+import 'package:firebase_nexus/adminPages/orderPages/adminOrderDetailedPage.dart';
+import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/models/order.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/product.dart';
-import 'adminOrderDetailedPage.dart';
-
-import '../adminHome.dart';
 
 class OrderListPage extends StatefulWidget {
-  const OrderListPage({Key? key}) : super(key: key);
+  const OrderListPage({
+    super.key,
+  });
 
   @override
   State<OrderListPage> createState() => _OrderListPageState();
@@ -23,13 +27,17 @@ class _OrderItem {
 class _OrderListPageState extends State<OrderListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<Order> _orders = [];
+
   String _search = '';
+  bool _loading = true;
+  final supabaseHelper = AdminSupabaseHelper();
 
   // Filter variables
   List<String> _selectedStatuses = [];
   DateTimeRange? _selectedDateRange;
   double _minPrice = 0;
-  double _maxPrice = 1000;
+  double _maxPrice = 10000;
 
   // Add Category variables
   int _selectedIconIndex = 0;
@@ -66,6 +74,7 @@ class _OrderListPageState extends State<OrderListPage>
   @override
   void initState() {
     super.initState();
+    _loadInitialData();
     _tabController = TabController(length: tabs.length, vsync: this);
   }
 
@@ -76,28 +85,294 @@ class _OrderListPageState extends State<OrderListPage>
     super.dispose();
   }
 
-  List<_OrderItem> _filteredForTab(int tabIndex) {
-    final all = _mockOrders;
-    final tab = tabs[tabIndex];
-    var items = all.where((o) {
-      final matchSearch = _search.isEmpty ||
-          o.product.name.toLowerCase().contains(_search.toLowerCase()) ||
-          o.product.id.toString().contains(_search);
+  Future<void> _loadInitialData() async {
+    try {
+      print('INIT STARTED');
+      final rawOrders = await supabaseHelper.getOrdersForUser(null);
+      print('Orders fetched: $rawOrders');
 
-      // Apply additional filters if any are selected
+      final orders = (rawOrders as List)
+          .map((o) =>  Order.fromJson(Map<String, dynamic>.from(o)))
+          .toList();
+
+      setState(() {
+        _loading = false;
+        _orders = orders;
+      });
+
+      print('Parsed orders: $_orders');
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() => _loading = false);
+    }
+  }
+
+  List<Order> _filteredForTab(int tabIndex) {
+    final tab = tabs[tabIndex];
+    var items = _orders.where((o) {
+      final matchSearch = _search.isEmpty ||
+          o.items.any(
+              (i) => i.name.toLowerCase().contains(_search.toLowerCase())) ||
+          o.id.toString().contains(_search);
+
       final matchStatus =
           _selectedStatuses.isEmpty || _selectedStatuses.contains(o.status);
-      final matchPrice =
-          o.product.price >= _minPrice && o.product.price <= _maxPrice;
+      final matchPrice = o.totalPrice >= _minPrice && o.totalPrice <= _maxPrice;
 
       return matchSearch && matchStatus && matchPrice;
     }).toList();
 
-    if (tab != 'All')
+    if (tab != 'All') {
       items = items
           .where((o) => o.status.toLowerCase() == tab.toLowerCase())
           .toList();
+    }
     return items;
+  }
+
+//   Order getOrder(int index){
+//     return  items[index];
+//   }
+
+//   final order =;
+// final firstItem = order.items.isNotEmpty ? order.items.first : null;
+
+  @override
+  Widget build(BuildContext context) {
+    // Apply Quicksand font family across this page
+    final themeWithQuicksand = Theme.of(context).copyWith(
+      textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Quicksand'),
+    );
+
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
+
+    return Theme(
+      data: themeWithQuicksand,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF38241D),
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          titleSpacing: 0,
+          toolbarHeight: 60,
+          title: const Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: Text('Orders',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontFamily: 'Quicksand',
+                    fontWeight: FontWeight.w600)),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(130),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 25),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 44, // 👈 adjust height here
+                          child: TextField(
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFF503228),
+                              hintText: 'Search here...',
+                              hintStyle: const TextStyle(color: Colors.white70),
+                              prefixIcon: const Icon(Icons.search,
+                                  color: Colors.white70),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (v) => setState(() => _search = v),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      InkWell(
+                        onTap: _showFilterDialog,
+                        borderRadius: BorderRadius.circular(5),
+                        child: SvgPicture.asset(
+                          'assets/images/filter_icon.svg',
+                          width: 44,
+                          height: 44,
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: 30,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 0),
+                    child: TabBar(
+                      isScrollable: true,
+                      controller: _tabController,
+                      tabAlignment: TabAlignment.start,
+                      indicatorColor: Colors.transparent,
+                      dividerColor: Colors.transparent,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: const Color(0xFF9C7E60),
+                      labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600, fontFamily: 'Quicksand'),
+                      unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w400, fontFamily: 'Quicksand'),
+                      tabs: tabs.map((t) => Tab(text: t)).toList(),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+        body: TabBarView(
+          controller: _tabController,
+          children: List.generate(tabs.length, (tabIndex) {
+            final items = _filteredForTab(tabIndex);
+            if (items.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search_off,
+                      size: 64,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No orders found',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Try a different search or filter',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 20),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return GestureDetector(
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => AdminOrderDetailedPage(
+                          product: item.items.first,
+                          orderStatus: item.status))),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF7F2EC),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: item.items.first != null
+                              ? Image.network(
+                                  item.items.first.image() ??
+                                      'https://placehold.co/200x150/png',
+                                  fit: BoxFit.cover)
+                              : const Icon(Icons.inventory),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text('Order #${items[index].id}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
+                                            fontFamily: 'Quicksand')),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                        color:
+                                            items[index].status == 'Cancelled'
+                                                ? const Color(0xFFF8D1D1)
+                                                : const Color(0xFFF4E6DC),
+                                        borderRadius:
+                                            BorderRadius.circular(18)),
+                                    child: Text(items[index].status,
+                                        style: const TextStyle(
+                                            color: Color(0xFF8E4B0E),
+                                            fontFamily: 'Quicksand')),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '₱${items[index].discounted.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                    color: Color(0xFF8E4B0E),
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Quicksand'),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${item.items.first.size} ${item.items.first.name}, x${item.items.first.quantity}',
+                                style: const TextStyle(
+                                    color: Color(0xFFB99F92),
+                                    fontFamily: 'Quicksand'),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }),
+        ),
+      ),
+    );
   }
 
   void _showFilterDialog() {
@@ -249,7 +524,7 @@ class _OrderListPageState extends State<OrderListPage>
                       _selectedStatuses.clear();
                       _selectedDateRange = null;
                       _minPrice = 0;
-                      _maxPrice = 1000;
+                      _maxPrice = 10000;
                     });
                   },
                   child: const Text('Clear All',
@@ -279,260 +554,6 @@ class _OrderListPageState extends State<OrderListPage>
           },
         );
       },
-    );
-  }
-
-  Future<UserProfile> fetchUserProfile() async {
-    // TODO: replace with your real backend call
-    await Future.delayed(const Duration(milliseconds: 300));
-    return UserProfile(
-      displayName: 'Express-O',
-      email: 'admin123@gmail.com',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Apply Quicksand font family across this page
-    final themeWithQuicksand = Theme.of(context).copyWith(
-      textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Quicksand'),
-    );
-
-    return Theme(
-      data: themeWithQuicksand,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF38241D),
-          iconTheme: const IconThemeData(color: Colors.white),
-          centerTitle: true,
-          titleSpacing: 0,
-          toolbarHeight: 60,
-          title: const Padding(
-            padding: EdgeInsets.only(top: 10),
-            child: Text('Orders',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w600)),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-                child: const Icon(
-                  Icons.store_outlined,
-                  size: 24,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(130),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 25),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 44, // 👈 adjust height here
-                          child: TextField(
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: const Color(0xFF503228),
-                              hintText: 'Search here...',
-                              hintStyle: const TextStyle(color: Colors.white70),
-                              prefixIcon: const Icon(Icons.search,
-                                  color: Colors.white70),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 0),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            onChanged: (v) => setState(() => _search = v),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      InkWell(
-                        onTap: _showFilterDialog,
-                        borderRadius: BorderRadius.circular(5),
-                        child: SvgPicture.asset(
-                          'assets/images/filter_icon.svg',
-                          width: 44,
-                          height: 44,
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Container(
-                    height: 30,
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 0),
-                    child: TabBar(
-                      isScrollable: true,
-                      controller: _tabController,
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: Colors.transparent,
-                      dividerColor: Colors.transparent,
-                      labelColor: Colors.white,
-                      unselectedLabelColor: const Color(0xFF9C7E60),
-                      labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w600, fontFamily: 'Quicksand'),
-                      unselectedLabelStyle: const TextStyle(
-                          fontWeight: FontWeight.w400, fontFamily: 'Quicksand'),
-                      tabs: tabs.map((t) => Tab(text: t)).toList(),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-        drawer: AdminDrawer(
-          profileFuture: fetchUserProfile(), // <-- your future method
-
-          selectedRoute: "/orders", // mark this as active/highlighted
-          onNavigate: (route) {
-            Navigator.pushNamed(context, route);
-          },
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: List.generate(tabs.length, (tabIndex) {
-            final items = _filteredForTab(tabIndex);
-            if (items.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.search_off,
-                      size: 64,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No orders found',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Try a different search or filter',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 20),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => AdminOrderDetailedPage(
-                          product: item.product, orderStatus: item.status))),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                          spreadRadius: 0,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF7F2EC),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Image.asset(
-                              'assets/images/coffee_order_pic.png',
-                              fit: BoxFit.contain),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                      child: Text(item.product.name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 16,
-                                              fontFamily: 'Quicksand'))),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                        color: item.status == 'Cancelled'
-                                            ? const Color(0xFFF8D1D1)
-                                            : const Color(0xFFF4E6DC),
-                                        borderRadius:
-                                            BorderRadius.circular(18)),
-                                    child: Text(item.status,
-                                        style: const TextStyle(
-                                            color: Color(0xFF8E4B0E),
-                                            fontFamily: 'Quicksand')),
-                                  )
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text('₱${item.product.price.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                      color: Color(0xFF8E4B0E),
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Quicksand')),
-                              const SizedBox(height: 6),
-                              const Text('Americano, Latte, Cookies...',
-                                  style: TextStyle(
-                                      color: Color(0xFFB99F92),
-                                      fontFamily: 'Quicksand')),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
-        ),
-      ),
     );
   }
 }

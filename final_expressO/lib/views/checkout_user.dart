@@ -1,6 +1,8 @@
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/main.dart';
 import 'package:firebase_nexus/models/supabaseProduct.dart';
+import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +16,7 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   bool loading = false;
+  bool goToOrders = false;
   bool isOnlinePayment = false;
   bool showDiscountField = false;
   bool discountApplied = false;
@@ -68,7 +71,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         } else if (coupon['type'] == 'fixed') {
           discount = (coupon['value'] ?? 0).toDouble();
         }
-  
+
         // Prevent negative total
         final newTotal = (subtotal + shippingFee) - discount;
         if (newTotal < 0) discount = subtotal + shippingFee;
@@ -97,6 +100,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _insertOrder(Map<String, dynamic> orderData) async {
+    final navProvider = Provider.of<NavigationProvider>(context, listen: false);
     print(orderData['items']);
     final response = await userSupabaseHelper.insertOrder(orderData);
     String message;
@@ -115,8 +119,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
         print('-------------------------------------');
         await localDBhelper.deleteRow('cart', item.id);
       }
+      navProvider.setIndex(2);
+      setState(() {
+        goToOrders = true;
+      });
     } else {
-      message = "Invalid discount code.";
+      message = "There was a problem in our end, please try again later.";
     }
 
     // ✅ UI feedback
@@ -127,6 +135,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
         duration: const Duration(seconds: 2),
       ),
     );
+    setState(() {
+      loading = false;
+    });
   }
 
   @override
@@ -141,6 +152,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
+    }
+
+    if (goToOrders) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+        Navigator.pop(context);
+      });
     }
 
     final user = userProvider.user;

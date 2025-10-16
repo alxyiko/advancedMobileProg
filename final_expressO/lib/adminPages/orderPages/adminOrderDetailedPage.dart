@@ -672,7 +672,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                     _isStatusCompleted('Order Placed')
                         ? const Color(0xFFE27D19)
                         : Colors.grey,
-                    Icons.shopping_cart_checkout,
+                    Icons.shopping_cart_checkout, 
                     'Order Placed',
                     'We have received your order on\n16 Aug 2025',
                     isLast: false,
@@ -686,7 +686,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                         : Colors.grey,
                     Icons.pending_actions,
                     'Pending',
-                    'Your order is awaiting approval',
+                    'Your order is pending...',
                     isLast: false,
                   ),
 

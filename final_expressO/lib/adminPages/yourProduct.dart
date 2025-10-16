@@ -462,8 +462,8 @@ class _YourProductPageState extends State<YourProductPage> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => EditProduct(
-                                                productData: product),
+                                            builder: (context) => Editproductflow(
+                                                productID: product['id']),
                                           ),
                                         );
                                       },

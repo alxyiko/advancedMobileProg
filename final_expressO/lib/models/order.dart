@@ -11,6 +11,7 @@ class Order {
   final String status;
   final double totalPrice;
   final double discounted;
+  final String created_at;
   final List<Product> items;
   final Map<String, dynamic>? discount;
 
@@ -26,6 +27,7 @@ class Order {
     required this.totalPrice,
     required this.discounted,
     required this.items,
+    required this.created_at,
     this.discount,
   });
 
@@ -54,6 +56,7 @@ class Order {
       totalPrice: (json['total_price'] as num).toDouble(),
       discounted: (json['discounted'] as num).toDouble(),
       discount: json['discount'],
+      created_at: json['created_at'],
       items: products,
     );
   }

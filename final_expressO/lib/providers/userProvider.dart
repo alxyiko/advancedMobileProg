@@ -42,3 +42,26 @@ class UserProvider extends ChangeNotifier {
     Navigator.pushNamedAndRemoveUntil(context, '/tioLogin', (route) => false);
   }
 }
+
+String getFirstTwoInitials(String name) {
+  if (name.isEmpty) {
+    return '';
+  }
+
+  List<String> words = name.trim().split(' ');
+  StringBuffer initials = StringBuffer();
+
+  // Take the first character of the first word
+  if (words.isNotEmpty && words[0].isNotEmpty) {
+    initials.write(words[0][0]);
+  }
+
+  // Take the first character of the second word, if it exists
+  if (words.length > 1 && words[1].isNotEmpty) {
+    initials.write(words[1][0]);
+  }
+
+  return initials
+      .toString()
+      .toUpperCase(); // Return in uppercase for standard initial display
+}

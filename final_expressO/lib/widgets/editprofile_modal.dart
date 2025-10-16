@@ -18,7 +18,7 @@ class EditProfileModal extends StatefulWidget {
 
 class _EditProfileModalState extends State<EditProfileModal> {
   late TextEditingController nameController;
-  late TextEditingController emailController;
+  // late TextEditingController emailController;
   late TextEditingController addressController;
   late TextEditingController phoneController;
   final _formKey = GlobalKey<FormState>();
@@ -28,7 +28,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.user['name'] ?? '');
-    emailController = TextEditingController(text: widget.user['email'] ?? '');
+    // emailController = TextEditingController(text: widget.user['email'] ?? '');
     addressController =
         TextEditingController(text: widget.user['address'] ?? '');
     phoneController =
@@ -38,7 +38,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
   @override
   void dispose() {
     nameController.dispose();
-    emailController.dispose();
+    // emailController.dispose();
     addressController.dispose();
     phoneController.dispose();
     super.dispose();
@@ -49,7 +49,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
 
     final updated = {
       'name': nameController.text.trim(),
-      'email': emailController.text.trim(),
+      // 'email': emailController.text.trim(),
       'address': addressController.text.trim(),
       'phone_number': phoneController.text.trim(),
     };
@@ -101,14 +101,14 @@ class _EditProfileModalState extends State<EditProfileModal> {
                 _buildField('User name', nameController,
                     validator: (v) =>
                         v == null || v.trim().isEmpty ? 'Enter name' : null),
-                _buildField('Email', emailController,
-                    keyboardType: TextInputType.emailAddress, validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Enter email';
-                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                  if (!emailRegex.hasMatch(v.trim()))
-                    return 'Enter valid email';
-                  return null;
-                }),
+                // _buildField('Email', emailController,
+                //     keyboardType: TextInputType.emailAddress, validator: (v) {
+                //   if (v == null || v.trim().isEmpty) return 'Enter email';
+                //   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                //   if (!emailRegex.hasMatch(v.trim()))
+                //     return 'Enter valid email';
+                //   return null;
+                // }),
                 _buildField('Address', addressController,
                     maxLines: 3,
                     validator: (v) =>

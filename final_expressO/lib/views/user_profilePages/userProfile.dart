@@ -1,8 +1,9 @@
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/widgets/editprofile_modal.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -30,6 +31,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (!userProvider.isLoaded || userProvider.user == null) {
+      userProvider.loadUser(context);
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final user = userProvider.user;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -80,7 +92,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       IconButton(
                         onPressed: () {
                           // Handle settings/menu button press
-                          _showSettingsMenu(context);
+                          _showSettingsMenu(context, user);
                         },
                         icon: Icon(
                           Icons.more_vert,
@@ -107,7 +119,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                     child: Center(
                       child: Text(
-                        "AB",
+                        getFirstTwoInitials(user?['username']),
                         style: TextStyle(
                           color: Color(0xFFFFFFFF), // White text
                           fontSize: 32,
@@ -120,7 +132,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                   // Name in white
                   Text(
-                    "Ano Boss",
+                    user?['username'],
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -131,7 +143,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                   // Email in light color
                   Text(
-                    "anoboss@gmail.com",
+                    user?['email'],
                     style: TextStyle(
                       fontSize: 16,
                       color: const Color.fromARGB(158, 255, 255, 255)
@@ -153,7 +165,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   _isProfileExpanded = !_isProfileExpanded;
                 });
               },
-              content: _buildProfileDetails(),
+              content: _buildProfileDetails(
+                address: user?['address'],
+                phonenum: user?['phone_number'],
+              ),
             ),
 
             // // About Us Section
@@ -185,7 +200,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  void _showSettingsMenu(BuildContext context) {
+  void _showSettingsMenu(BuildContext context, Map<String, dynamic>? user) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -203,11 +218,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     context: context,
                     builder: (ctx) => EditProfileModal(
                       user: {
-                        'name': 'Ano Boss',
-                        'email': 'anoboss@gmail.com',
-                        'address':
-                            'Blk 1 Lt 2 Ph 2 Maple Street Diamond Ville\nSalawag Dasmarinas Cavite',
-                        'phone_number': '09123456789',
+                        'name': user?['username'],
+                        'address': user?['address'],
+                        'phone_number': user?['phone_number'],
                       },
                     ),
                   );
@@ -266,7 +279,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildProfileDetails() {
+  Widget _buildProfileDetails({
+    required String address,
+    required String phonenum,
+  }) {
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
@@ -297,7 +313,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      "Blk 1 Lt 2 Ph 2 Maple Street Diamond Ville\nSalawag Dasmarinas Cavite",
+                      address,
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[700],
@@ -335,7 +351,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      "09123456789",
+                      phonenum,
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[700],

@@ -26,6 +26,7 @@ class _CartPageState extends State<CartPage> {
 
   Future<void> _getCart() async {
     final cart = await localDBhelper.getCart();
+    print(cart.where((item) => item.included!).toList());
     setState(() {
       cartList = cart;
       selectedItems = cart.where((item) => item.included!).toList();

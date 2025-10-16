@@ -1,6 +1,7 @@
 import 'package:firebase_nexus/Profile/ShowProfile.dart';
 import 'package:firebase_nexus/adminPages/dummyCart.dart';
 import 'package:firebase_nexus/providers/navigation_provider.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/views/UserProducts.dart';
 import 'package:firebase_nexus/views/checkout_user.dart';
 import 'package:firebase_nexus/views/dummyCart.dart';
@@ -20,11 +21,15 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
 
     final pages = [
       const MyHomePage(),
       const NeilCart(),
-      const OrderListPage(),
+      OrderListPage(
+        user: user,
+      ),
       // const DummyOrderPage(),
       // const SQLitePage(),
       // const SupaPage(),

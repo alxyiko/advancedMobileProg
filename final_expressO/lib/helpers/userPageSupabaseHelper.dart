@@ -183,6 +183,22 @@ class UserSupabaseHelper {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getOrdersForUser(int userId) async {
+    try {
+      var query = _client.from('orderaggregate').select().eq('user_id', userId);
+
+      final response = await query;
+
+      print("functname:getOrders");
+      print(response);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print("GetAll error: $e");
+      return [];
+    }
+  }
+
   Future<List<SupabaseProduct>> getCart() async {
     return sqlFlite.getCart();
   }

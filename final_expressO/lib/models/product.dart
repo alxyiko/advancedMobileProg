@@ -3,15 +3,17 @@ import 'dart:io';
 class Product {
   final int? id;
   final String name;
-  final File? img;
+  final String? img;
   final Map<String, num>? variation;
   final double price;
   final int quantity;
+  final String? size;
 
   Product({
     this.id,
     required this.name,
     this.img,
+    this.size,
     this.variation,
     required this.price,
     required this.quantity,
@@ -25,6 +27,10 @@ class Product {
       'price': price,
       'quantity': quantity,
     };
+  }
+
+  String? image() {
+    return img;
   }
 
   // Create object from Map

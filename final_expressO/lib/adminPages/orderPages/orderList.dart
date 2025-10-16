@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/product.dart';
 
+import '../adminHome.dart';
+
 class OrderListPage extends StatefulWidget {
   const OrderListPage({
     super.key,
@@ -137,6 +139,17 @@ class _OrderListPageState extends State<OrderListPage>
 //   final order =;
 // final firstItem = order.items.isNotEmpty ? order.items.first : null;
 
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Apply Quicksand font family across this page
@@ -237,6 +250,14 @@ class _OrderListPageState extends State<OrderListPage>
               ),
             ),
           ),
+        ),
+        drawer: AdminDrawer(
+          profileFuture: fetchUserProfile(), // <-- your future method
+
+          selectedRoute: "/orders", // mark this as active/highlighted
+          onNavigate: (route) {
+            Navigator.pushNamed(context, route);
+          },
         ),
         body: TabBarView(
           controller: _tabController,
@@ -383,6 +404,7 @@ class _OrderListPageState extends State<OrderListPage>
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              backgroundColor: Colors.white,
               title: const Text('Filter Orders',
                   style: TextStyle(
                       fontFamily: 'Quicksand', fontWeight: FontWeight.w600)),
@@ -406,11 +428,17 @@ class _OrderListPageState extends State<OrderListPage>
                         'Cancelled',
                         'Rejected',
                       ].map((status) {
+                        final isSelected = _selectedStatuses.contains(status);
+
                         return FilterChip(
-                          label: Text(status,
-                              style: const TextStyle(
-                                  fontSize: 12, fontFamily: 'Quicksand')),
-                          selected: _selectedStatuses.contains(status),
+                          label: Text(
+                            status,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontFamily: 'Quicksand',
+                            ),
+                          ),
+                          selected: isSelected,
                           onSelected: (selected) {
                             setDialogState(() {
                               if (selected) {
@@ -420,12 +448,22 @@ class _OrderListPageState extends State<OrderListPage>
                               }
                             });
                           },
+                          backgroundColor: const Color(0xFFfcfaf3),
                           selectedColor:
                               const Color(0xFFE27D19).withOpacity(0.2),
                           checkmarkColor: const Color(0xFF8E4B0E),
+                          side: BorderSide(
+                            color: isSelected
+                                ? const Color(0xFFE27D19).withOpacity(0.4)
+                                : const Color.fromARGB(255, 247, 244, 231),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         );
                       }).toList(),
                     ),
+
                     const SizedBox(height: 16),
 
                     // Price Range Filter
@@ -544,8 +582,16 @@ class _OrderListPageState extends State<OrderListPage>
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE27D19),
-                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFFE27D19), // button fill
+                    foregroundColor: Colors.white, // text color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(
+                          color: Color(0xFFE7D3B4)), // border color
+                    ),
+                    elevation: 0, // optional, remove shadow for flat look
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                   ),
                   child: const Text('Apply',
                       style: TextStyle(fontFamily: 'Quicksand')),

@@ -86,53 +86,61 @@ class _AnalyticsPageState extends State<AnalyticsPage>
           Navigator.pushNamed(context, route);
         },
       ),
-      body: Column(
-        children: [
-          SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0, left: 13.0, right: 13.0),
-            child: Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8), // background of TabBar
-              child: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.orange[300],
-                labelColor: const Color(0xFFE27D19),
-                unselectedLabelColor: const Color(0xFF49454F),
-                tabs: const [
-                  Tab(text: 'Successful Orders'),
-                  Tab(text: 'Failed Orders'),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        child: Column(
+          children: [
+            SizedBox(height: 12),
+            Padding(
+              padding:
+                  const EdgeInsets.only(top: 12.0, left: 13.0, right: 13.0),
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8), // background of TabBar
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorColor: Colors.orange[300],
+                  labelColor: const Color(0xFFE27D19),
+                  unselectedLabelColor: const Color(0xFF49454F),
+                  tabs: const [
+                    Tab(text: 'Successful Orders'),
+                    Tab(text: 'Failed Orders'),
+                  ],
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: FutureBuilder<AdminAnalyticsReport>(
-              future: _analyticsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Failed to load analytics',
-                      style: TextStyle(color: Colors.red[700]),
+            Expanded(
+              child: FutureBuilder<AdminAnalyticsReport>(
+                future: _analyticsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Failed to load analytics',
+                        style: TextStyle(color: Colors.red[700]),
+                      ),
+                    );
+                  }
+                  final report = snapshot.data!;
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildSuccessfulTab(report),
+                        _buildFailedTab(report),
+                      ],
                     ),
                   );
-                }
-                final report = snapshot.data!;
-                return TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildSuccessfulTab(report),
-                    _buildFailedTab(report),
-                  ],
-                );
-              },
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

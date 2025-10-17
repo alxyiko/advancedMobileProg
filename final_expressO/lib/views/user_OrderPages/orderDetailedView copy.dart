@@ -51,9 +51,9 @@
 //     final currentStage = _getCurrentStage(orderStatus);
 
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFFAF6EA),
+//       backgroundColor: const Color(0XFFFFFAED),
 //       appBar: AppBar(
-//         backgroundColor: const Color(0xFFFAF6EA),
+//         backgroundColor: const Color(0XFFFFFAED),
 //         elevation: 0,
 //         leading: IconButton(
 //           icon: const Icon(Icons.chevron_left),

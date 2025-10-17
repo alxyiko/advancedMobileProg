@@ -421,7 +421,7 @@ class _CategoryLateralState extends State<CategoryLateral> {
               : Column(
                   children: [
                     Container(
-                      height: 75,
+                      height: 100,
                       decoration: const BoxDecoration(color: Color(0xFF38241D)),
                       child: SafeArea(
                         child: Padding(

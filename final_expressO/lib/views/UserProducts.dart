@@ -133,18 +133,18 @@ class _NeilCartState extends State<NeilCart> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Color(0xFFFAF6EA)),
+          icon: const Icon(Icons.chevron_left, color: Color(0XFFFFFAED)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined,
-                color: Color(0xFFFAF6EA)),
+                color: Color(0XFFFFFAED)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -154,7 +154,7 @@ class _NeilCartState extends State<NeilCart> {
           ),
           IconButton(
             icon:
-                const Icon(Icons.notifications_none, color: Color(0xFFFAF6EA)),
+                const Icon(Icons.notifications_none, color: Color(0XFFFFFAED)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -178,13 +178,13 @@ class _NeilCartState extends State<NeilCart> {
                   text: const TextSpan(
                     style: TextStyle(
                       fontFamily: 'Quicksand',
-                      fontSize: 22,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                     children: [
                       TextSpan(
                         text: 'Enjoy your Favorite ',
-                        style: TextStyle(color: Color(0xFFFAF6EA)),
+                        style: TextStyle(color: Color(0XFFFFFAED)),
                       ),
                       TextSpan(
                         text: 'Coffee! ☕',
@@ -194,7 +194,7 @@ class _NeilCartState extends State<NeilCart> {
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 20),
 
                 // 🔎 Search bar + filter
                 Row(
@@ -214,6 +214,7 @@ class _NeilCartState extends State<NeilCart> {
                             color: Color(0xFF9E7A6E),
                           ),
                           decoration: const InputDecoration(
+                            filled: false,
                             hintText: "Search coffee...",
                             hintStyle: TextStyle(
                               fontFamily: 'Quicksand',
@@ -235,7 +236,7 @@ class _NeilCartState extends State<NeilCart> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 // ☕ Categories
                 SizedBox(
@@ -297,6 +298,8 @@ class _NeilCartState extends State<NeilCart> {
               ],
             ),
           ),
+
+          SizedBox(height: 20),
 
           // 📜 Grid of products
           Expanded(
@@ -435,15 +438,16 @@ class _NeilCartState extends State<NeilCart> {
                                           MaterialPageRoute(
                                             builder: (_) => UserViewProductPage(
                                               productData: {
+                                                'id': product['id'],
                                                 'name': name,
                                                 'lowest_price': price,
                                                 'img': imageUrl,
-                                                'status': 'Processing',
-                                                'desc':
-                                                    'A delicious coffee for testing.',
-                                                'category_name': 'Coffee',
-                                                'stock': 10,
-                                                'variations': [],
+                                                'status': product['status'],
+                                                'desc': product['desc'],
+                                                'category_name':
+                                                    product['category_name'],
+                                                'stock': product['stock'],
+                                                'variations': variations,
                                               },
                                             ),
                                           ),
@@ -462,7 +466,8 @@ class _NeilCartState extends State<NeilCart> {
                 );
               },
             ),
-          )
+          ),
+          SizedBox(height: 30),
         ],
       ),
       floatingActionButton: AddToCartFAB(

@@ -86,6 +86,7 @@ class RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0XFFFFFAED),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: ConstrainedBox(
@@ -212,7 +213,7 @@ class RegisterState extends State<Register> {
                   const SizedBox(height: 50),
                   SizedBox(
                     width: double.infinity, // Takes full width
-                    height: 50,
+                    height: 44,
                     child: ElevatedButton(
                       onPressed: _validateAndSubmit,
                       style: ElevatedButton.styleFrom(
@@ -237,7 +238,7 @@ class RegisterState extends State<Register> {
                           : const Text(
                               'Sign Up',
                               style:
-                                  TextStyle(fontSize: 18, color: Colors.white),
+                                  TextStyle(fontSize: 16, color: Colors.white),
                             ),
                     ),
                   ),

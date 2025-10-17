@@ -207,7 +207,7 @@ class _NotifPageState extends State<adminTransactionHistory> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         centerTitle: true,

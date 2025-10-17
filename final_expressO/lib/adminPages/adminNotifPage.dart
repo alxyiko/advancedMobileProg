@@ -213,8 +213,7 @@ class _NotifPageState extends State<AdminNotifPage> {
     bool isHighPriority = false,
   }) {
     final timeText = _timeAgoText(createdAt);
-    const double cardHeight =
-        140.0; 
+    const double cardHeight = 140.0;
 
     final cardBody = SizedBox(
       height: cardHeight,
@@ -330,7 +329,7 @@ class _NotifPageState extends State<AdminNotifPage> {
   Widget build(BuildContext context) {
     // Scaffold containing the high priority section and regular notifications.
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         centerTitle: true,

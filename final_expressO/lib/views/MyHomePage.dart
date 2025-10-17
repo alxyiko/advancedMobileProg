@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print(user);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -60,6 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: const TextStyle(
                             fontSize: 20,
                             color: Color(0xFF2D1D17),
+                            fontFamily: 'Quicksand',
+                            fontWeight: FontWeight.w600,
                           ),
                           children: [
                             const TextSpan(text: "Hello, "),
@@ -107,12 +109,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFCFAF3),
                     borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
+                          color: Color(0x19B8B8B8),
+                          blurRadius: 2,
+                          offset: Offset(0, 1)),
+                      BoxShadow(
+                          color: Color(0x16B8B8B8),
+                          blurRadius: 4,
+                          offset: Offset(0, 4)),
+                      BoxShadow(
+                          color: Color(0x0CB8B8B8),
+                          blurRadius: 5,
+                          offset: Offset(0, 8)),
                     ],
                   ),
                   child: TextField(
@@ -120,24 +129,37 @@ class _MyHomePageState extends State<MyHomePage> {
                       hintText: 'Search...',
                       hintStyle: const TextStyle(
                         color: Color(0xFFD4D0C2),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15),
-                        child: Icon(
-                          Icons.search,
-                          color: Color(0xFFD4D0C2), // Match hint text color
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xFFD4D0C2),
+                        size: 20,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 255, 255,
+                              255), // border color when not focused
+                          width: 1,
                         ),
                       ),
-                      border: OutlineInputBorder(
+                      focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE27D19), // border color when focused
+                          width: 2,
+                        ),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 16),
                       filled: true,
-                      fillColor: const Color(
-                          0xFFFCFAF3), // Match container's background
+                      fillColor: const Color.fromARGB(255, 255, 255, 255),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 40),
                 Container(
                   height: 180,

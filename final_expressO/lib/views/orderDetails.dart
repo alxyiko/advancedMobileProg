@@ -161,7 +161,7 @@ class OrderDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       body: SafeArea(
         child: Center(
           child: Padding(

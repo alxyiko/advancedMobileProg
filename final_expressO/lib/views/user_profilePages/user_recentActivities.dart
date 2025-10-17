@@ -191,11 +191,10 @@ class _UserRecentActivitiesState extends State<UserRecentActivities> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         centerTitle: true,
@@ -213,7 +212,6 @@ class _UserRecentActivitiesState extends State<UserRecentActivities> {
           ),
         ),
       ),
-     
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),

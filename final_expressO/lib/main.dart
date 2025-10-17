@@ -104,38 +104,47 @@ class _MyAppState extends State<MyApp> {
         // scaffoldBackgroundColor: Color(0xFFF4F4F4),
         scaffoldBackgroundColor: Colors.white,
 
+        // ✨ Input field theme
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: const Color(0xFFEFF2FA),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
-            borderSide: const BorderSide(color: AppColors.secondary),
+          fillColor: Colors.white, // background color
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+
+          labelStyle: const TextStyle(
+            color: Color(0xFFD4D0C2),
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+
+          prefixIconColor: const Color(0xFFD4D0C2),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(
+              color: Color(0xFFE4E4E4), // not focused
+              width: 1,
+            ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
-            borderSide:
-                const BorderSide(color: AppColors.primaryVariant, width: 2),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
-            borderSide: const BorderSide(color: AppColors.secondaryVariant),
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(
+              color: Color(0xFFE27D19), // focused
+              width: 2,
+            ),
           ),
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
-            borderSide: const BorderSide(color: Color(0xFFFE3300), width: 2),
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(
+              color: Colors.red,
+              width: 1.5,
+            ),
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 17, horizontal: 10),
-          labelStyle: const TextStyle(color: Color(0xFF8F8F8F)),
-        ),
-
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary, // Button background color
-            foregroundColor: AppColors.textPrimary, // Text color
-            textStyle: const TextStyle(fontSize: 16), // Button text style
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5), // Rounded corners
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(
+              color: Colors.redAccent,
+              width: 2,
             ),
           ),
         ),

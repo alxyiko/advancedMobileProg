@@ -133,7 +133,7 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
       );
     }
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         elevation: 0,
@@ -188,10 +188,10 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF603B17),
-          width: 1,
-        ),
+        // border: Border.all(
+        //   color: const Color(0xFF603B17),
+        //   width: 1,
+        // ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -329,7 +329,7 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFAF6EA),
+                            color: const Color(0XFFFFFAED),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -429,10 +429,10 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF603B17),
-          width: 1,
-        ),
+        // border: Border.all(
+        //   color: const Color(0xFF603B17),
+        //   width: 1,
+        // ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -630,10 +630,10 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF603B17),
-          width: 1,
-        ),
+        // border: Border.all(
+        //   color: const Color(0xFF603B17),
+        //   width: 1,
+        // ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -871,10 +871,10 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF603B17),
-          width: 1,
-        ),
+        // border: Border.all(
+        //   color: const Color(0xFF603B17),
+        //   width: 1,
+        // ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),

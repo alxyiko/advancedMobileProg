@@ -45,7 +45,7 @@ class _CartPageState extends State<CartPage> {
         selectedItems.fold<double>(0, (sum, e) => sum + (e.price * e.quantity));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF2c1d16),
         elevation: 0,

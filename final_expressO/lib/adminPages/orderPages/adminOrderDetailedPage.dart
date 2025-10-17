@@ -774,14 +774,14 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                       isLast: true,
                     ),
 
-                  if (hasStatus('Canceled') != null)
+                  if (hasStatus('Cancelled') != null)
                     // For Delivery / Ready to Pickup
                     _buildTimelineItem(
                       true,
                       const Color.fromARGB(255, 237, 60, 7),
                       Icons.error,
-                      'Canceled',
-                      '${hasStatus('Canceled')?['remarks']} - ${formattedDate(hasStatus('Canceled')?['created_at'])}',
+                      'Cancelled',
+                      '${hasStatus('Cancelled')?['remarks']} - ${formattedDate(hasStatus('Cancelled')?['created_at'])}',
                       isLast: true,
                     ),
                   // if (hasStatus('Completed') != null)

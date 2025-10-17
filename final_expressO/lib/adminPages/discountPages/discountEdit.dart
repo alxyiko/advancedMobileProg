@@ -74,7 +74,7 @@ class _DiscountEditState extends State<DiscountEdit> {
       lastDate: DateTime(2100),
     );
 
-    if (pickedDate == null) return; // user canceled
+    if (pickedDate == null) return; // user cancelled
 
     // Then pick the time
     final TimeOfDay? pickedTime = await showTimePicker(
@@ -82,7 +82,7 @@ class _DiscountEditState extends State<DiscountEdit> {
       initialTime: TimeOfDay.fromDateTime(now),
     );
 
-    if (pickedTime == null) return; // user canceled
+    if (pickedTime == null) return; // user cancelled
 
     // Combine date + time
     final DateTime fullDateTime = DateTime(

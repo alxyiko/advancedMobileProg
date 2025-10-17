@@ -453,7 +453,7 @@ class _AddProductStep2State extends State<AddProductStep2> {
         toolbarHeight: 68, // slightly taller for breathing room
         elevation: 0,
         title: Text(
-          _editMode ? "Edits Product" : "Adds Product",
+          _editMode ? "Edit Product" : "Add Product",
           style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontFamily: 'Quicksand',
@@ -837,7 +837,7 @@ class _VariationEditorState extends State<VariationEditor> {
           // Scrollable variation list
           Flexible(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 250),
+              constraints: const BoxConstraints(minHeight: 300, maxHeight: 450),
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _variations.length,

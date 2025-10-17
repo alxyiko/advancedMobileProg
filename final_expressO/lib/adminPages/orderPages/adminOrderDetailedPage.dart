@@ -132,7 +132,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
       );
     }
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       appBar: AppBar(
         backgroundColor: const Color(0xFF38241D),
         elevation: 0,
@@ -338,7 +338,7 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFAF6EA),
+                            color: const Color(0XFFFFFAED),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(

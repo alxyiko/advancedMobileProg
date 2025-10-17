@@ -9,7 +9,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0XFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       body: Center(
         // <-- This centers everything horizontally and vertically
         child: Padding(
@@ -42,8 +42,9 @@ class WelcomeScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE27D19),
                     foregroundColor: Colors.white,
+
                     padding: const EdgeInsets.symmetric(
-                        vertical: 20), // only vertical padding
+                        vertical: 15), // only vertical padding
                     textStyle: GoogleFonts.quicksand(fontSize: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -61,12 +62,13 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 30),
               RichText(
                 text: TextSpan(
                   text: 'Already have an account? ',
                   style: GoogleFonts.quicksand(
                     fontSize: 14,
+                    fontWeight: FontWeight.w500,
                     color: const Color(0xFF603B17),
                   ),
                   children: [
@@ -74,6 +76,7 @@ class WelcomeScreen extends StatelessWidget {
                       text: 'Sign in here',
                       style: GoogleFonts.quicksand(
                         fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: const Color(0xFFE27D19),
                         decoration: TextDecoration.underline,
                       ),

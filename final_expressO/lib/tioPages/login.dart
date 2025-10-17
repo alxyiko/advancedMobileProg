@@ -64,16 +64,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0XFFFAF6EA),
+      backgroundColor: const Color(0XFFFFFAED),
       body: Stack(
         children: [
           // --- Background Image ---
-          SizedBox(
-            child: Image.asset(
-              'assets/loginbg.png', // Change to your background image
-              fit: BoxFit.cover,
-            ),
-          ),
+          // SizedBox(
+          //   child: Image.asset(
+          //     'assets/loginbg.png', // Change to your background image
+          //     fit: BoxFit.cover,
+          //   ),
+          // ),
 
           // --- Foreground content ---
           Center(
@@ -92,6 +92,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF603B17),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Please sign in to continue',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFBD9771),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -116,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE27D19),
-                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
@@ -138,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 40),
                     // SizedBox(
                     //   width: double.infinity,
                     //   child: ElevatedButton(
@@ -201,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFCF9F2),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: const [
           BoxShadow(
@@ -210,10 +219,6 @@ class _LoginScreenState extends State<LoginScreen> {
               color: Color(0x16B8B8B8), blurRadius: 4, offset: Offset(0, 4)),
           BoxShadow(
               color: Color(0x0CB8B8B8), blurRadius: 5, offset: Offset(0, 8)),
-          BoxShadow(
-              color: Color(0x02B8B8B8), blurRadius: 6, offset: Offset(0, 14)),
-          BoxShadow(
-              color: Color(0x00B8B8B8), blurRadius: 6, offset: Offset(0, 22)),
         ],
       ),
       child: TextField(
@@ -231,12 +236,22 @@ class _LoginScreenState extends State<LoginScreen> {
             color: const Color(0xFFD4D0C2),
             size: 20,
           ),
-          border: OutlineInputBorder(
+          enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide.none,
+            borderSide: const BorderSide(
+              color: Color(0xFFE4E4E4), // border color when not focused
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(
+              color: Color(0xFFE27D19), // border color when focused
+              width: 2,
+            ),
           ),
           contentPadding:
-              const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+              const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
         ),
       ),
     );

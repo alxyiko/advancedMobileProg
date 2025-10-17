@@ -6,6 +6,8 @@ import 'package:firebase_nexus/views/user_OrderPages/CartList.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'notifPage.dart';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
@@ -92,12 +94,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.notifications_outlined,
-                            color: Color(0xFF2D1D17),
-                            size: 22, // ✅ smaller size
-                          ),
+                          icon: const Icon(Icons.notifications_none,
+                              color: Color(0xFF2D1D17)),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const NotifPage()),
+                            );
+                          },
                         ),
                       ],
                     ),

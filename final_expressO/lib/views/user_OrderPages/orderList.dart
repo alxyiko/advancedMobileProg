@@ -6,6 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/product.dart';
 import 'orderDetailedView.dart';
 
+import '../notifPage.dart';
+import 'CartList.dart';
+
 class OrderListPage extends StatefulWidget {
   final Map<String, dynamic>? user;
 
@@ -159,19 +162,44 @@ class _OrderListPageState extends State<OrderListPage>
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xFF38241D),
-          iconTheme: const IconThemeData(color: Colors.white),
-          centerTitle: true,
-          titleSpacing: 0,
+          elevation: 0,
           toolbarHeight: 60,
-          title: const Padding(
-            padding: EdgeInsets.only(top: 10),
-            child: Text('Orders',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Quicksand',
-                    fontWeight: FontWeight.w600)),
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left, color: Color(0XFFFFFAED)),
+            onPressed: () => Navigator.of(context).pop(),
           ),
+          title: const Text(
+            'Orders',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.shopping_cart_outlined,
+                  color: Color(0XFFFFFAED)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartPage()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.notifications_none,
+                  color: Color(0XFFFFFAED)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotifPage()),
+                );
+              },
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(130),
             child: Padding(
@@ -182,7 +210,7 @@ class _OrderListPageState extends State<OrderListPage>
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: 44, // 👈 adjust height here
+                          height: 44,
                           child: TextField(
                             decoration: InputDecoration(
                               filled: true,
@@ -212,7 +240,7 @@ class _OrderListPageState extends State<OrderListPage>
                           width: 44,
                           height: 44,
                         ),
-                      )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -229,12 +257,16 @@ class _OrderListPageState extends State<OrderListPage>
                       labelColor: Colors.white,
                       unselectedLabelColor: const Color(0xFF9C7E60),
                       labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w600, fontFamily: 'Quicksand'),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Quicksand',
+                      ),
                       unselectedLabelStyle: const TextStyle(
-                          fontWeight: FontWeight.w400, fontFamily: 'Quicksand'),
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Quicksand',
+                      ),
                       tabs: tabs.map((t) => Tab(text: t)).toList(),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

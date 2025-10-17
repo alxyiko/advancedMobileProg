@@ -51,6 +51,7 @@ class AdminHome extends StatelessWidget {
         '/analytics': (c) => const AnalyticsVIew(),
         '/transactions': (c) => const adminTransactionHistory(),
         '/profile': (c) => const ShowProfile(),
+        '/adminNotifPage': (context) => const AdminNotifPage(),
       },
       initialRoute: '/',
     );

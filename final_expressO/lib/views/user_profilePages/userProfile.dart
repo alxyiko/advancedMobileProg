@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_nexus/views/user_profilePages/user_recentActivities.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -15,7 +16,7 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   bool _isProfileExpanded = true;
   bool _isAboutExpanded = true;
-  bool _isActivitiesExpanded = true;
+  // bool _isActivitiesExpanded = true;
 
   Future<void> _logout(BuildContext context) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -183,17 +184,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
             //   content: _buildAboutUs(),
             // ),
 
-            // Recent Activities Section
-            _buildProfileSection(
-              title: "Recent Activities",
-              isExpanded: _isActivitiesExpanded,
-              onTap: () {
-                setState(() {
-                  _isActivitiesExpanded = !_isActivitiesExpanded;
-                });
-              },
-              content: _buildRecentActivities(),
-            ),
+            // Recent Activities button
+            _buildRecentActivitiesButton(),
           ],
         ),
       ),
@@ -409,44 +401,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
   //   );
   // }
 
-  Widget _buildRecentActivities() {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.history,
-            color: Color(0xFF603B17),
-            size: 20,
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Recent Activities",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "No recent activities to display",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[700],
-                    height: 1.5,
-                  ),
-                ),
-              ],
+  Widget _buildRecentActivitiesButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const UserRecentActivities(),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF603B17),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-        ],
+          child: const Text('View Recent Activities'),
+        ),
       ),
     );
   }

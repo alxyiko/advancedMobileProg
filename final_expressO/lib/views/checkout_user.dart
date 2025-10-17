@@ -268,7 +268,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     onChanged: (val) => setState(() => isOnlinePayment = val!),
                   ),
                   RadioListTile<bool>(
-                    title: const Text("Gcash"),
+                    title: const Text("Online Payment"),
                     secondary: const Icon(Icons.payment_outlined),
                     activeColor: brown,
                     value: true,
@@ -397,7 +397,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: 10),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCF8C47),
+                backgroundColor: const Color(0xFFe37c19),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 shape: RoundedRectangleBorder(
@@ -487,7 +487,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     });
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFCF8C47),
+              backgroundColor: const Color(0xFFe37c19),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),

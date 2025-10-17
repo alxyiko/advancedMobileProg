@@ -206,8 +206,13 @@ class _discountAddState extends State<discountAdd> {
         backgroundColor: AppColors.secondary,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
-          "Add Discount",
-          style: TextStyle(fontSize: 16, color: Colors.white),
+          "Add Product",
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Quicksand',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: true,
       ),
@@ -438,7 +443,7 @@ class _discountAddState extends State<discountAdd> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
@@ -481,11 +486,11 @@ class _discountAddState extends State<discountAdd> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.secondary,
                         backgroundColor: Colors.white, // <-- white background
-                        side: const BorderSide(color: Color(0xFFC8A888)),
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        side: const BorderSide(color: AppColors.border),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius:
-                              BorderRadius.circular(15), // 15px radius
+                              BorderRadius.circular(12), // 15px radius
                         ),
                       ),
                       onPressed: () {
@@ -503,10 +508,10 @@ class _discountAddState extends State<discountAdd> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius:
-                              BorderRadius.circular(15), // 15px radius
+                              BorderRadius.circular(12), // 15px radius
                         ),
                       ),
                       onPressed: _submitLoading

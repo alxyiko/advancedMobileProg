@@ -1,8 +1,10 @@
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/models/order.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
+import 'package:firebase_nexus/widgets/optimizedFab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import '../../models/product.dart';
 import '../../widgets/order_status_fab.dart';
 
@@ -24,7 +26,7 @@ class AdminOrderDetailedPage extends StatefulWidget {
 
 class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
     with TickerProviderStateMixin {
-  late String _currentStatus;
+  String _currentStatus = 'Pending';
   String _deliveryMethod = 'Walk-in'; // or get from order data
   bool _isCustomerInfoExpanded = true;
   bool _isOrderItemsExpanded = true;
@@ -35,7 +37,8 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
   double _discount = 0;
 
   late List<Map<String, dynamic>> _updates = [];
-  double get totalPayment => (widget.order.totalPrice + 50) - _discount;
+  // double get totalPayment => (widget.order.totalPrice + 50) - _discount;
+  double get totalPayment => (widget.order.totalPrice) - _discount;
 
   final supabaseHelper = AdminSupabaseHelper();
   @override
@@ -50,12 +53,44 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
     super.dispose();
   }
 
+  Map<String, dynamic>? hasStatus(String status) {
+    Map<String, dynamic>? fetchedElement;
+
+    try {
+      fetchedElement = _updates.firstWhere(
+        (update) =>
+            update['status'].toString().toLowerCase() == status.toLowerCase(),
+      );
+    } catch (e) {
+      // firstWhere throws if no match found
+      fetchedElement = null;
+    }
+
+    if (fetchedElement != null) {
+      print('Found: $fetchedElement');
+    } else {
+      print('No match for status "$status"');
+    }
+
+    return fetchedElement;
+  }
+
+  String formattedDate(String utcString) {
+    DateTime localDateTime = DateTime.parse(utcString).toLocal();
+    // Format nicely
+    return DateFormat('yyyy-MM-dd hh:mm a').format(localDateTime);
+  }
+
   Future<void> _loadInitialData() async {
     try {
+      setState(() {
+        _loading = true;
+      });
       print('INIT STARTED');
-      final updates = await supabaseHelper.getOrdersForUser(widget.order.id);
+      final updates = await supabaseHelper.getOrderupdates(widget.order.id);
 
       double discount = 0;
+      String latest = 'Pending';
       if (widget.order.discount?['code'] != null) {
         if (widget.order.discount?['type'] == 'percentage') {
           final rate = (widget.order.discount?['value'] ?? 0).toDouble();
@@ -65,9 +100,18 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
         }
       }
 
+      if (updates.isNotEmpty) {
+        latest = updates.last['status'];
+      } else {
+        latest = widget.order.status;
+      }
+
+      print(latest);
+
       setState(() {
         _discount = discount;
         _loading = false;
+        _currentStatus = latest;
         _updates = updates;
       });
 
@@ -129,19 +173,12 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
           ],
         ),
       ),
-      floatingActionButton: OrderStatusFab(
+      floatingActionButton: OrderStatusFabOptimized(
         currentStatus: _currentStatus,
+        loading: _loading,
+        orderID: widget.order.id,
         deliveryMethod: _deliveryMethod,
-        onStatusChanged: (newStatus, remarks) {
-          setState(() {
-            _currentStatus = newStatus;
-          });
-
-          // print('New Status: $newStatus');
-          // print('Remarks: $remarks');
-
-          // TODO: Update database with new status and remarks
-        },
+        onStatusChanged: () => _loadInitialData(),
       ),
     );
   }
@@ -668,69 +705,96 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
                 children: [
                   // Order Placed
                   _buildTimelineItem(
-                    _isStatusCompleted('Order Placed'),
-                    _isStatusCompleted('Order Placed')
-                        ? const Color(0xFFE27D19)
-                        : Colors.grey,
-                    Icons.shopping_cart_checkout, 
+                    true,
+                    // _isStatusCompleted('Order Placed')
+                    // ?
+                    const Color(0xFFE27D19),
+                    // : Colors.grey,
+
+                    Icons.shopping_cart_checkout,
                     'Order Placed',
-                    'We have received your order on\n16 Aug 2025',
+                    'on ${formattedDate(widget.order.created_at)}',
                     isLast: false,
                   ),
 
                   // Pending
                   _buildTimelineItem(
-                    _isStatusCompleted('Pending'),
-                    _isStatusCompleted('Pending')
-                        ? const Color(0xFFFF9800)
-                        : Colors.grey,
+                    true,
+                    const Color(0xFFE27D19),
+                    // _isStatusCompleted('Pending')
+                    //     ? const Color(0xFFFF9800)
+                    //     : Colors.grey,
                     Icons.pending_actions,
                     'Pending',
-                    'Your order is pending...',
+                    'Order is pending...',
                     isLast: false,
                   ),
 
-                  // Processing
-                  _buildTimelineItem(
-                    _isStatusCompleted('Processing'),
-                    _isStatusCompleted('Processing')
-                        ? const Color(0xFF2196F3)
-                        : Colors.grey,
-                    Icons.autorenew,
-                    'Processing',
-                    'We are now processing your order',
-                    isLast: false,
-                  ),
+                  if (hasStatus('Processing') != null)
+                    // Processing
+                    _buildTimelineItem(
+                      true,
+                      const Color(0xFF2196F3),
+                      Icons.autorenew,
+                      'Processing',
+                      '${hasStatus('Processing')?['remarks']} - ${formattedDate(hasStatus('Processing')?['created_at'])}',
+                      isLast: false,
+                    ),
 
-                  // For Delivery / Ready to Pickup
-                  _buildTimelineItem(
-                    _isStatusCompleted(
-                        isWalkIn ? 'Ready to Pickup' : 'For Delivery'),
-                    _isStatusCompleted(
-                            isWalkIn ? 'Ready to Pickup' : 'For Delivery')
-                        ? (isWalkIn
-                            ? const Color(0xFFFF9800)
-                            : const Color(0xFF9C27B0))
-                        : Colors.grey,
-                    isWalkIn ? Icons.store : Icons.local_shipping,
-                    isWalkIn ? 'Ready to Pickup' : 'For Delivery',
-                    isWalkIn
-                        ? 'Your order is ready for pickup'
-                        : 'Your order is out for delivery',
-                    isLast: false,
-                  ),
+                  if (hasStatus('Ready to Pickup') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color(0xFFFF9800),
+                      Icons.store,
+                      'Ready to Pickup',
+                      '${hasStatus('Ready to Pickup')?['remarks']} - ${formattedDate(hasStatus('Ready to Pickup')?['created_at'])}',
+                      isLast: false,
+                    ),
 
-                  // Completed
-                  _buildTimelineItem(
-                    _isStatusCompleted('Completed'),
-                    _isStatusCompleted('Completed')
-                        ? const Color(0xFF4CAF50)
-                        : Colors.grey,
-                    Icons.check_circle,
-                    'Completed',
-                    'Your order is completed on 16\nAug 2025, 10:35 PM',
-                    isLast: true,
-                  ),
+                  if (hasStatus('Completed') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color(0xFF4CAF50),
+                      Icons.check_circle,
+                      'Complete',
+                      '${hasStatus('Completed')?['remarks']} - ${formattedDate(hasStatus('Completed')?['created_at'])}',
+                      isLast: true,
+                    ),
+
+                  if (hasStatus('Rejected') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color.fromARGB(255, 237, 60, 7),
+                      Icons.error,
+                      'Complete',
+                      '${hasStatus('Rejected')?['remarks']} - ${formattedDate(hasStatus('Rejected')?['created_at'])}',
+                      isLast: true,
+                    ),
+
+                  if (hasStatus('Canceled') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color.fromARGB(255, 237, 60, 7),
+                      Icons.error,
+                      'Canceled',
+                      '${hasStatus('Canceled')?['remarks']} - ${formattedDate(hasStatus('Canceled')?['created_at'])}',
+                      isLast: true,
+                    ),
+                  // if (hasStatus('Completed') != null)
+                  //   // Completed
+                  //   _buildTimelineItem(
+                  //     _isStatusCompleted('Completed'),
+                  //     _isStatusCompleted('Completed')
+                  //         : Colors.grey,
+                  //     Icons.check_circle,
+                  //     'Completed',
+                  //     'Your order is completed on 16\nAug 2025, 10:35 PM',
+                  //     isLast: true,
+                  //   ),
                 ],
               ),
             ),
@@ -881,8 +945,8 @@ class _AdminOrderDetailedPageState extends State<AdminOrderDetailedPage>
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  _buildPaymentRow('Shipping', '₱ 50.00'),
-                  const SizedBox(height: 12),
+                  // _buildPaymentRow('Shipping', '₱ 50.00'),
+                  // const SizedBox(height: 12),
                   _buildPaymentRow('Subtotal', '₱ ${widget.order.totalPrice}'),
                   const SizedBox(height: 12),
                   if (widget.order.discount?['code'] != null)

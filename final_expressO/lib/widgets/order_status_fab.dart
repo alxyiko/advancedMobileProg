@@ -148,6 +148,8 @@ class _OrderStatusFabState extends State<OrderStatusFab>
     String status = widget.currentStatus.toLowerCase();
     String method = widget.deliveryMethod.toLowerCase();
 
+
+  
     if (status == 'processing') {
       return method == 'walk-in' ? 'Ready to Pickup' : 'For Delivery';
     } else if (status == 'for delivery' || status == 'ready to pickup') {

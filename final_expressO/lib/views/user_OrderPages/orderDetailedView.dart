@@ -1,16 +1,19 @@
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/models/order.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
+import 'package:firebase_nexus/widgets/optimizedFab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import '../../models/product.dart';
-import '../../widgets/order_cancel_fab.dart';
+import '../../widgets/order_status_fab.dart';
 
-class UserOrderDetailedView extends StatefulWidget {
+class UserOrderDetailedPage extends StatefulWidget {
   final Order order;
   final Product product;
   final String orderStatus;
 
-  const UserOrderDetailedView({
+  const UserOrderDetailedPage({
     super.key,
     required this.order,
     required this.product,
@@ -18,12 +21,12 @@ class UserOrderDetailedView extends StatefulWidget {
   });
 
   @override
-  State<UserOrderDetailedView> createState() => _UserOrderDetailedViewState();
+  State<UserOrderDetailedPage> createState() => _UserOrderDetailedPageState();
 }
 
-class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
+class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
     with TickerProviderStateMixin {
-  late String _currentStatus;
+  String _currentStatus = 'Pending';
   String _deliveryMethod = 'Walk-in'; // or get from order data
   bool _isCustomerInfoExpanded = true;
   bool _isOrderItemsExpanded = true;
@@ -31,13 +34,17 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
   bool _loading = false;
   bool _isPaymentDetailsExpanded = true;
 
+  double _discount = 0;
+
   late List<Map<String, dynamic>> _updates = [];
+  // double get totalPayment => (widget.order.totalPrice + 50) - _discount;
+  double get totalPayment => (widget.order.totalPrice) - _discount;
 
   final supabaseHelper = AdminSupabaseHelper();
-
   @override
   void initState() {
     super.initState();
+    _loadInitialData();
     _currentStatus = widget.orderStatus;
   }
 
@@ -46,13 +53,65 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
     super.dispose();
   }
 
+  Map<String, dynamic>? hasStatus(String status) {
+    Map<String, dynamic>? fetchedElement;
+
+    try {
+      fetchedElement = _updates.firstWhere(
+        (update) =>
+            update['status'].toString().toLowerCase() == status.toLowerCase(),
+      );
+    } catch (e) {
+      // firstWhere throws if no match found
+      fetchedElement = null;
+    }
+
+    if (fetchedElement != null) {
+      print('Found: $fetchedElement');
+    } else {
+      print('No match for status "$status"');
+    }
+
+    return fetchedElement;
+  }
+
+  String formattedDate(String utcString) {
+    DateTime localDateTime = DateTime.parse(utcString).toLocal();
+    // Format nicely
+    return DateFormat('yyyy-MM-dd hh:mm a').format(localDateTime);
+  }
+
   Future<void> _loadInitialData() async {
     try {
+      setState(() {
+        _loading = true;
+      });
       print('INIT STARTED');
-      final updates = await supabaseHelper.getOrdersForUser(widget.order.id);
+      final updates = await supabaseHelper.getOrderupdates(widget.order.id);
+
+      double discount = 0;
+      String latest = 'Pending';
+      if (widget.order.discount?['code'] != null) {
+        if (widget.order.discount?['type'] == 'percentage') {
+          final rate = (widget.order.discount?['value'] ?? 0).toDouble();
+          discount = widget.order.totalPrice * (rate / 100);
+        } else if (widget.order.discount?['type'] == 'fixed') {
+          discount = (widget.order.discount?['value'] ?? 0).toDouble();
+        }
+      }
+
+      if (updates.isNotEmpty) {
+        latest = updates.last['status'];
+      } else {
+        latest = widget.order.status;
+      }
+
+      print(latest);
 
       setState(() {
+        _discount = discount;
         _loading = false;
+        _currentStatus = latest;
         _updates = updates;
       });
 
@@ -65,6 +124,13 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6EA),
       appBar: AppBar(
@@ -89,27 +155,31 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Customer Information Card
             _buildCustomerInfoCard(),
             const SizedBox(height: 16),
+
+            // Order Items Card
             _buildOrderItemsCard(),
             const SizedBox(height: 16),
+
+            // Order Timeline Card
             _buildOrderTimelineCard(),
             const SizedBox(height: 16),
+
+            // Payment Details Card
             _buildPaymentDetailsCard(),
-            const SizedBox(height: 100),
+            const SizedBox(height: 100), // Extra space for floating button
           ],
         ),
       ),
-      floatingActionButton: CancelOrderFab(
-        orderStatus: _currentStatus,
-        orderId: widget.product.id?.toString(),
-        onCancel: () {
-          print('Order ${widget.product.id} cancelled');
-          setState(() {
-            _currentStatus = 'Cancelled';
-          });
-        },
-      ),
+      // floatingActionButton: OrderStatusFabOptimized(
+      //   currentStatus: _currentStatus,
+      //   loading: _loading,
+      //   orderID: widget.order.id,
+      //   deliveryMethod: _deliveryMethod,
+      //   onStatusChanged: () => _loadInitialData(),
+      // ),
     );
   }
 
@@ -157,7 +227,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
               child: Row(
                 children: [
                   const Text(
-                    'Order Information',
+                    'Customer Information',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -184,7 +254,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
               child: Column(
                 children: [
                   Text(
-                    'Order#: ${widget.product.id}',
+                    'Order #${widget.order.id}',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -192,7 +262,8 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                       color: Color(0xFF38241D),
                     ),
                   ),
-                  const SizedBox(height: 4),
+
+                  const SizedBox(height: 16),
 
                   // Payment Method Badge
                   Container(
@@ -227,68 +298,52 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
 
                   // Customer Details
                   _buildInfoRow(
-                      Icons.email_outlined, 'Email', 'bossjuan@gmail.com'),
+                      Icons.email_outlined, 'Email', widget.order.email),
                   const SizedBox(height: 12),
-                  _buildInfoRow(Icons.phone_outlined, 'Number', '09123456789'),
+                  _buildInfoRow(Icons.phone_outlined, 'Number',
+                      widget.order.phone_number),
                   const SizedBox(height: 12),
                   _buildInfoRow(Icons.location_on_outlined, 'Address',
-                      'Blk 1 Lt 2 Ph 2 Maple Street\nDiamond Ville Salawag\nDasmarinas Cavite'),
+                      widget.order.address),
                   const SizedBox(height: 12),
                   _buildMethodRow(),
                   const SizedBox(height: 12),
 
                   // Vouchers
-                  Row(
-                    children: [
-                      const Icon(Icons.local_offer_outlined,
-                          color: Color(0xFF8E4B0E), size: 20),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Voucher(s)',
-                        style: TextStyle(
-                          color: Color(0xFF8E4B0E),
-                          fontFamily: 'Quicksand',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF6EA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'SAVE50',
+                  if (widget.order.discount?['code'] != null)
+                    Row(
+                      children: [
+                        const Icon(Icons.local_offer_outlined,
+                            color: Color(0xFF8E4B0E), size: 20),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Discount:',
                           style: TextStyle(
-                            color: Color(0xFF7B5B3C),
+                            color: Color(0xFF8E4B0E),
                             fontFamily: 'Quicksand',
-                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF6EA),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'BUY1GET1',
-                          style: TextStyle(
-                            color: Color(0xFF7B5B3C),
-                            fontFamily: 'Quicksand',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAF6EA),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                          child: Text(
+                            widget.order.discount?['code'],
+                            style: TextStyle(
+                              color: Color(0xFF7B5B3C),
+                              fontFamily: 'Quicksand',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -412,7 +467,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
               child: Row(
                 children: [
                   Text(
-                    'Items',
+                    'Order#: ${widget.product.id}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Quicksand',
@@ -454,7 +509,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: 3, // Mock 3 items
+              itemCount: widget.order.items.length,
               separatorBuilder: (context, index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 child: const Divider(
@@ -464,6 +519,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                 ),
               ),
               itemBuilder: (context, index) {
+                final item = widget.order.items[index];
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -474,7 +530,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '₱${widget.product.price.toStringAsFixed(0)}',
+                              '₱${item.price.toStringAsFixed(0)}',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -483,8 +539,8 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'Caramel Macchiato',
+                            Text(
+                              '${item.name} (${item.size})',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -508,10 +564,16 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/coffee_order_pic.png',
-                            fit: BoxFit.cover,
-                          ),
+                          child: item.img != null
+                              ? Image.network(
+                                  item.img ??
+                                      'https://placehold.co/200x150/png',
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  'assets/images/coffee_order_pic.png',
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                     ],
@@ -634,69 +696,96 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                 children: [
                   // Order Placed
                   _buildTimelineItem(
-                    _isStatusCompleted('Order Placed'),
-                    _isStatusCompleted('Order Placed')
-                        ? const Color(0xFFE27D19)
-                        : Colors.grey,
+                    true,
+                    // _isStatusCompleted('Order Placed')
+                    // ?
+                    const Color(0xFFE27D19),
+                    // : Colors.grey,
+
                     Icons.shopping_cart_checkout,
                     'Order Placed',
-                    'We have received your order on\n16 Aug 2025',
+                    'on ${formattedDate(widget.order.created_at)}',
                     isLast: false,
                   ),
 
                   // Pending
                   _buildTimelineItem(
-                    _isStatusCompleted('Pending'),
-                    _isStatusCompleted('Pending')
-                        ? const Color(0xFFFF9800)
-                        : Colors.grey,
+                    true,
+                    const Color(0xFFE27D19),
+                    // _isStatusCompleted('Pending')
+                    //     ? const Color(0xFFFF9800)
+                    //     : Colors.grey,
                     Icons.pending_actions,
                     'Pending',
-                    'Your order is awaiting approval',
+                    'Order is pending...',
                     isLast: false,
                   ),
 
-                  // Processing
-                  _buildTimelineItem(
-                    _isStatusCompleted('Processing'),
-                    _isStatusCompleted('Processing')
-                        ? const Color(0xFF2196F3)
-                        : Colors.grey,
-                    Icons.autorenew,
-                    'Processing',
-                    'We are now processing your order',
-                    isLast: false,
-                  ),
+                  if (hasStatus('Processing') != null)
+                    // Processing
+                    _buildTimelineItem(
+                      true,
+                      const Color(0xFF2196F3),
+                      Icons.autorenew,
+                      'Processing',
+                      '${hasStatus('Processing')?['remarks']} - ${formattedDate(hasStatus('Processing')?['created_at'])}',
+                      isLast: false,
+                    ),
 
-                  // For Delivery / Ready to Pickup
-                  _buildTimelineItem(
-                    _isStatusCompleted(
-                        isWalkIn ? 'Ready to Pickup' : 'For Delivery'),
-                    _isStatusCompleted(
-                            isWalkIn ? 'Ready to Pickup' : 'For Delivery')
-                        ? (isWalkIn
-                            ? const Color(0xFFFF9800)
-                            : const Color(0xFF9C27B0))
-                        : Colors.grey,
-                    isWalkIn ? Icons.store : Icons.local_shipping,
-                    isWalkIn ? 'Ready to Pickup' : 'For Delivery',
-                    isWalkIn
-                        ? 'Your order is ready for pickup'
-                        : 'Your order is out for delivery',
-                    isLast: false,
-                  ),
+                  if (hasStatus('Ready to Pickup') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color(0xFFFF9800),
+                      Icons.store,
+                      'Ready to Pickup',
+                      '${hasStatus('Ready to Pickup')?['remarks']} - ${formattedDate(hasStatus('Ready to Pickup')?['created_at'])}',
+                      isLast: false,
+                    ),
 
-                  // Completed
-                  _buildTimelineItem(
-                    _isStatusCompleted('Completed'),
-                    _isStatusCompleted('Completed')
-                        ? const Color(0xFF4CAF50)
-                        : Colors.grey,
-                    Icons.check_circle,
-                    'Completed',
-                    'Your order is completed on 16\nAug 2025, 10:35 PM',
-                    isLast: true,
-                  ),
+                  if (hasStatus('Completed') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color(0xFF4CAF50),
+                      Icons.check_circle,
+                      'Complete',
+                      '${hasStatus('Completed')?['remarks']} - ${formattedDate(hasStatus('Completed')?['created_at'])}',
+                      isLast: true,
+                    ),
+
+                  if (hasStatus('Rejected') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color.fromARGB(255, 237, 60, 7),
+                      Icons.error,
+                      'Complete',
+                      '${hasStatus('Rejected')?['remarks']} - ${formattedDate(hasStatus('Rejected')?['created_at'])}',
+                      isLast: true,
+                    ),
+
+                  if (hasStatus('Canceled') != null)
+                    // For Delivery / Ready to Pickup
+                    _buildTimelineItem(
+                      true,
+                      const Color.fromARGB(255, 237, 60, 7),
+                      Icons.error,
+                      'Canceled',
+                      '${hasStatus('Canceled')?['remarks']} - ${formattedDate(hasStatus('Canceled')?['created_at'])}',
+                      isLast: true,
+                    ),
+                  // if (hasStatus('Completed') != null)
+                  //   // Completed
+                  //   _buildTimelineItem(
+                  //     _isStatusCompleted('Completed'),
+                  //     _isStatusCompleted('Completed')
+                  //         : Colors.grey,
+                  //     Icons.check_circle,
+                  //     'Completed',
+                  //     'Your order is completed on 16\nAug 2025, 10:35 PM',
+                  //     isLast: true,
+                  //   ),
                 ],
               ),
             ),
@@ -847,12 +936,13 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  _buildPaymentRow('Shipping', '₱ 50.00'),
+                  // _buildPaymentRow('Shipping', '₱ 50.00'),
+                  // const SizedBox(height: 12),
+                  _buildPaymentRow('Subtotal', '₱ ${widget.order.totalPrice}'),
                   const SizedBox(height: 12),
-                  _buildPaymentRow('Subtotal', '₱ 500.00'),
-                  const SizedBox(height: 12),
-                  _buildPaymentRow('Voucher Applied', '₱ -500.00',
-                      isVoucher: true),
+                  if (widget.order.discount?['code'] != null)
+                    _buildPaymentRow('Voucher Applied', '-₱ $_discount ',
+                        isVoucher: true),
                   const SizedBox(height: 16),
                   const Divider(color: Color(0xFFE7D3B4)),
                   const SizedBox(height: 16),
@@ -869,7 +959,7 @@ class _UserOrderDetailedViewState extends State<UserOrderDetailedView>
                       ),
                       const Spacer(),
                       Text(
-                        '₱ ${widget.product.price.toStringAsFixed(2)}',
+                        '₱ ${totalPayment.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

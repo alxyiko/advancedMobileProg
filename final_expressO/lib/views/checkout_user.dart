@@ -25,7 +25,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   UserSupabaseHelper userSupabaseHelper = UserSupabaseHelper();
   SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
 
-  final double shippingFee = 50.0;
+  final double shippingFee = 0.0;
+  // final double shippingFee = 50.0;
   double voucherDiscount = 0.0;
 
   double get subtotal => widget.checkOutItems
@@ -284,7 +285,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildPaymentRow("Shipping", shippingFee),
+                  if (shippingFee > 0)
+                    _buildPaymentRow("Shipping", shippingFee),
                   _buildPaymentRow("Subtotal", subtotal),
                   if (voucherDiscount > 0)
                     _buildPaymentRow("Voucher Applied", -voucherDiscount,

@@ -130,7 +130,7 @@ class AdminSupabaseHelper {
 
   Future<List<Map<String, dynamic>>> getOrderupdates(int orderID) async {
     try {
-      var query = client.from('order_updates').select().eq('order_id', orderID);
+      var query = client.from('Order_updates').select().eq('order_id', orderID);
 
       final response = await query;
 

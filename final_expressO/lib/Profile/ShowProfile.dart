@@ -5,6 +5,8 @@ import 'package:firebase_nexus/widgets/editprofile_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:firebase_nexus/adminPages/adminHome.dart';
+
 class ShowProfile extends StatefulWidget {
   const ShowProfile({super.key});
 
@@ -31,6 +33,17 @@ class _ShowProfileState extends State<ShowProfile> {
   }
 
   bool isOpen = true; // Button state
+
+  Future<UserProfile> fetchUserProfile() async {
+    // TODO: replace with your real backend call
+    await Future.delayed(const Duration(milliseconds: 300));
+    return UserProfile(
+      displayName: 'Express-O',
+      email: 'admin123@gmail.com',
+      avatarUrl:
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?...',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +90,14 @@ class _ShowProfileState extends State<ShowProfile> {
             },
           ),
         ],
+      ),
+      drawer: AdminDrawer(
+        profileFuture: fetchUserProfile(), // <-- your future method
+
+        selectedRoute: "/profile", // mark this as active/highlighted
+        onNavigate: (route) {
+          Navigator.pushNamed(context, route);
+        },
       ),
       body: user != null
           ? SingleChildScrollView(

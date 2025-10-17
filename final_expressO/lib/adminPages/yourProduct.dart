@@ -383,29 +383,21 @@ class _YourProductPageState extends State<YourProductPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       // Price - not bold, normal weight
-                                      Text(
-                                        "Php ${product['lowest_price'].toString()}",
-                                        // product['price'] as String,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          color: Color(0xFF4B2E19),
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      // Product name and status on the same line
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            product['name'] as String,
+                                            "Php ${product['lowest_price'].toString()}",
                                             style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.normal,
                                               color: Color(0xFF4B2E19),
-                                              fontSize: 16,
+                                              fontSize: 14,
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
                                           Container(
+                                            margin: const EdgeInsets.only(
+                                                right: 8, top: 4, bottom: 4),
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
@@ -428,7 +420,98 @@ class _YourProductPageState extends State<YourProductPage> {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
+
+                                      // Product name and status on the same line
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            product['name'] as String,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF4B2E19),
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          PopupMenuButton<String>(
+                                            color: Colors.white,
+                                            icon: const Icon(
+                                              Icons.more_vert,
+                                              color: Color(0xFF4B2E19),
+                                              size: 24,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            offset: const Offset(-10, 40),
+                                            itemBuilder:
+                                                (BuildContext context) => [
+                                              PopupMenuItem<String>(
+                                                value: 'edit',
+                                                child: Row(
+                                                  children: const [
+                                                    Icon(
+                                                      Icons.edit_outlined,
+                                                      color: Color(0xFF4B2E19),
+                                                      size: 20,
+                                                    ),
+                                                    SizedBox(width: 12),
+                                                    Text('Edit'),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuItem<String>(
+                                                value: 'delete',
+                                                child: Row(
+                                                  children: const [
+                                                    Icon(
+                                                      Icons.delete_outline,
+                                                      color: Colors.redAccent,
+                                                      size: 20,
+                                                    ),
+                                                    SizedBox(width: 12),
+                                                    Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.redAccent),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                            onSelected: (String value) {
+                                              if (value == 'edit') {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Editproductflow(
+                                                            productID:
+                                                                product['id']),
+                                                  ),
+                                                );
+                                              } else if (value == 'delete') {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      ConfirmationModal(
+                                                    type: ConfirmationModalType
+                                                        .delete,
+                                                    onConfirm: () {
+                                                      // Your delete logic here
+                                                      print('Item deleted!');
+                                                    },
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                       // Description
                                       SizedBox(
                                         width: double.infinity,
@@ -444,53 +527,6 @@ class _YourProductPageState extends State<YourProductPage> {
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    // ✏️ Edit button
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit_outlined,
-                                        color: Color(0xFF4B2E19),
-                                        size: 24,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => Editproductflow(
-                                                productID: product['id']),
-                                          ),
-                                        );
-                                      },
-                                    ),
-
-                                    // 🗑️ Delete button
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: Colors.redAccent,
-                                        size: 24,
-                                      ),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) =>
-                                              ConfirmationModal(
-                                            type: ConfirmationModalType.delete,
-                                            onConfirm: () {
-                                              // Your delete logic here
-                                              print('Item deleted!');
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  ],
                                 ),
                               ),
                             ],

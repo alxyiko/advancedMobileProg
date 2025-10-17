@@ -2,6 +2,7 @@ import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/models/order.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:firebase_nexus/widgets/optimizedFab.dart';
+import 'package:firebase_nexus/widgets/userOrderDetailFab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -67,9 +68,9 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
     }
 
     if (fetchedElement != null) {
-      print('Found: $fetchedElement');
+      // print('Found: $fetchedElement');
     } else {
-      print('No match for status "$status"');
+      // print('No match for status "$status"');
     }
 
     return fetchedElement;
@@ -173,13 +174,12 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
           ],
         ),
       ),
-      // floatingActionButton: OrderStatusFabOptimized(
-      //   currentStatus: _currentStatus,
-      //   loading: _loading,
-      //   orderID: widget.order.id,
-      //   deliveryMethod: _deliveryMethod,
-      //   onStatusChanged: () => _loadInitialData(),
-      // ),
+      floatingActionButton: UserOrderStatusFabOptimized(
+        currentStatus: _currentStatus,
+        loading: _loading,
+        orderID: widget.order.id,
+        onStatusChanged: () => _loadInitialData(),
+      ),
     );
   }
 
@@ -304,7 +304,7 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
                       widget.order.phone_number),
                   const SizedBox(height: 12),
                   _buildInfoRow(Icons.location_on_outlined, 'Address',
-                      widget.order.address),
+                      "BLK 35 LOT 10, Purok 3, \n Barangay Luzviminda II, Dasmarinias City, "),
                   const SizedBox(height: 12),
                   _buildMethodRow(),
                   const SizedBox(height: 12),
@@ -760,19 +760,19 @@ class _UserOrderDetailedPageState extends State<UserOrderDetailedPage>
                       true,
                       const Color.fromARGB(255, 237, 60, 7),
                       Icons.error,
-                      'Complete',
+                      'Rejected',
                       '${hasStatus('Rejected')?['remarks']} - ${formattedDate(hasStatus('Rejected')?['created_at'])}',
                       isLast: true,
                     ),
 
-                  if (hasStatus('Canceled') != null)
+                  if (hasStatus('Cancelled') != null)
                     // For Delivery / Ready to Pickup
                     _buildTimelineItem(
                       true,
                       const Color.fromARGB(255, 237, 60, 7),
-                      Icons.error,
-                      'Canceled',
-                      '${hasStatus('Canceled')?['remarks']} - ${formattedDate(hasStatus('Canceled')?['created_at'])}',
+                      Icons.cancel,
+                      'Cancelled',
+                      '${hasStatus('Cancelled')?['remarks']} - ${formattedDate(hasStatus('Cancelled')?['created_at'])}',
                       isLast: true,
                     ),
                   // if (hasStatus('Completed') != null)

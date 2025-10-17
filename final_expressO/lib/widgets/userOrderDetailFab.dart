@@ -2,28 +2,27 @@ import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:firebase_nexus/widgets/statusFabModals.dart';
 import 'package:flutter/material.dart';
 
-class OrderStatusFabOptimized extends StatefulWidget {
+class UserOrderStatusFabOptimized extends StatefulWidget {
   final String currentStatus;
-  final String deliveryMethod;
   final int orderID;
   final bool loading;
   final VoidCallback onStatusChanged;
 
-  const OrderStatusFabOptimized({
+  const UserOrderStatusFabOptimized({
     Key? key,
     required this.currentStatus,
     required this.orderID,
     required this.loading,
-    required this.deliveryMethod,
     required this.onStatusChanged,
   }) : super(key: key);
 
   @override
-  State<OrderStatusFabOptimized> createState() =>
-      _OrderStatusFabOptimizedState();
+  State<UserOrderStatusFabOptimized> createState() =>
+      _UserOrderStatusFabOptimizedState();
 }
 
-class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
+class _UserOrderStatusFabOptimizedState
+    extends State<UserOrderStatusFabOptimized>
     with SingleTickerProviderStateMixin {
   bool _isFabExpanded = false;
   bool _fabLoading = false;
@@ -52,6 +51,8 @@ class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
       _fabLoading = true;
     });
 
+    bool isCancelable = true;
+
     try {
       final checkIfCancelable =
           await supabaseHelper.getById('Orders', 'id', widget.orderID);
@@ -63,9 +64,10 @@ class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
         final status = checkIfCancelable['Status']?.toString().toLowerCase();
 
         // Only allow cancelation if still pending or processing
-        final alreadyCancelled = status == 'cancelled';
+        final isCancelable = status == 'pending' || status == 'processing';
+        final alreadyRejected = status == 'rejected';
 
-        if (alreadyCancelled) {
+        if (!isCancelable && !alreadyRejected) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('You cannot cancel a "$status" order!'),
@@ -140,48 +142,23 @@ class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
     }
   }
 
-  // Figure out which modal to show
-  void _showModalForStatus() {
-    String status = widget.currentStatus.toLowerCase();
-    if (status == 'pending') {
-      _showApprovalModal();
-    } else if (status == 'processing' ||
-        status == 'for delivery' ||
-        status == 'ready to pickup') {
-      _showNextStatusModal();
-    }
-  }
-
-  void _showApprovalModal() {
+  void _showCancelModal() {
     showDialog(
       context: context,
-      builder: (dialogContext) => ApproveModal(onConfirm: (String remarks) {
+      builder: (dialogContext) => CancelModal(onConfirm: (String remarks) {
         Navigator.pop(dialogContext);
-        _updateOrderStatus('Processing', remarks);
+        _updateOrderStatus('Cancelled', remarks);
       }),
     );
   }
 
-  void _showRejectModal() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => RejectModal(onConfirm: (String remarks) {
-        Navigator.pop(dialogContext);
-        _updateOrderStatus('Rejected', remarks);
-      }),
-    );
-  }
-
-  void _showNextStatusModal() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => NextStatusModal(
-        currentStatus: widget.currentStatus,
-        // deliveryMethod: widget.deliveryMethod,
-        onConfirm: (nextStatus, remarks) {
-          Navigator.pop(dialogContext);
-          _updateOrderStatus(nextStatus, remarks);
-        },
+  void _notifyInability() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'You can only cancel an order up to when it\'s still processing!',
+        ),
+        backgroundColor: Colors.red,
       ),
     );
   }
@@ -197,28 +174,14 @@ class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_isFabExpanded) ...[
-          if (status == 'pending') ...[
-            FloatingActionButton(
-              backgroundColor: const Color(0xFF4CAF50),
-              onPressed: _showApprovalModal,
-              heroTag: 'approve',
-              child: const Icon(Icons.check),
-            ),
-            const SizedBox(height: 16),
-            FloatingActionButton(
-              backgroundColor: const Color(0xFFE53E3E),
-              onPressed: _showRejectModal,
-              heroTag: 'reject',
-              child: const Icon(Icons.close),
-            ),
-          ] else ...[
-            FloatingActionButton(
-              backgroundColor: const Color(0xFFE27D19),
-              onPressed: _showNextStatusModal,
-              heroTag: 'next',
-              child: const Icon(Icons.arrow_forward),
-            ),
-          ],
+          FloatingActionButton(
+            backgroundColor: const Color(0xFFE53E3E),
+            onPressed: status == 'pending' || status == 'processing'
+                ? _showCancelModal
+                : _notifyInability,
+            heroTag: 'reject',
+            child: const Icon(Icons.close),
+          ),
           const SizedBox(height: 16),
         ],
         FloatingActionButton(

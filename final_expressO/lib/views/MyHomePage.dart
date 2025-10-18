@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'notifPage.dart';
+import '../widgets/promo_carousel.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -24,6 +25,26 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  final promos = [
+    {
+      'title': '30% Discount!', // value + type (if percentage or fixed)
+      'subtitle':
+          'A more affordable fix just for you!', // description + minimum spend rin pero oks na sguro desc lng?
+      'buttonText': 'COFFEE30', // discount code to be copied
+      'onTap': () {
+        debugPrint('COFFEE30 clicked!');
+      },
+    },
+    {
+      'title': '₱50 Off Your Order!',
+      'subtitle': 'Valid until this weekend only!',
+      'buttonText': 'SAVE50',
+      'onTap': () {
+        debugPrint('SAVE50 clicked!');
+      },
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -40,6 +61,55 @@ class _MyHomePageState extends State<MyHomePage> {
     print(user);
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF38241D),
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        title: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              letterSpacing: -0.5,
+              fontSize: 18,
+              color: Color.fromARGB(255, 255, 255, 255),
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.w600,
+            ),
+            children: [
+              const TextSpan(text: "Hello, "),
+              TextSpan(
+                text: user!['username'],
+                style: const TextStyle(
+                  color: Color(0xFFE27D19),
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart_outlined,
+                color: Color.fromARGB(255, 255, 255, 255), size: 22),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_none,
+                color: Color.fromARGB(255, 255, 255, 255)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotifPage()),
+              );
+            },
+          ),
+        ],
+      ),
       backgroundColor: const Color(0XFFFFFAED),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -48,185 +118,127 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment:
-                      CrossAxisAlignment.center, // ✅ aligns icons with text
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 8.0), // ✅ left padding for text
-                      child: RichText(
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Color(0xFF2D1D17),
-                            fontFamily: 'Quicksand',
-                            fontWeight: FontWeight.w600,
-                          ),
-                          children: [
-                            const TextSpan(text: "Hello, "),
-                            TextSpan(
-                              text: user!['username'],
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CartPage(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.shopping_cart_outlined,
-                            color: Color(0xFF2D1D17),
-                            size: 22, // ✅ smaller size
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.notifications_none,
-                              color: Color(0xFF2D1D17)),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const NotifPage()),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                // const SizedBox(height: 14),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   crossAxisAlignment:
+                //       CrossAxisAlignment.center, // ✅ aligns icons with text
+                //   children: [
+                //     Padding(
+                //       padding: const EdgeInsets.only(
+                //           left: 8.0), // ✅ left padding for text
+                //       child: RichText(
+                //         text: TextSpan(
+                //           style: const TextStyle(
+                //             letterSpacing: -0.5,
+                //             fontSize: 18,
+                //             color: Color(0xFF2D1D17),
+                //             fontFamily: 'Quicksand',
+                //             fontWeight: FontWeight.w600,
+                //           ),
+                //           children: [
+                //             const TextSpan(text: "Hello, "),
+                //             TextSpan(
+                //               text: user!['username'],
+                //               style: const TextStyle(
+                //                 fontWeight: FontWeight.bold,
+                //                 letterSpacing: -0.5,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ),
+                //     ),
+                //     Row(
+                //       children: [
+                //         IconButton(
+                //           onPressed: () {
+                //             Navigator.push(
+                //               context,
+                //               MaterialPageRoute(
+                //                 builder: (context) => const CartPage(),
+                //               ),
+                //             );
+                //           },
+                //           icon: const Icon(
+                //             Icons.shopping_cart_outlined,
+                //             color: Color(0xFF2D1D17),
+                //             size: 22, // ✅ smaller size
+                //           ),
+                //         ),
+                //         IconButton(
+                //           icon: const Icon(Icons.notifications_none,
+                //               color: Color(0xFF2D1D17)),
+                //           onPressed: () {
+                //             Navigator.push(
+                //               context,
+                //               MaterialPageRoute(
+                //                   builder: (context) => const NotifPage()),
+                //             );
+                //           },
+                //         ),
+                //       ],
+                //     ),
+                //   ],
+                // ),
 
-                const SizedBox(height: 24), // space below the header
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFCFAF3),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Color(0x19B8B8B8),
-                          blurRadius: 2,
-                          offset: Offset(0, 1)),
-                      BoxShadow(
-                          color: Color(0x16B8B8B8),
-                          blurRadius: 4,
-                          offset: Offset(0, 4)),
-                      BoxShadow(
-                          color: Color(0x0CB8B8B8),
-                          blurRadius: 5,
-                          offset: Offset(0, 8)),
-                    ],
-                  ),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search...',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFFD4D0C2),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Color(0xFFD4D0C2),
-                        size: 20,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 255, 255,
-                              255), // border color when not focused
-                          width: 1,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE27D19), // border color when focused
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 16),
-                      filled: true,
-                      fillColor: const Color.fromARGB(255, 255, 255, 255),
-                    ),
-                  ),
-                ),
+                // Container(
+                //   decoration: BoxDecoration(
+                //     color: const Color(0xFFFCFAF3),
+                //     borderRadius: BorderRadius.circular(15),
+                //     boxShadow: const [
+                //       BoxShadow(
+                //           color: Color(0x19B8B8B8),
+                //           blurRadius: 2,
+                //           offset: Offset(0, 1)),
+                //       BoxShadow(
+                //           color: Color(0x16B8B8B8),
+                //           blurRadius: 4,
+                //           offset: Offset(0, 4)),
+                //       BoxShadow(
+                //           color: Color(0x0CB8B8B8),
+                //           blurRadius: 5,
+                //           offset: Offset(0, 8)),
+                //     ],
+                //   ),
+                //   child: TextField(
+                //     decoration: InputDecoration(
+                //       hintText: 'Search...',
+                //       hintStyle: const TextStyle(
+                //         color: Color(0xFFD4D0C2),
+                //         fontSize: 16,
+                //         fontWeight: FontWeight.w500,
+                //       ),
+                //       prefixIcon: const Icon(
+                //         Icons.search,
+                //         color: Color(0xFFD4D0C2),
+                //         size: 20,
+                //       ),
+                //       enabledBorder: OutlineInputBorder(
+                //         borderRadius: BorderRadius.circular(15),
+                //         borderSide: const BorderSide(
+                //           color: Color.fromARGB(255, 255, 255,
+                //               255), // border color when not focused
+                //           width: 1,
+                //         ),
+                //       ),
+                //       focusedBorder: OutlineInputBorder(
+                //         borderRadius: BorderRadius.circular(15),
+                //         borderSide: const BorderSide(
+                //           color: Color(0xFFE27D19), // border color when focused
+                //           width: 2,
+                //         ),
+                //       ),
+                //       contentPadding: const EdgeInsets.symmetric(
+                //           vertical: 15, horizontal: 16),
+                //       filled: true,
+                //       fillColor: const Color.fromARGB(255, 255, 255, 255),
+                //     ),
+                //   ),
+                // ),
+                const SizedBox(height: 10),
+                PromoCarousel(promos: promos),
 
-                const SizedBox(height: 40),
-                Container(
-                  height: 180,
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D1D17),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Left Side: Text and Button
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '30% Discount!',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'A more affordable fix just for you!',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE27D19),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text('Order Now!'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-
-                      SizedBox(
-                        height: 100,
-                        width: 100,
-                        child: Image.asset(
-                          'assets/images/coffee_img.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 30),
                 const Text(
                   'Bestsellers',

@@ -100,11 +100,52 @@ class RegisterState extends State<Register> {
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 40),
                   const Text(
                     'Create Account',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF603B17),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Please fill in the details below',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFBD9771),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'Personal Details',
+                        style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          letterSpacing: -0.5,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFBD9771),
+                        ),
+                        children: [
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -139,6 +180,32 @@ class RegisterState extends State<Register> {
                         ? "Please enter your address!"
                         : null,
                   ),
+                  const SizedBox(height: 23),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'Contact Details',
+                        style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          letterSpacing: -0.5,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFBD9771),
+                        ),
+                        children: [
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _phoneNumController,
@@ -148,7 +215,7 @@ class RegisterState extends State<Register> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) => value == null || value.isEmpty
-                        ? "Please enter last name!"
+                        ? "Please enter valid phone number!"
                         : null,
                   ),
                   const SizedBox(height: 12),
@@ -168,9 +235,33 @@ class RegisterState extends State<Register> {
                       }
                     },
                   ),
-                  const SizedBox(
-                    height: 12,
+                  const SizedBox(height: 23),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'Password',
+                        style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          letterSpacing: -0.5,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFBD9771),
+                        ),
+                        children: [
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 12),
                   TextFormField(
                     obscureText: true,
                     controller: _passwordController,
@@ -220,10 +311,11 @@ class RegisterState extends State<Register> {
                         backgroundColor: AppColors.primary, // Button background
                         foregroundColor: Colors.white, // Text color
                         textStyle: const TextStyle(
-                            fontSize: 16), // Customize text style
+                            fontSize: 16,
+                            fontFamily: 'Quicksand'), // Customize text style
                         shape: RoundedRectangleBorder(
                           borderRadius:
-                              BorderRadius.circular(8), // Rounded corners
+                              BorderRadius.circular(12), // Rounded corners
                         ),
                       ),
                       child: _isLoading
@@ -242,31 +334,35 @@ class RegisterState extends State<Register> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 25),
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF797B81)), // Default style
-                      children: [
-                        const TextSpan(
-                            text: 'Already have an account? '), // Normal text
-                        TextSpan(
-                          text: 'Login', // Clickable text
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+                  Center(
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                            fontFamily: 'Quicksand',
+                            fontSize: 14,
+                            color: Color(0xFF797B81)), // Default style
+                        children: [
+                          const TextSpan(
+                              text: 'Already have an account? '), // Normal text
+                          TextSpan(
+                            text: 'Login', // Clickable text
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.pushNamed(
+                                    context, '/login'); // Navigate to login
+                                // Navigator.popUntil(context, ModalRoute.withName('/login'))
+                              },
                           ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.pushNamed(
-                                  context, '/login'); // Navigate to login
-                              // Navigator.popUntil(context, ModalRoute.withName('/login'))
-                            },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),

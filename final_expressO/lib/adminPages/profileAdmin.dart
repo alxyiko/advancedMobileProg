@@ -19,11 +19,11 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color brownColor = Color(0xFF38241D); 
-    const Color lightBackground = Color(0xFFF8F3E9); 
+    const Color brownColor = Color(0xFF38241D);
+    const Color lightBackground = Color(0xFFF8F3E9);
 
     const String profileImageUrl =
-        'https://png.pngtree.com/png-clipart/20220119/ourmid/pngtree-coffee-icon-icon-element-png-image_4237513.png'; 
+        'https://png.pngtree.com/png-clipart/20220119/ourmid/pngtree-coffee-icon-icon-element-png-image_4237513.png';
 
     return Scaffold(
       backgroundColor: lightBackground,
@@ -80,30 +80,30 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  // const SizedBox(height: 10),
 
-                  // Responsive button
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        isOpen = !isOpen;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isOpen ? Colors.green : Colors.red,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 8,
-                      ),
-                    ),
-                    child: Text(
-                      isOpen ? 'Open' : 'Close',
-                      style: const TextStyle(fontSize: 14, color: Colors.white),
-                    ),
-                  ),
+                  // // Responsive button
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     setState(() {
+                  //       isOpen = !isOpen;
+                  //     });
+                  //   },
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: isOpen ? Colors.green : Colors.red,
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //     padding: const EdgeInsets.symmetric(
+                  //       horizontal: 30,
+                  //       vertical: 8,
+                  //     ),
+                  //   ),
+                  //   child: Text(
+                  //     isOpen ? 'Open' : 'Close',
+                  //     style: const TextStyle(fontSize: 14, color: Colors.white),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

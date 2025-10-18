@@ -213,22 +213,20 @@ class _NeilCartState extends State<NeilCart> {
                             fontSize: 16,
                             color: Color(0xFF9E7A6E),
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             filled: false,
                             hintText: "Search coffee...",
-                            hintStyle: TextStyle(
+                            hintStyle: const TextStyle(
                               fontFamily: 'Quicksand',
                               color: Color(0xFF9E7A6E),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                                 vertical: 12, horizontal: 16),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon:
-                                Icon(Icons.search, color: Color(0xFF9E7A6E)),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none, // 👈 add this
+                            focusedBorder: InputBorder.none, // 👈 add this
+                            prefixIcon: const Icon(Icons.search,
+                                color: Color(0xFF9E7A6E)),
                           ),
                         ),
                       ),
@@ -322,7 +320,7 @@ class _NeilCartState extends State<NeilCart> {
 
                 return ConstrainedBox(
                   constraints: const BoxConstraints(
-                    minHeight: 180, // minimum height
+                    minHeight: 190, // minimum height
                   ),
                   child: InkWell(
                     onTap: () {
@@ -380,7 +378,7 @@ class _NeilCartState extends State<NeilCart> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                  horizontal: 8, vertical: 1),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
@@ -397,7 +395,8 @@ class _NeilCartState extends State<NeilCart> {
                                           style: const TextStyle(
                                             fontFamily: 'Quicksand',
                                             fontWeight: FontWeight.w700,
-                                            fontSize: 16,
+                                            fontSize: 14,
+                                            letterSpacing: -0.5,
                                             color: Color(0xFF2c1d16),
                                           ),
                                           maxLines: 2,
@@ -408,7 +407,7 @@ class _NeilCartState extends State<NeilCart> {
                                           "₱$price",
                                           style: const TextStyle(
                                             fontFamily: 'Quicksand',
-                                            fontSize: 14,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF603B17),
                                           ),
@@ -416,8 +415,6 @@ class _NeilCartState extends State<NeilCart> {
                                       ],
                                     ),
                                   ),
-
-                                  const SizedBox(width: 8),
 
                                   // Add button on the right
                                   Container(

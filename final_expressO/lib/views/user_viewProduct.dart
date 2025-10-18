@@ -111,35 +111,29 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
         .cast<Map<String, dynamic>>();
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF38241D), // brown background
+        elevation: 0, // optional: remove shadow
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'View Product',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white, // white text
+          ),
+        ),
+      ),
       backgroundColor: const Color(0xFFF9F6ED),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon:
-                        const Icon(Icons.arrow_back, color: Color(0xFF4B2E19)),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'View Product',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF4B2E19),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Product Image
+            const SizedBox(height: 15),
             Container(
               width: double.infinity,
               height: 280,
@@ -199,47 +193,53 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                     children: [
                       // Price and Status Row
 
-                      const SizedBox(height: 16),
-
                       // Product Name
-                      Text(
-                        productData['name'] as String,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4B2E19),
-                          height: 1.2,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Category
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4B2E19).withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF4B2E19).withOpacity(0.1),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            productData['name'] as String,
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4B2E19),
+                              height: 1.2,
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              '${productData['category_name'] ?? 'Unknown'}',
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                  0xFFF8F6F0), // light beige background
+                              borderRadius: BorderRadius.circular(
+                                  50), // 👈 makes it pill-shaped
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFF9E8E57).withOpacity(0.1),
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              productData['category_name'] ?? 'Unknown',
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF4B2E19),
+                                color:
+                                    Color(0xFF9E8E57), // muted gold-brown text
+                                fontFamily: 'Quicksand',
+                                letterSpacing: -0.3,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 15),
 
                       // Description
                       Text(
@@ -251,15 +251,13 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 15),
 
                       Container(
                         height: 1,
                         color: const Color(0xFF4B2E19).withOpacity(0.2),
                         margin: const EdgeInsets.symmetric(vertical: 8),
                       ),
-
-                      const SizedBox(height: 24),
 
                       // Stock + Variations
                       Column(
@@ -304,6 +302,7 @@ class _UserViewProductPageState extends State<UserViewProductPage> {
                               );
                             }).toList(),
                           ),
+                          const SizedBox(height: 16),
                           const Text(
                             'Price',
                             style: TextStyle(

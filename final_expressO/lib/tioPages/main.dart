@@ -37,17 +37,16 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 50),
               SizedBox(
-                width: double.infinity, // makes button fill horizontal space
+                width: double.infinity,
+                height: 44, // makes button fill horizontal space
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE27D19),
                     foregroundColor: Colors.white,
-
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15), // only vertical padding
-                    textStyle: GoogleFonts.quicksand(fontSize: 16),
+                    textStyle:
+                        const TextStyle(fontSize: 16, fontFamily: 'Quicksand'),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: () {

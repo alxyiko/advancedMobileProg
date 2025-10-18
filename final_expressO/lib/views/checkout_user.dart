@@ -493,7 +493,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text(
-              "Check out",
+              "Check Out",
               style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

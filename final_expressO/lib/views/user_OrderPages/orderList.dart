@@ -80,6 +80,14 @@ class _OrderListPageState extends State<OrderListPage>
     super.initState();
     _loadInitialData();
     _tabController = TabController(length: tabs.length, vsync: this);
+
+    // rebuild when tab changes so the badge color (selected/unselected) updates
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging == false) {
+        // indexIsChanging false means animation ended and index is stable
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -133,6 +141,15 @@ class _OrderListPageState extends State<OrderListPage>
           .toList();
     }
     return items;
+  }
+
+  Color _badgeBgColor(int count, bool isSelected) {
+    if (count == 0) return const Color(0xFF9C7E60).withOpacity(0.25); // faded
+    return isSelected ? const Color(0xFFE27D19) : const Color(0xFFD39B6A);
+  }
+
+  Color _badgeTextColor(int count) {
+    return count == 0 ? Colors.white.withOpacity(0.6) : Colors.white;
   }
 
 //   Order getOrder(int index){
@@ -209,22 +226,26 @@ class _OrderListPageState extends State<OrderListPage>
                   Row(
                     children: [
                       Expanded(
-                        child: SizedBox(
-                          height: 44,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF503228),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                           child: TextField(
                             decoration: InputDecoration(
-                              filled: true,
-                              fillColor: const Color(0xFF503228),
-                              hintText: 'Search here...',
-                              hintStyle: const TextStyle(color: Colors.white70),
-                              prefixIcon: const Icon(Icons.search,
-                                  color: Colors.white70),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 0),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
+                              filled: false,
+                              hintText: "Search coffee...",
+                              hintStyle: const TextStyle(
+                                fontFamily: 'Quicksand',
+                                color: Color(0xFF9E7A6E),
                               ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none, // 👈 add this
+                              focusedBorder: InputBorder.none, // 👈 add this
+                              prefixIcon: const Icon(Icons.search,
+                                  color: Color(0xFF9E7A6E)),
                             ),
                             onChanged: (v) => setState(() => _search = v),
                             style: const TextStyle(color: Colors.white),
@@ -264,7 +285,43 @@ class _OrderListPageState extends State<OrderListPage>
                         fontWeight: FontWeight.w400,
                         fontFamily: 'Quicksand',
                       ),
-                      tabs: tabs.map((t) => Tab(text: t)).toList(),
+                      tabs: tabs.map((t) {
+                        final index = tabs.indexOf(t);
+                        final count = _filteredForTab(index).length;
+                        final bool isSelected = _tabController.index == index;
+
+                        return Tab(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                t,
+                                style: const TextStyle(
+                                  fontFamily: 'Quicksand',
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _badgeBgColor(count, isSelected),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    color: _badgeTextColor(count),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Quicksand',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],

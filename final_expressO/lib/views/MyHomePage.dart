@@ -65,12 +65,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // format discounts if present
       if (discounts.isNotEmpty) {
+        print('here aahah');
         formatted = formatDiscounts(discounts);
       }
 
       // set top 3 best sellers
       if (topProducts.isNotEmpty) {
         bestSellers = topProducts.take(3).toList();
+        print('here aahah2');
 
         // collect unique categories from top products
         final seenCategories = <String>{};
@@ -96,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
       }
+      print('here aahah3');
 
       setState(() {
         _loading = false;
@@ -276,7 +279,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: [
                                 Expanded(
                                   child: Image.network(
-                                    item['product_img'],
+                                    item['product_img'] ??
+                                        'https://placehold.co/200x150/png',
                                     fit: BoxFit.contain,
                                     errorBuilder:
                                         (context, error, stackTrace) =>

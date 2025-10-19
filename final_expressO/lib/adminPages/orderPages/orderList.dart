@@ -95,7 +95,7 @@ class _OrderListPageState extends State<OrderListPage>
     try {
       print('INIT STARTED');
       final rawOrders = await supabaseHelper.getOrdersForUser(null);
-      print('Orders fetched: $rawOrders');
+      // print('Orders fetched: $rawOrders');
 
       final orders = (rawOrders as List)
           .map((o) => Order.fromJson(Map<String, dynamic>.from(o)))

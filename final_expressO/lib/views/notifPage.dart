@@ -1,5 +1,340 @@
 import 'dart:math';
+import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/models/order.dart';
+import 'package:firebase_nexus/providers/userProvider.dart';
+import 'package:firebase_nexus/views/user_OrderPages/orderDetailedView.dart';
+import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+/// Converted NotifPage (Stateful) with pulse on High Priority cards only.
+class NotifPage extends StatefulWidget {
+  const NotifPage({super.key});
+
+  @override
+  State<NotifPage> createState() => _NotifPageState();
+}
+
+class _NotifPageState extends State<NotifPage> {
+  bool _loading = true;
+  List<Order> _orders = [];
+  final supabaseHelper = UserSupabaseHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.loadUser(context);
+      print('INIT STARTED');
+      final rawOrders =
+          await supabaseHelper.getOrdersForUser(userProvider.user?['id']);
+      print('Orders fetched: $rawOrders');
+
+      final orders = (rawOrders as List)
+          .map((o) => Order.fromJson(Map<String, dynamic>.from(o)))
+          .toList();
+
+      // Sort by most recent
+      orders
+          .sort((a, b) => a.created_at.compareTo(b.updated_at ?? b.created_at));
+
+      setState(() {
+        _loading = false;
+        _orders = orders;
+      });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() => _loading = false);
+    }
+  }
+
+  String _formatTimeAgo(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return DateFormat('MMM d, h:mm a').format(time);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return LoadingScreens(
+        message: 'Loading...',
+        error: false,
+        onRetry: null,
+      );
+    }
+
+    // Filter orders by importance
+    final highPriority = _orders
+        .where((o) => o.status == 'Pending' || o.status == 'Processing')
+        .toList();
+    final others = _orders
+        .where((o) => !(o.status == 'Pending' || o.status == 'Processing'))
+        .toList();
+
+    return Scaffold(
+      backgroundColor: const Color(0XFFFFFAED),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF38241D),
+        centerTitle: true,
+        title: const Text(
+          "Notifications",
+          style: TextStyle(
+            fontFamily: 'Quicksand',
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.chevron_left, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          child: ListView(
+            children: [
+              const SizedBox(height: 30),
+              if (highPriority.isNotEmpty) ...[
+                const Text(
+                  "High Priority",
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  children: highPriority.map((o) {
+                    return buildCard(
+                        order: o, isHighPriority: true, context: context);
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                CustomPaint(
+                  size: const Size(double.infinity, 1),
+                  painter: DashedLinePainter(),
+                ),
+              ],
+              const SizedBox(height: 16),
+              const Text(
+                "Other Notifications",
+                style: TextStyle(
+                  fontFamily: 'Quicksand',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Column(
+                children: others.map((o) {
+                  return buildCard(order: o, context: context);
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Custom painter for dashed line
+class DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const dashWidth = 5.0;
+    const dashSpace = 3.0;
+    double startX = 0;
+    final paint = Paint()
+      ..color = Colors.black54
+      ..strokeWidth = 1;
+
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0),
+        Offset(startX + dashWidth, 0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+String _timeAgoText(DateTime dt) {
+  print(dt);
+  final diff = DateTime.now().difference(dt);
+  if (diff.inSeconds < 60) return 'Now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  return '${diff.inDays}d ago';
+}
+
+Widget buildCard(
+    {required Order order,
+    bool isHighPriority = false,
+    required BuildContext context}) {
+  final timeText = _timeAgoText(DateTime.parse(order.created_at));
+  final firstItem = order.items.isNotEmpty ? order.items.first : null;
+
+  const double cardHeight = 140.0;
+
+  final cardBody = SizedBox(
+    height: cardHeight,
+    child: GestureDetector(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => UserOrderDetailedPage(
+              order: order, product: firstItem!, orderStatus: order.status))),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFEF9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.36),
+              blurRadius: 2,
+              offset: const Offset(2, 2),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 5,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Thumbnail
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F2E2),
+                shape: BoxShape.circle,
+                image: firstItem?.img != null
+                    ? DecorationImage(
+                        image: NetworkImage(firstItem!.img ??
+                            'https://placehold.co/200x150/png'),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: firstItem?.img == null
+                  ? const Icon(
+                      Icons.local_cafe,
+                      size: 22,
+                      color: Color(0xFF603B17),
+                    )
+                  : null,
+            ),
+
+            const SizedBox(width: 12),
+
+            // Main details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    timeText,
+                    style: const TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 12,
+                      color: Color(0xFFC8A888),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Review your order",
+                    style: const TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF603B17),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Your order #${order.id} was ${order.status.toLowerCase()}.",
+                    style: const TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 13,
+                      color: Color(0xFFC8A888),
+                    ),
+                  ),
+                  // if (firstItem != null)
+                  //   Text(
+                  //     "${firstItem.name} (${firstItem.size}) - ₱${firstItem.price} x ${firstItem.quantity}",
+                  //     style: const TextStyle(
+                  //       fontFamily: 'Quicksand',
+                  //       fontSize: 12,
+                  //       color: Color(0xFF9C7C5C),
+                  //     ),
+                  //   ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "Total: ₱${order.discounted.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontFamily: 'Quicksand',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF603B17),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            StatusBadge(status: order.status),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  // Normal card
+  if (!isHighPriority) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      child: cardBody,
+    );
+  }
+
+  // High priority card with pulse
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    child: PulsingBorder(
+      minWidth: 1.0,
+      maxWidth: 2.5,
+      duration: const Duration(milliseconds: 900),
+      color: const Color(0xFFE27D19),
+      borderRadius: BorderRadius.circular(12),
+      child: cardBody,
+    ),
+  );
+}
 
 /// Modular status badge placed outside NotifPage so it can be reused.
 class StatusBadge extends StatelessWidget {
@@ -173,270 +508,4 @@ class _BorderPainter extends CustomPainter {
   bool shouldRepaint(covariant _BorderPainter old) {
     return old.strokeWidth != strokeWidth || old.color != color;
   }
-}
-
-/// Converted NotifPage (Stateful) with pulse on High Priority cards only.
-class NotifPage extends StatefulWidget {
-  const NotifPage({super.key});
-
-  @override
-  State<NotifPage> createState() => _NotifPageState();
-}
-
-class _NotifPageState extends State<NotifPage> {
-  final _rand = Random();
-  final sampleStatuses = [
-    'For Pickup',
-    'Pending',
-    'Completed',
-    'Processing',
-    'Cancelled'
-  ];
-
-  // small helper to format "time ago"
-  String _timeAgoText(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inSeconds < 60) return 'Now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
-
-  Widget buildCard({
-    required DateTime createdAt,
-    required String status,
-    bool isHighPriority = false,
-  }) {
-    final timeText = _timeAgoText(createdAt);
-    const double cardHeight = 140.0;
-
-    final cardBody = SizedBox(
-      height: cardHeight,
-      child: Container(
-        // no outer margin here
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFEF9),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.36),
-              blurRadius: 2,
-              spreadRadius: 0,
-              offset: const Offset(2, 2),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 5,
-              spreadRadius: 0,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // icon circle...
-            Container(
-              width: 48,
-              height: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF8F2E2),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.local_cafe,
-                  size: 22,
-                  color: Color(0xFF603B17),
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    timeText,
-                    style: const TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 12,
-                      color: Color(0xFFC8A888),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Review your order",
-                    style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF603B17),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Your order #999897 was completed.",
-                    style: TextStyle(
-                      fontFamily: 'Quicksand',
-                      fontSize: 13,
-                      color: Color(0xFFC8A888),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            StatusBadge(status: status),
-          ],
-        ),
-      ),
-    );
-
-    // Keep the same outer spacing for both types
-    if (!isHighPriority) {
-      return Container(
-          margin: const EdgeInsets.symmetric(vertical: 12), child: cardBody);
-    }
-
-    // For high priority: wrap with PulsingBorder (overlay) and same outer spacing.
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: PulsingBorder(
-        minWidth: 1.0,
-        maxWidth: 2.5,
-        duration: const Duration(milliseconds: 900),
-        color: const Color(0xFFE27D19),
-        borderRadius: BorderRadius.circular(12),
-        child: cardBody,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0XFFFFFAED),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF38241D),
-        centerTitle: true,
-        title: const Text(
-          "Notifications",
-          style: TextStyle(
-            fontFamily: 'Quicksand',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: Colors.white,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: ListView(
-            children: [
-              const SizedBox(height: 30),
-              const Text(
-                "High Priority",
-                style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // High Priority vertical list (3 items)
-              Column(
-                children: List.generate(3, (index) {
-                  final status =
-                      sampleStatuses[_rand.nextInt(sampleStatuses.length)];
-                  final hoursAgo = _rand.nextInt(12); // 0..11 hours ago
-                  final createdAt =
-                      DateTime.now().subtract(Duration(hours: hoursAgo));
-                  return buildCard(
-                    createdAt: createdAt,
-                    status: status,
-                    isHighPriority: true, // enable pulse here
-                  );
-                }),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Dashed divider
-              CustomPaint(
-                size: const Size(double.infinity, 1),
-                painter: DashedLinePainter(),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Other Notifications title
-              const Text(
-                "Other Notifications",
-                style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              Column(
-                children: List.generate(5, (index) {
-                  final status =
-                      sampleStatuses[_rand.nextInt(sampleStatuses.length)];
-                  final minutesAgo = _rand.nextInt(120); // 0..119 minutes ago
-                  final createdAt =
-                      DateTime.now().subtract(Duration(minutes: minutesAgo));
-                  return buildCard(createdAt: createdAt, status: status);
-                }),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Custom painter for dashed line
-class DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const dashWidth = 5.0;
-    const dashSpace = 3.0;
-    double startX = 0;
-    final paint = Paint()
-      ..color = Colors.black54
-      ..strokeWidth = 1;
-
-    while (startX < size.width) {
-      canvas.drawLine(
-        Offset(startX, 0),
-        Offset(startX + dashWidth, 0),
-        paint,
-      );
-      startX += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

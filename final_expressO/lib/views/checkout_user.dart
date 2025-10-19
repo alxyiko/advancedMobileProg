@@ -140,7 +140,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         goToOrders = true;
       });
     } else {
-      message = "There was a problem in our end, please try again later.";
+      message = "There was a problem in our end, please try again 30 seconds later.";
     }
 
     // ✅ UI feedback

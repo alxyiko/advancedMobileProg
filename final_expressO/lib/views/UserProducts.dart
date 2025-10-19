@@ -190,7 +190,7 @@ class _NeilCartState extends State<NeilCart> with RouteAware {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const OrderDetails()),
+                MaterialPageRoute(builder: (context) => const CartPage()),
               );
             },
           ),

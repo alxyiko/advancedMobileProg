@@ -267,6 +267,7 @@ class UserSupabaseHelper {
           .eq('code', code)
           .isFilter('deleted_at', null)
           .maybeSingle();
+
       return {
         'success': true,
         'message': 'coupon found!',

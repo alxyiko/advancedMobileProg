@@ -141,6 +141,22 @@ class UserSupabaseHelper {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getAvailableDiscounts(
+      int userId) async {
+    try {
+      final response = await _client.rpc(
+        'get_available_discounts',
+        params: {'p_user_id': userId},
+      );
+
+      return List<Map<String, dynamic>>.from(response as List);
+    } catch (e) {
+      print('getAvailableDiscounts error: $e');
+      rethrow;
+      return [];
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getCategs() async {
     try {
       print("functname start: getCategs");
@@ -185,7 +201,8 @@ class UserSupabaseHelper {
 
   Future<List<Map<String, dynamic>>> getOrdersForUser(int userId) async {
     try {
-      var query = _client.from('new_orderoverview').select().eq('user_id', userId);
+      var query =
+          _client.from('new_orderoverview').select().eq('user_id', userId);
 
       final response = await query;
 

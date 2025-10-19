@@ -133,34 +133,34 @@ class _ShowProfileState extends State<ShowProfile> {
                                 fontFamily: 'Quicksand',
                                 color: Colors.white70,
                                 fontSize: 16)),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              isOpen = !isOpen;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Color(isOpen ? 0xFF294020 : 0xFF402620),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 30,
-                              vertical: 18,
-                            ),
-                          ),
-                          child: Text(
-                            isOpen ? 'Open' : 'Close',
-                            style: TextStyle(
-                              fontFamily: 'Quicksand',
-                              fontSize: 14,
-                              color: Color(isOpen ? 0xFF98E544 : 0xFFE56744),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        // const SizedBox(height: 10),
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     setState(() {
+                        //       isOpen = !isOpen;
+                        //     });
+                        //   },
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor:
+                        //         Color(isOpen ? 0xFF294020 : 0xFF402620),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(12),
+                        //     ),
+                        //     padding: const EdgeInsets.symmetric(
+                        //       horizontal: 30,
+                        //       vertical: 18,
+                        //     ),
+                        //   ),
+                        //   child: Text(
+                        //     isOpen ? 'Open' : 'Close',
+                        //     style: TextStyle(
+                        //       fontFamily: 'Quicksand',
+                        //       fontSize: 14,
+                        //       color: Color(isOpen ? 0xFF98E544 : 0xFFE56744),
+                        //       fontWeight: FontWeight.w600,
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

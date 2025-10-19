@@ -101,6 +101,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _insertOrder(Map<String, dynamic> orderData) async {
+
+ 
     final navProvider = Provider.of<NavigationProvider>(context, listen: false);
     print(orderData['items']);
     final response = await userSupabaseHelper.insertOrder(orderData);

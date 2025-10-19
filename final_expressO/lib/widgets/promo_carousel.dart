@@ -14,8 +14,33 @@ class PromoCarousel extends StatefulWidget {
 class _PromoCarouselState extends State<PromoCarousel> {
   int _currentIndex = 0;
 
+  final List<Map<String, String>> _fallbackPromos = [
+    {
+      'title': 'Espresso yourself!',
+      'subtitle': 'Because life’s too short for bad coffee ☕',
+      'buttonText': 'Stay Grounded',
+    },
+    {
+      'title': 'Brew-tiful mornings!',
+      'subtitle': 'Start your day with a little bean magic ✨',
+      'buttonText': 'Perk Up',
+    },
+    {
+      'title': 'You mocha me crazy ❤️',
+      'subtitle': 'Our coffee’s smooth, our baristas smoother.',
+      'buttonText': 'Order Now',
+    },
+    {
+      'title': 'Latte love for you!',
+      'subtitle': 'Sweet deals may be gone, but love’s still brewing.',
+      'buttonText': 'Sip Sip Hooray',
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final promosToShow = widget.promos.isEmpty ? _fallbackPromos : widget.promos;
+
     return Column(
       children: [
         Container(
@@ -38,7 +63,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
               const SizedBox(width: 16),
               Expanded(
                 child: CarouselSlider.builder(
-                  itemCount: widget.promos.length,
+                  itemCount: promosToShow.length,
                   options: CarouselOptions(
                     height: 120,
                     autoPlay: true,
@@ -50,13 +75,14 @@ class _PromoCarouselState extends State<PromoCarousel> {
                     },
                   ),
                   itemBuilder: (context, index, realIdx) {
-                    final promo = widget.promos[index];
+                    final promo = promosToShow[index];
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          promo['title'] ?? '', // value + type
+                          promo['title'] ?? '',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -65,7 +91,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          promo['subtitle'] ?? '', // description
+                          promo['subtitle'] ?? '',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.white,
@@ -75,15 +101,22 @@ class _PromoCarouselState extends State<PromoCarousel> {
                         ElevatedButton(
                           onPressed: () {
                             final code = promo['buttonText'] ?? '';
-                            if (code.isNotEmpty) {
-                              // Copy to clipboard
+                            if (widget.promos.isEmpty) {
+                              // Fallback behavior: just show a wink ;)
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('😉 No promo, just love.'),
+                                  backgroundColor: Color(0xFF2c1d16),
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            } else {
                               Clipboard.setData(ClipboardData(text: code));
-
-                              // Show floating snackbar
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content:
-                                      Text('Code "$code" copied to clipboard!'),
+                                  content: Text(
+                                      'Code "$code" copied to clipboard!'),
                                   backgroundColor: const Color(0xFF2c1d16),
                                   behavior: SnackBarBehavior.floating,
                                   duration: const Duration(seconds: 2),
@@ -99,7 +132,10 @@ class _PromoCarouselState extends State<PromoCarousel> {
                             ),
                           ),
                           child: Text(
-                              'Use code ${promo['buttonText'] ?? 'ORDER30'}'),
+                            widget.promos.isEmpty
+                                ? promo['buttonText'] ?? ''
+                                : 'Use code ${promo['buttonText'] ?? 'ORDER30'}',
+                          ),
                         ),
                       ],
                     );
@@ -110,11 +146,11 @@ class _PromoCarouselState extends State<PromoCarousel> {
           ),
         ),
 
-        //  Dots indicator
+        // Dots indicator
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: widget.promos.asMap().entries.map((entry) {
+          children: promosToShow.asMap().entries.map((entry) {
             return Container(
               width: 8,
               height: 8,

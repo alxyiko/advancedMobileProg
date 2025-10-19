@@ -1,8 +1,12 @@
+import 'dart:math';
+
 import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
+import 'package:firebase_nexus/providers/navigation_provider.dart';
 import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:firebase_nexus/views/UserProducts.dart';
 import 'package:firebase_nexus/views/user_OrderPages/CartList.dart';
+import 'package:firebase_nexus/views/user_fetchProduct.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 
 import 'package:flutter/material.dart';
@@ -31,6 +35,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final supabaseHelper = UserSupabaseHelper();
 
   List<Map<String, dynamic>> promos = [];
+  List<Map<String, dynamic>> _categs = [];
+  List<Map<String, dynamic>> _bestsellers = [];
 
   @override
   void initState() {
@@ -46,22 +52,57 @@ class _MyHomePageState extends State<MyHomePage> {
 
       final discounts =
           await supabaseHelper.getAvailableDiscounts(userProvider.user!['id']);
-      if (discounts.isNotEmpty) {
-        print('Categoried loaded!');
-        print(discounts);
-        final formatted = formatDiscounts(discounts);
-        setState(() {
-          _loading = false;
-          promos = formatted;
-        });
+      final topProducts = await supabaseHelper.getTopSales();
+      final categs = await supabaseHelper.getCategs();
+      print('discounts loaded!');
+      print(discounts);
+      print('top products loaded!');
+      print(topProducts);
 
-        return;
+      List<Map<String, dynamic>> formatted = [];
+      List<Map<String, dynamic>> bestSellers = [];
+      List<Map<String, dynamic>> bestCats = [];
+
+      // format discounts if present
+      if (discounts.isNotEmpty) {
+        formatted = formatDiscounts(discounts);
       }
+
+      // set top 3 best sellers
+      if (topProducts.isNotEmpty) {
+        bestSellers = topProducts.take(3).toList();
+
+        // collect unique categories from top products
+        final seenCategories = <String>{};
+        for (var p in topProducts) {
+          if (!seenCategories.contains(p['category'])) {
+            bestCats.add({
+              "name": p['category'],
+              "icon": p['cat_icon'],
+            });
+            seenCategories.add(p['category']);
+          }
+        }
+
+        // fill remaining categories if we have fewer than 3
+        for (var c in categs) {
+          if (bestCats.length >= 3) break;
+          if (!seenCategories.contains(c['name'])) {
+            bestCats.add({
+              "name": c['name'],
+              "icon": c['icon'],
+            });
+            seenCategories.add(c['name']);
+          }
+        }
+      }
+
       setState(() {
         _loading = false;
+        promos = formatted;
+        _bestsellers = bestSellers;
+        _categs = bestCats.take(3).toList();
       });
-
-      // _categories = categories;
     } catch (e) {
       print("Error fetching categories: $e");
       setState(() => _loading = false);
@@ -108,6 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final navProvider = Provider.of<NavigationProvider>(context);
 
     if (!userProvider.isLoaded || userProvider.user == null) {
       userProvider.loadUser(context);
@@ -200,114 +242,62 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
-                  height: 160, // adjust height as needed
+                  height: 160,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Box 1
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Image.asset(
-                                    'assets/images/cappuccino_img.png',
-                                    fit: BoxFit.contain),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Cappuccino',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+                    children: _bestsellers.take(3).map((item) {
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => UserFetchProductPage(
+                                  prodID: item['product_id'],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Box 2
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Image.asset(
-                                    'assets/images/matcha_img.png',
-                                    fit: BoxFit.contain),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Matcha Latte',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Image.asset(
-                                    'assets/images/latte_img.png',
-                                    fit: BoxFit.contain),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Iced Latte',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: Image.network(
+                                    item['product_img'],
+                                    fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(Icons.broken_image,
+                                                size: 50, color: Colors.grey),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                Text(
+                                  item['product_name'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -315,7 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Categories',
+                      'Top Categories',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -344,11 +334,22 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildCategoryBox('Coffee', Icons.coffee_outlined),
-                      _buildCategoryBox(
-                          'Tea', Icons.emoji_food_beverage_outlined),
-                      _buildCategoryBox('Pastries', Icons.cake_outlined),
-                      _buildCategoryBox('Others', Icons.more_horiz),
+                      ..._categs.map((categ) {
+                        final icon =
+                            availableIcons[categ['icon']] ?? Icons.local_cafe;
+                        return _buildCategoryBox(
+                          categ['name'],
+                          icon,
+                          () {
+                            navProvider.setCategory(categ['name']);
+                            navProvider.setIndex(1);
+                          },
+                        );
+                      }).toList(),
+                      _buildCategoryBox('Others', Icons.more_horiz, () {
+                        navProvider.setCategory('All');
+                        navProvider.setIndex(1);
+                      }),
                     ],
                   ),
                 ),
@@ -362,22 +363,25 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-Widget _buildCategoryBox(String label, IconData icon) {
+Widget _buildCategoryBox(String label, IconData icon, VoidCallback onTap) {
   return Expanded(
     child: Column(
       children: [
-        Container(
-          height: 70,
-          width: 70,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE27D19),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Icon(
-              icon,
-              color: Colors.white, // or any color you like
-              size: 25,
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 70,
+            width: 70,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE27D19),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 25,
+              ),
             ),
           ),
         ),

@@ -141,13 +141,24 @@ class UserSupabaseHelper {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAvailableDiscounts(
-      int userId) async {
+  Future<List<Map<String, dynamic>>> getAvailableDiscounts(int userId) async {
     try {
       final response = await _client.rpc(
         'get_available_discounts',
         params: {'p_user_id': userId},
       );
+
+      return List<Map<String, dynamic>>.from(response as List);
+    } catch (e) {
+      print('getAvailableDiscounts error: $e');
+      rethrow;
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getTopSales() async {
+    try {
+      final response = await _client.rpc('get_total_sales').select();
 
       return List<Map<String, dynamic>>.from(response as List);
     } catch (e) {
@@ -163,9 +174,9 @@ class UserSupabaseHelper {
       var query =
           _client.from("Categories").select().isFilter('deleted_at', null);
       final response = await query;
-      print("functname: getCategs");
+      // print("functname: getCategs");r
 
-      print(response);
+      // print(response);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -189,13 +200,29 @@ class UserSupabaseHelper {
 
       final response = await query;
 
-      print("functname: getAll");
-      print(response);
+      // print("functname: getAll");
+      // print(response);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       print("GetAll error: $e");
       return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getProductbyId(int prodID) async {
+    try {
+      var query = _client
+          .from('product_overview')
+          .select()
+          .eq('id', prodID)
+          .maybeSingle();
+      final response = await query;
+
+      return response;
+    } catch (e) {
+      print("GetAll error: $e");
+      return null;
     }
   }
 

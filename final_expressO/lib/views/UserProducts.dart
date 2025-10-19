@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
@@ -11,16 +12,21 @@ import 'user_viewProduct.dart';
 import 'user_OrderPages/CartList.dart';
 
 class NeilCart extends StatefulWidget {
-  const NeilCart({super.key});
+  final String? preselect;
+  const NeilCart({super.key, this.preselect});
 
   @override
   State<NeilCart> createState() => _NeilCartState();
 }
 
-class _NeilCartState extends State<NeilCart> {
+class _NeilCartState extends State<NeilCart> with RouteAware {
   String _selectedCategory = 'All';
+  int selectedIndex = 0;
+  int _cartCount = 0;
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
   int _selectedIconIndex = 0;
   final TextEditingController _categoryNameController = TextEditingController();
   final supabaseHelper = UserSupabaseHelper();
@@ -54,9 +60,16 @@ class _NeilCartState extends State<NeilCart> {
   }
 
   @override
+  void didPopNext() {
+    print('Returned to this route (another popped on top)');
+    super.didPopNext();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadInitialData();
+    _getCart();
 
     _searchController.addListener(() {
       setState(() {
@@ -71,21 +84,52 @@ class _NeilCartState extends State<NeilCart> {
     });
   }
 
+  Future<void> _getCart() async {
+    final cart = await localDBhelper.getCart();
+    print(cart.where((item) => item.included!).toList());
+    setState(() {
+      _cartCount = cart.where((item) => item.included!).toList().length;
+    });
+  }
+
   Future<void> _loadInitialData() async {
+    print('preselect:!');
+    print(widget.preselect);
     try {
       print('INIT STARTED');
       final categories = await supabaseHelper.getCategs();
       final products = await supabaseHelper.getProductsForUser(null);
 
-      print('INIT FINISHED');
-      print('categories fetched!');
-      print(categories);
-      print('products fetched!');
-      print(products);
+      // print('INIT FINISHED');
+      // print('categories fetched!');
+      // print(categories);
+      // print('products fetched!');
+      // print(products);
+
+      // Build category names list first
+      final categoryNames = [
+        'All',
+        ...categories.map((e) => e['name'] as String)
+      ];
+
+      // Determine preselected category
+      String preselected = 'All';
+      int preselectedInd = 0;
+
+      if (widget.preselect != null) {
+        final foundIndex = categoryNames.indexOf(widget.preselect!);
+        if (foundIndex != -1) {
+          preselected = widget.preselect!;
+          preselectedInd = foundIndex;
+        }
+      }
 
       setState(() {
+        _selectedCategory = preselected;
         _loading = false;
-        _categories.addAll(categories.map((e) => e['name'] as String).toList());
+        _categories.clear();
+        _categories.addAll(categoryNames);
+        selectedIndex = preselectedInd != 0 ? preselectedInd : 0;
         _products = products;
       });
     } catch (e) {
@@ -117,8 +161,6 @@ class _NeilCartState extends State<NeilCart> {
     _searchFocusNode.dispose();
     super.dispose();
   }
-
-  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -340,6 +382,10 @@ class _NeilCartState extends State<NeilCart> {
                               'stock': product['stock'],
                               'variations': variations,
                             },
+                            onReturn: () {
+                              _getCart();
+                              _loadInitialData();
+                            },
                           ),
                         ),
                       );
@@ -446,6 +492,10 @@ class _NeilCartState extends State<NeilCart> {
                                                 'stock': product['stock'],
                                                 'variations': variations,
                                               },
+                                              onReturn: () {
+                                                _getCart();
+                                                _loadInitialData();
+                                              },
                                             ),
                                           ),
                                         );
@@ -468,7 +518,7 @@ class _NeilCartState extends State<NeilCart> {
         ],
       ),
       floatingActionButton: AddToCartFAB(
-        itemCount: 3, // replace with your cart count
+        itemCount: _cartCount, // replace with your cart count
         onTap: () {
           // Show a temporary SnackBar
           ScaffoldMessenger.of(context).showSnackBar(

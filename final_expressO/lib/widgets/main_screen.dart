@@ -26,7 +26,10 @@ class MainScreen extends StatelessWidget {
 
     final pages = [
       const MyHomePage(),
-      const NeilCart(),
+      NeilCart(
+          preselect: navProvider.selectedCategory != ''
+              ? navProvider.selectedCategory
+              : 'All'),
       OrderListPage(
         user: user,
       ),

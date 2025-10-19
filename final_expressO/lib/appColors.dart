@@ -25,3 +25,20 @@ class AppColors {
   static const Color warning = Color(0xFFFFC107);
   static const Color error = Color(0xFFF44336);
 }
+
+final List<IconData> availableIcons = [
+  Icons.fastfood,
+  Icons.local_fire_department,
+  Icons.local_bar,
+  Icons.coffee,
+  Icons.ramen_dining,
+  Icons.set_meal,
+  Icons.wine_bar,
+  Icons.apple,
+  Icons.local_drink,
+  Icons.lunch_dining,
+  Icons.bakery_dining,
+  Icons.spa,
+  Icons.icecream,
+  Icons.rice_bowl,
+];

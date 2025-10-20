@@ -426,15 +426,23 @@ class _YourProductPageState extends State<YourProductPage> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(
-                                            product['name'] as String,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF4B2E19),
-                                              fontSize: 16,
+                                          // 👇 This makes the text flexible but ellipses when space runs out
+                                          Expanded(
+                                            child: Text(
+                                              product['name'] as String,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF4B2E19),
+                                                fontSize: 16,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                             ),
                                           ),
+
+                                          // optional small gap between text and menu
                                           const SizedBox(width: 8),
+
                                           PopupMenuButton<String>(
                                             color: Colors.white,
                                             icon: const Icon(
@@ -443,35 +451,32 @@ class _YourProductPageState extends State<YourProductPage> {
                                               size: 24,
                                             ),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(12)),
                                             ),
                                             offset: const Offset(-10, 40),
                                             itemBuilder:
                                                 (BuildContext context) => [
-                                              PopupMenuItem<String>(
+                                              const PopupMenuItem<String>(
                                                 value: 'edit',
                                                 child: Row(
-                                                  children: const [
-                                                    Icon(
-                                                      Icons.edit_outlined,
-                                                      color: Color(0xFF4B2E19),
-                                                      size: 20,
-                                                    ),
+                                                  children: [
+                                                    Icon(Icons.edit_outlined,
+                                                        color:
+                                                            Color(0xFF4B2E19),
+                                                        size: 20),
                                                     SizedBox(width: 12),
                                                     Text('Edit'),
                                                   ],
                                                 ),
                                               ),
-                                              PopupMenuItem<String>(
+                                              const PopupMenuItem<String>(
                                                 value: 'delete',
                                                 child: Row(
-                                                  children: const [
-                                                    Icon(
-                                                      Icons.delete_outline,
-                                                      color: Colors.redAccent,
-                                                      size: 20,
-                                                    ),
+                                                  children: [
+                                                    Icon(Icons.delete_outline,
+                                                        color: Colors.redAccent,
+                                                        size: 20),
                                                     SizedBox(width: 12),
                                                     Text(
                                                       'Delete',
@@ -502,7 +507,6 @@ class _YourProductPageState extends State<YourProductPage> {
                                                     type: ConfirmationModalType
                                                         .delete,
                                                     onConfirm: () {
-                                                      // Your delete logic here
                                                       print('Item deleted!');
                                                     },
                                                   ),
@@ -512,7 +516,7 @@ class _YourProductPageState extends State<YourProductPage> {
                                           ),
                                         ],
                                       ),
-                                      // Description
+// Description
                                       SizedBox(
                                         width: double.infinity,
                                         child: Text(

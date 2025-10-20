@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_nexus/views/user_fetchProduct.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/models/supabaseProduct.dart';
@@ -155,37 +156,50 @@ class _CartPageState extends State<CartPage> {
                                     const SizedBox(width: 12),
 
                                     // Product details
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: const TextStyle(
-                                              fontFamily: 'Quicksand',
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 16,
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                UserFetchProductPage(
+                                              prodID: item.prodId!,
                                             ),
                                           ),
-                                          Text(
-                                            '${item.category} — ${item.variation}',
-                                            style: const TextStyle(
-                                              fontFamily: 'Quicksand',
-                                              fontSize: 13,
-                                              color: Colors.grey,
+                                        );
+                                      },
+                                      child: Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.name,
+                                              style: const TextStyle(
+                                                fontFamily: 'Quicksand',
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 16,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            '₱${item.price.toStringAsFixed(2)}',
-                                            style: const TextStyle(
-                                              fontFamily: 'Quicksand',
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF603B17),
+                                            Text(
+                                              '${item.category} — ${item.variation}',
+                                              style: const TextStyle(
+                                                fontFamily: 'Quicksand',
+                                                fontSize: 13,
+                                                color: Colors.grey,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              '₱${item.price.toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                fontFamily: 'Quicksand',
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF603B17),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
 

@@ -4,6 +4,7 @@ import 'package:firebase_nexus/providers/userProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/gestures.dart';
+import 'dart:math' as math;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -68,12 +69,23 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         children: [
           // --- Background Image ---
-          // SizedBox(
-          //   child: Image.asset(
-          //     'assets/loginbg.png', // Change to your background image
-          //     fit: BoxFit.cover,
-          //   ),
-          // ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Transform.translate(
+              offset: Offset(
+                0,
+                MediaQuery.of(context).size.width * 0.4,
+              ),
+              child: Opacity(
+                opacity: MediaQuery.of(context).size.width < 600 ? 0.15 : 0.25,
+                child: Image.asset(
+                  'assets/coffeebg.png',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
+              ),
+            ),
+          ),
 
           // --- Foreground content ---
           Center(
@@ -82,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.all(30.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
 
@@ -92,8 +104,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF603B17),
+                        letterSpacing: -0.5,
                       ),
                     ),
+
                     const SizedBox(height: 5),
                     const Text(
                       'Please sign in to continue',
@@ -122,12 +136,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Login button
                     SizedBox(
                       width: double.infinity,
+                      height: 44,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE27D19),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(
+                              fontSize: 16, fontFamily: 'Quicksand'),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         onPressed: _isLoading ? null : _handleLogin,
@@ -168,27 +185,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     //   ),
                     // ),
                     // RichText
-                    RichText(
-                      text: TextSpan(
-                        text: 'Don’t have an account? ',
-                        style: GoogleFonts.quicksand(
-                          fontSize: 14,
-                          color: const Color(0xFF603B17),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'Create account here',
-                            style: GoogleFonts.quicksand(
-                              fontSize: 14,
-                              color: const Color(0xFFE27D19),
-                              decoration: TextDecoration.underline,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () async {
-                                await safeNavigate(context, '/register');
-                              },
+                    Center(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Don’t have an account? ',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 14,
+                            color: const Color(0xFF603B17),
                           ),
-                        ],
+                          children: [
+                            TextSpan(
+                              text: 'Create account here',
+                              style: GoogleFonts.quicksand(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: const Color(0xFFE27D19),
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  await safeNavigate(context, '/register');
+                                },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

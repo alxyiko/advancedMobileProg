@@ -51,6 +51,26 @@ class AdminSupabaseHelper {
     }
   }
 
+  Future<int?> getDiscountUses(int uses, dynamic id) async {
+    try {
+      final response = await client
+          .from('Orders')
+          .select('count(*)')
+          .eq('discount_id', id)
+          .neq('Status', 'Cancelled')
+          .neq('Status', 'Rejected')
+          .single();
+
+      // Supabase returns {'count': <number>}
+      final count = response['count'] as int?;
+      print("Discount usage count: $count");
+      return count;
+    } catch (e) {
+      print("getDiscountUses error: $e");
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> insert(
       String table, Map<String, dynamic> data) async {
     try {

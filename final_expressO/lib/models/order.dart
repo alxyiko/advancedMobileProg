@@ -12,6 +12,7 @@ class Order {
   final double totalPrice;
   final double discounted;
   final String created_at;
+  final String? updated_at;
   final List<Product> items;
   final Map<String, dynamic>? discount;
 
@@ -28,6 +29,7 @@ class Order {
     required this.discounted,
     required this.items,
     required this.created_at,
+    this.updated_at,
     this.discount,
   });
 
@@ -57,6 +59,7 @@ class Order {
       discounted: (json['discounted'] as num).toDouble(),
       discount: json['discount'],
       created_at: json['created_at'],
+      updated_at: json['updated_at'],
       items: products,
     );
   }

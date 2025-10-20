@@ -65,7 +65,6 @@ class MyRouteObserver extends NavigatorObserver {
 final MyRouteObserver routeObserver = MyRouteObserver();
 
 class MyApp extends StatefulWidget {
-  // User? mainUser; // Pass mainUser to MyApp
   const MyApp({
     super.key,
     // required this.mainUser
@@ -170,53 +169,7 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
-
-  // Widget _routeGuard(
-  //     String? routeName, Map<String, dynamic>? user, bool isLoaded) {
-  //   final isPublicRoute =
-  //       ['/', '/tioWelcome', '/tioLogin', '/register'].contains(routeName);
-
-  //   if (isLoaded && user == null && !isPublicRoute) {
-  //     print(routeName);
-  //     print(isLoaded ? 'isLoaded' : 'not isLoaded');
-  //     print(user != null ? 'user' : 'not user');
-  //     print(!isPublicRoute ? '!isPublicRoute' : 'not !isPublicRoute');
-  //     return const LoginScreen();
-  //   }
-
-  //   switch (routeName) {
-  //     case '/':
-  //       return const Splash();
-  //     case '/tioWelcome':
-  //       return const WelcomeScreen();
-  //     case '/tioLogin':
-  //       return const LoginScreen();
-  //     case '/login':
-  //       return const MainScreen();
-  //     case '/register':
-  //       return const Register();
-  //     case '/home':
-  //       return const MainScreen();
-  //     case '/profile':
-  //       return const ShowProfile();
-
-  //     //Admin pages
-  //     case '/adminHome':
-  //       return const AdminMainScreen();
-
-  //     case '/adminAnalytics':
-  //       return const AdminMainScreen();
-
-  //     case '/adminProducts':
-  //       return const AdminMainScreen();
-
-  //     case '/adminOrders':
-  //       return const AdminMainScreen();
-
-  //     default:
-  //       return const Splash();
-  //   }
-  // }
+ 
 }
 
 final Map<String, WidgetBuilder> routes = {

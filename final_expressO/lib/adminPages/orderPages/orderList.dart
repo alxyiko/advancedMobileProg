@@ -78,6 +78,10 @@ class _OrderListPageState extends State<OrderListPage>
     super.initState();
     _loadInitialData();
     _tabController = TabController(length: tabs.length, vsync: this);
+
+    _tabController.addListener(() {
+      setState(() {}); // rebuilds UI when switching tabs
+    });
   }
 
   @override
@@ -91,7 +95,7 @@ class _OrderListPageState extends State<OrderListPage>
     try {
       print('INIT STARTED');
       final rawOrders = await supabaseHelper.getOrdersForUser(null);
-      print('Orders fetched: $rawOrders');
+      // print('Orders fetched: $rawOrders');
 
       final orders = (rawOrders as List)
           .map((o) => Order.fromJson(Map<String, dynamic>.from(o)))
@@ -240,10 +244,62 @@ class _OrderListPageState extends State<OrderListPage>
                       labelColor: Colors.white,
                       unselectedLabelColor: const Color(0xFF9C7E60),
                       labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w600, fontFamily: 'Quicksand'),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Quicksand',
+                      ),
                       unselectedLabelStyle: const TextStyle(
-                          fontWeight: FontWeight.w400, fontFamily: 'Quicksand'),
-                      tabs: tabs.map((t) => Tab(text: t)).toList(),
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Quicksand',
+                      ),
+                      tabs: tabs.map((t) {
+                        final index = tabs.indexOf(t);
+                        final count = _filteredForTab(index).length;
+                        final bool isSelected = _tabController.index == index;
+
+                        return Tab(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                t,
+                                style: const TextStyle(fontFamily: 'Quicksand'),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: (() {
+                                    if (count == 0) {
+                                      // Faded badge when empty
+                                      return const Color(0xFF9C7E60)
+                                          .withOpacity(0.25);
+                                    } else if (isSelected) {
+                                      // Highlight when tab is selected
+                                      return const Color(0xFFE27D19);
+                                    } else {
+                                      // Normal when not selected
+                                      return const Color(0xFFE27D19);
+                                    }
+                                  })(),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    color: count == 0
+                                        ? Colors.white.withOpacity(0.6)
+                                        : Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Quicksand',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
                     ),
                   )
                 ],

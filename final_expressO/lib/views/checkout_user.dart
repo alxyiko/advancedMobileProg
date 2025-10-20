@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
 import 'package:firebase_nexus/main.dart';
@@ -41,39 +42,53 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _checkCoupon(String code) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.loadUser(context);
+
+    // Fetch coupon info and user discounts
     final response = await userSupabaseHelper.checkCoupon(code);
+    final discounts = await userSupabaseHelper
+        .getAvailableDiscounts(userProvider.user!['id']);
+
     String message;
     bool success = false;
+
+    // Check if this coupon is already used by user
+    final foundCode =
+        discounts.firstWhereOrNull((d) => d['code']?.toString() == code);
 
     if (response?['success'] == true && response?['data'] != null) {
       final coupon = response?['data'];
       final now = DateTime.now();
       final startDate = DateTime.parse(coupon['start_date']);
       final expiryDate = DateTime.parse(coupon['expiry_date']);
+      final minSpend = (coupon['minimumSpend'] ?? 0).toDouble();
 
-      print(coupon);
+      print('Coupon data: $coupon');
 
-      if (coupon['isActive'] != true) {
-        message = "This discount is no longer active.";
+      // 🧩 Validation chain
+      if (foundCode == null) {
+        message = "You’ve fully used up this coupon.";
+      } else if (coupon['isActive'] != true) {
+        message = "This coupon is no longer active.";
       } else if (now.isBefore(startDate)) {
         message = "This coupon isn't active yet.";
       } else if (now.isAfter(expiryDate)) {
         message = "This coupon has expired.";
-      } else if (subtotal < (coupon['minimumSpend'] ?? 0)) {
+      } else if (subtotal < minSpend) {
         message =
-            "Minimum spend of ₱${(coupon['minimumSpend'] ?? 0).toStringAsFixed(2)} required.";
+            "Minimum spend of ₱${minSpend.toStringAsFixed(2)} required to use this coupon.";
       } else {
         // ✅ Valid coupon
-
         double discount = 0;
+        final value = (coupon['value'] ?? 0).toDouble();
+
         if (coupon['type'] == 'percentage') {
-          final rate = (coupon['value'] ?? 0).toDouble();
-          discount = subtotal * (rate / 100);
+          discount = subtotal * (value / 100);
         } else if (coupon['type'] == 'fixed') {
-          discount = (coupon['value'] ?? 0).toDouble();
+          discount = value;
         }
 
-        // Prevent negative total
         final newTotal = (subtotal + shippingFee) - discount;
         if (newTotal < 0) discount = subtotal + shippingFee;
 
@@ -90,7 +105,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       message = "Invalid discount code.";
     }
 
-    // ✅ UI feedback
+    // 🧃 Feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: success ? Colors.green : Colors.red,
@@ -125,7 +140,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         goToOrders = true;
       });
     } else {
-      message = "There was a problem in our end, please try again later.";
+      message = "There was a problem in our end, please try again 30 seconds later.";
     }
 
     // ✅ UI feedback
@@ -493,7 +508,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text(
-              "Check out",
+              "Check Out",
               style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

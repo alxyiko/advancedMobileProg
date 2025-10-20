@@ -1,3 +1,4 @@
+import 'package:firebase_nexus/appColors.dart';
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
 import 'package:flutter/material.dart';
 
@@ -29,23 +30,6 @@ class _CategoryLateralState extends State<CategoryLateral> {
   final TextEditingController _categoryNameController = TextEditingController();
   final supabaseHelper = AdminSupabaseHelper();
   int _selectedIconIndex = 0;
-
-  final List<IconData> availableIcons = [
-    Icons.fastfood,
-    Icons.local_fire_department,
-    Icons.local_bar,
-    Icons.coffee,
-    Icons.ramen_dining,
-    Icons.set_meal,
-    Icons.wine_bar,
-    Icons.apple,
-    Icons.local_drink,
-    Icons.lunch_dining,
-    Icons.bakery_dining,
-    Icons.spa,
-    Icons.icecream,
-    Icons.rice_bowl,
-  ];
 
   @override
   void initState() {
@@ -387,10 +371,12 @@ class _CategoryLateralState extends State<CategoryLateral> {
                             child: const Text("Cancel"),
                           ),
                           TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _deleteCategory(category, index);
-                            },
+                            onPressed: categories.length <= 3
+                                ? null
+                                : () {
+                                    Navigator.pop(context);
+                                    _deleteCategory(category, index);
+                                  },
                             child: const Text(
                               "Delete",
                               style: TextStyle(color: Colors.red),

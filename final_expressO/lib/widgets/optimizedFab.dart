@@ -87,6 +87,11 @@ class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
       }
 
       print("Updating order ${widget.orderID} to: $status");
+      // Get the current DateTime object
+      final now = DateTime.now();
+
+      // Convert it to an ISO 8601 string, suitable for Supabase
+      final currentTimestamp = now.toIso8601String();
 
       final result = await supabaseHelper.insert('Order_updates', {
         'order_id': widget.orderID,
@@ -97,6 +102,7 @@ class _OrderStatusFabOptimizedState extends State<OrderStatusFabOptimized>
       final result2 = await supabaseHelper
           .update('Orders', 'id', widget.orderID.toString(), {
         'Status': status,
+        'updated_at': currentTimestamp,
       });
 
       if (result['status'] == 'success' && result2['status'] == 'success') {

@@ -1,4 +1,5 @@
 import 'package:firebase_nexus/helpers/adminPageSupabaseHelper.dart';
+import 'package:firebase_nexus/helpers/local_database_helper.dart';
 import 'package:firebase_nexus/helpers/userPageSupabaseHelper.dart';
 import 'package:firebase_nexus/widgets/loading_screens.dart';
 import 'package:flutter/material.dart';
@@ -11,16 +12,21 @@ import 'user_viewProduct.dart';
 import 'user_OrderPages/CartList.dart';
 
 class NeilCart extends StatefulWidget {
-  const NeilCart({super.key});
+  final String? preselect;
+  const NeilCart({super.key, this.preselect});
 
   @override
   State<NeilCart> createState() => _NeilCartState();
 }
 
-class _NeilCartState extends State<NeilCart> {
+class _NeilCartState extends State<NeilCart> with RouteAware {
   String _selectedCategory = 'All';
+  int selectedIndex = 0;
+  int _cartCount = 0;
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  SQLFliteDatabaseHelper localDBhelper = SQLFliteDatabaseHelper();
   int _selectedIconIndex = 0;
   final TextEditingController _categoryNameController = TextEditingController();
   final supabaseHelper = UserSupabaseHelper();
@@ -54,9 +60,16 @@ class _NeilCartState extends State<NeilCart> {
   }
 
   @override
+  void didPopNext() {
+    print('Returned to this route (another popped on top)');
+    super.didPopNext();
+  }
+
+  @override
   void initState() {
     super.initState();
     _loadInitialData();
+    _getCart();
 
     _searchController.addListener(() {
       setState(() {
@@ -71,21 +84,52 @@ class _NeilCartState extends State<NeilCart> {
     });
   }
 
+  Future<void> _getCart() async {
+    final cart = await localDBhelper.getCart();
+    print(cart.where((item) => item.included!).toList());
+    setState(() {
+      _cartCount = cart.where((item) => item.included!).toList().length;
+    });
+  }
+
   Future<void> _loadInitialData() async {
+    print('preselect:!');
+    print(widget.preselect);
     try {
       print('INIT STARTED');
       final categories = await supabaseHelper.getCategs();
       final products = await supabaseHelper.getProductsForUser(null);
 
-      print('INIT FINISHED');
-      print('categories fetched!');
-      print(categories);
-      print('products fetched!');
-      print(products);
+      // print('INIT FINISHED');
+      // print('categories fetched!');
+      // print(categories);
+      // print('products fetched!');
+      // print(products);
+
+      // Build category names list first
+      final categoryNames = [
+        'All',
+        ...categories.map((e) => e['name'] as String)
+      ];
+
+      // Determine preselected category
+      String preselected = 'All';
+      int preselectedInd = 0;
+
+      if (widget.preselect != null) {
+        final foundIndex = categoryNames.indexOf(widget.preselect!);
+        if (foundIndex != -1) {
+          preselected = widget.preselect!;
+          preselectedInd = foundIndex;
+        }
+      }
 
       setState(() {
+        _selectedCategory = preselected;
         _loading = false;
-        _categories.addAll(categories.map((e) => e['name'] as String).toList());
+        _categories.clear();
+        _categories.addAll(categoryNames);
+        selectedIndex = preselectedInd != 0 ? preselectedInd : 0;
         _products = products;
       });
     } catch (e) {
@@ -118,8 +162,6 @@ class _NeilCartState extends State<NeilCart> {
     super.dispose();
   }
 
-  int selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<NavigationProvider>(context);
@@ -148,7 +190,7 @@ class _NeilCartState extends State<NeilCart> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const OrderDetails()),
+                MaterialPageRoute(builder: (context) => const CartPage()),
               );
             },
           ),
@@ -213,22 +255,20 @@ class _NeilCartState extends State<NeilCart> {
                             fontSize: 16,
                             color: Color(0xFF9E7A6E),
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             filled: false,
                             hintText: "Search coffee...",
-                            hintStyle: TextStyle(
+                            hintStyle: const TextStyle(
                               fontFamily: 'Quicksand',
                               color: Color(0xFF9E7A6E),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                                 vertical: 12, horizontal: 16),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon:
-                                Icon(Icons.search, color: Color(0xFF9E7A6E)),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none, // 👈 add this
+                            focusedBorder: InputBorder.none, // 👈 add this
+                            prefixIcon: const Icon(Icons.search,
+                                color: Color(0xFF9E7A6E)),
                           ),
                         ),
                       ),
@@ -322,7 +362,7 @@ class _NeilCartState extends State<NeilCart> {
 
                 return ConstrainedBox(
                   constraints: const BoxConstraints(
-                    minHeight: 180, // minimum height
+                    minHeight: 190, // minimum height
                   ),
                   child: InkWell(
                     onTap: () {
@@ -341,6 +381,10 @@ class _NeilCartState extends State<NeilCart> {
                               'category_name': product['category_name'],
                               'stock': product['stock'],
                               'variations': variations,
+                            },
+                            onReturn: () {
+                              _getCart();
+                              _loadInitialData();
                             },
                           ),
                         ),
@@ -380,7 +424,7 @@ class _NeilCartState extends State<NeilCart> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                  horizontal: 8, vertical: 1),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
@@ -397,7 +441,8 @@ class _NeilCartState extends State<NeilCart> {
                                           style: const TextStyle(
                                             fontFamily: 'Quicksand',
                                             fontWeight: FontWeight.w700,
-                                            fontSize: 16,
+                                            fontSize: 14,
+                                            letterSpacing: -0.5,
                                             color: Color(0xFF2c1d16),
                                           ),
                                           maxLines: 2,
@@ -408,7 +453,7 @@ class _NeilCartState extends State<NeilCart> {
                                           "₱$price",
                                           style: const TextStyle(
                                             fontFamily: 'Quicksand',
-                                            fontSize: 14,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF603B17),
                                           ),
@@ -416,8 +461,6 @@ class _NeilCartState extends State<NeilCart> {
                                       ],
                                     ),
                                   ),
-
-                                  const SizedBox(width: 8),
 
                                   // Add button on the right
                                   Container(
@@ -449,6 +492,10 @@ class _NeilCartState extends State<NeilCart> {
                                                 'stock': product['stock'],
                                                 'variations': variations,
                                               },
+                                              onReturn: () {
+                                                _getCart();
+                                                _loadInitialData();
+                                              },
                                             ),
                                           ),
                                         );
@@ -471,7 +518,7 @@ class _NeilCartState extends State<NeilCart> {
         ],
       ),
       floatingActionButton: AddToCartFAB(
-        itemCount: 3, // replace with your cart count
+        itemCount: _cartCount, // replace with your cart count
         onTap: () {
           // Show a temporary SnackBar
           ScaffoldMessenger.of(context).showSnackBar(

@@ -221,11 +221,58 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text('Logout'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await _logout(context);
+                onTap: () {
+                  Navigator.pop(context); // close the drawer first
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: Colors.white,
+                      title: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      content: const Text(
+                        'Are you sure you want to logout?',
+                        style: TextStyle(
+                          fontFamily: 'Quicksand',
+                          fontSize: 14,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.of(context).pop(), // close modal
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFC8B099),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop(); // close modal
+                            await _logout(context); // perform logout
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE27D19),
+                          ),
+                          child: const Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Quicksand',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 },
-              ),
+              )
             ],
           ),
         );

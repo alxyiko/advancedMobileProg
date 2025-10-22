@@ -726,7 +726,15 @@ class _VariationEditorState extends State<VariationEditor> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(isEditing ? 'Edit Variation' : 'Add Variation'),
+          backgroundColor: Colors.white,
+          title: Text(
+            isEditing ? 'Edit Variation' : 'Add Variation',
+            style: TextStyle(
+              fontFamily: 'Quicksand',
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -761,7 +769,15 @@ class _VariationEditorState extends State<VariationEditor> {
               ),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFFC8B099), // sets the text color
+              ),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  fontFamily: 'Quicksand', // optional, for consistency
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -792,7 +808,13 @@ class _VariationEditorState extends State<VariationEditor> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentOrange,
               ),
-              child: Text(isEditing ? 'Save' : 'Add'),
+              child: Text(
+                isEditing ? 'Save' : 'Add',
+                style: const TextStyle(
+                  color: Colors.white, // text color
+                  fontFamily: 'Quicksand',
+                ),
+              ),
             ),
           ],
         );

@@ -148,8 +148,6 @@ class _OrderStatusFabState extends State<OrderStatusFab>
     String status = widget.currentStatus.toLowerCase();
     String method = widget.deliveryMethod.toLowerCase();
 
-
-  
     if (status == 'processing') {
       return method == 'walk-in' ? 'Ready to Pickup' : 'For Delivery';
     } else if (status == 'for delivery' || status == 'ready to pickup') {
@@ -170,6 +168,7 @@ class _OrderStatusFabState extends State<OrderStatusFab>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          backgroundColor: Colors.white,
           title: const Row(
             children: [
               Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 28),

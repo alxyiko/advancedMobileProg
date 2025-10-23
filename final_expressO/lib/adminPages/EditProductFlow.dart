@@ -51,7 +51,7 @@ class _EditproductflowState extends State<Editproductflow> {
       if (_initialized) return;
       _initialized = true;
 
-      final categories = await supabaseHelper.getAll("Categories",null,null);
+      final categories = await supabaseHelper.getAll("Categories", null, null);
       final editedProduct =
           await supabaseHelper.getById("Products", 'id', widget.productID);
 
@@ -108,7 +108,7 @@ class _EditproductflowState extends State<Editproductflow> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Product added successfully!"),
+        content: Text("Product edited successfully!"),
         backgroundColor: Colors.green,
       ),
     );

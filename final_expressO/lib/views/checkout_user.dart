@@ -127,7 +127,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     print(widget.checkOutItems);
 
     if (response['success'] == true && response['data'] != null) {
-      message = "Order inserted successfully!";
+      message = "Order added successfully!";
 
       for (final item in widget.checkOutItems) {
         print('-------------------------------------');
@@ -140,7 +140,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         goToOrders = true;
       });
     } else {
-      message = "There was a problem in our end, please try again 30 seconds later.";
+      message =
+          "There was a problem in our end, please try again 30 seconds later.";
     }
 
     // ✅ UI feedback

@@ -46,281 +46,286 @@ class _CartPageState extends State<CartPage> {
         selectedItems.fold<double>(0, (sum, e) => sum + (e.price * e.quantity));
 
     return Scaffold(
-      backgroundColor: const Color(0XFFFFFAED),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF2c1d16),
-        elevation: 0,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Your Cart',
-          style: TextStyle(
-            fontFamily: 'Quicksand',
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+        backgroundColor: const Color(0XFFFFFAED),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF2c1d16),
+          elevation: 0,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: () => Navigator.pop(context),
           ),
+          title: const Text(
+            'Your Cart',
+            style: TextStyle(
+              fontFamily: 'Quicksand',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          // actions: [
+          //   TextButton(
+          //     onPressed: () {
+          //       setState(() {
+          //         isEditing = !isEditing;
+          //         if (!isEditing) {
+          //           selectedItems = List.generate(cartList.length, (_) => false);
+          //         }
+          //       });
+          //     },
+          //     child: Text(
+          //       isEditing ? 'Done' : 'Edit',
+          //       style: const TextStyle(
+          //         fontFamily: 'Quicksand',
+          //         color: Colors.white,
+          //         fontWeight: FontWeight.w600,
+          //       ),
+          //     ),
+          //   ),
+          // ],
         ),
-        // actions: [
-        //   TextButton(
-        //     onPressed: () {
-        //       setState(() {
-        //         isEditing = !isEditing;
-        //         if (!isEditing) {
-        //           selectedItems = List.generate(cartList.length, (_) => false);
-        //         }
-        //       });
-        //     },
-        //     child: Text(
-        //       isEditing ? 'Done' : 'Edit',
-        //       style: const TextStyle(
-        //         fontFamily: 'Quicksand',
-        //         color: Colors.white,
-        //         fontWeight: FontWeight.w600,
-        //       ),
-        //     ),
-        //   ),
-        // ],
-      ),
-      body: cartList.isEmpty
-          ? const Center(
-              child: Text(
-                'Your cart is empty.',
-                style: TextStyle(
-                  fontFamily: 'Quicksand',
-                  fontSize: 16,
-                  color: Colors.grey,
+        body: cartList.isEmpty
+            ? const Center(
+                child: Text(
+                  'Your cart is empty.',
+                  style: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: cartList.length,
-                    itemBuilder: (context, index) {
-                      final item = cartList[index];
+              )
+            : Column(
+                children: [
+                  // Product list
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: cartList.length,
+                      itemBuilder: (context, index) {
+                        final item = cartList[index];
 
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (isEditing)
-                            SizedBox(
-                              height: 120,
-                              width: 60,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Checkbox(
-                                    value: item.included!,
-                                    onChanged: (value) {
-                                      setState(() async {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Editing controls (optional)
+                            if (isEditing)
+                              SizedBox(
+                                height: 120,
+                                width: 60,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Checkbox(
+                                      value: item.included!,
+                                      onChanged: (value) async {
                                         await localDBhelper.includeCheckout(
                                             item.id!, !item.included!);
-                                        await _getCart(); // refresh UI
-                                      });
-                                    },
-                                    activeColor: const Color(0xFFE27D19),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Color(0xFFE27D19)),
-                                    onPressed: () async {
-                                      await localDBhelper.deleteRow(
-                                          'cart', item.id!);
-                                      await _getCart();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          Expanded(
-                            child: Card(
-                              color: const Color(0xFFFCFAF3),
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  children: [
-                                    // Product image
-                                    Image.network(
-                                      item.img as String,
-                                      height: 60,
-                                      width: 60,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    const SizedBox(width: 12),
-
-                                    // Product details
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                UserFetchProductPage(
-                                              prodID: item.prodId!,
-                                            ),
-                                          ),
-                                        );
+                                        await _getCart();
                                       },
-                                      child: Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item.name,
-                                              style: const TextStyle(
-                                                fontFamily: 'Quicksand',
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            Text(
-                                              '${item.category} — ${item.variation}',
-                                              style: const TextStyle(
-                                                fontFamily: 'Quicksand',
-                                                fontSize: 13,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              '₱${item.price.toStringAsFixed(2)}',
-                                              style: const TextStyle(
-                                                fontFamily: 'Quicksand',
-                                                fontWeight: FontWeight.w700,
-                                                color: Color(0xFF603B17),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      activeColor: const Color(0xFFE27D19),
                                     ),
-
-                                    // Quantity controls
-                                    Column(
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.add_circle,
-                                              color: Color(0xFF603B17)),
-                                          onPressed: () =>
-                                              _updateQuantity(item.id!, true),
-                                        ),
-                                        Text(
-                                          '${item.quantity}',
-                                          style: const TextStyle(
-                                            fontFamily: 'Quicksand',
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.remove_circle,
-                                            color: item.quantity <= 1
-                                                ? Colors.grey
-                                                : const Color(0xFF603B17),
-                                          ),
-                                          onPressed: item.quantity <= 1
-                                              ? null
-                                              : () => _updateQuantity(
-                                                  item.id!, false),
-                                        ),
-                                      ],
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Color(0xFFE27D19)),
+                                      onPressed: () async {
+                                        await localDBhelper.deleteRow(
+                                            'cart', item.id!);
+                                        await _getCart();
+                                      },
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
 
-                // Bottom summary bar
-                Container(
-                  height: 70,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 5,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Total
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Total Items: $totalItems',
-                            style: const TextStyle(
-                              fontFamily: 'Quicksand',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                            // Product card
+                            Expanded(
+                              child: Card(
+                                color: const Color(0xFFFCFAF3),
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      // Product image
+                                      Image.network(
+                                        item.img as String,
+                                        height: 60,
+                                        width: 60,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      const SizedBox(width: 12),
+
+                                      // Product details (Expanded so right controls stick right)
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    UserFetchProductPage(
+                                                        prodID: item.prodId!),
+                                              ),
+                                            );
+                                          },
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.name,
+                                                style: const TextStyle(
+                                                  fontFamily: 'Quicksand',
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 16,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                              ),
+                                              Text(
+                                                '${item.category} — ${item.variation}',
+                                                style: const TextStyle(
+                                                  fontFamily: 'Quicksand',
+                                                  fontSize: 13,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                '₱${item.price.toStringAsFixed(2)}',
+                                                style: const TextStyle(
+                                                  fontFamily: 'Quicksand',
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF603B17),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Quantity controls (right-aligned)
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.add_circle,
+                                                color: Color(0xFF603B17)),
+                                            onPressed: () =>
+                                                _updateQuantity(item.id!, true),
+                                          ),
+                                          Text(
+                                            '${item.quantity}',
+                                            style: const TextStyle(
+                                              fontFamily: 'Quicksand',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.remove_circle,
+                                              color: item.quantity <= 1
+                                                  ? Colors.grey
+                                                  : const Color(0xFF603B17),
+                                            ),
+                                            onPressed: item.quantity <= 1
+                                                ? null
+                                                : () => _updateQuantity(
+                                                    item.id!, false),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Bottom summary bar
+                  Container(
+                    height: 70,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Total info
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Total Items: $totalItems',
+                              style: const TextStyle(
+                                fontFamily: 'Quicksand',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              'Total Price: ₱${totalPrice.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontFamily: 'Quicksand',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                color: Color(0xFF603B17),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Checkout button
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE27D19),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
                           ),
-                          Text(
-                            'Total Price: ₱${totalPrice.toStringAsFixed(2)}',
-                            style: const TextStyle(
+                          onPressed: cartList.isNotEmpty
+                              ? () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => CheckoutPage(
+                                            checkOutItems: selectedItems)),
+                                  )
+                              : null,
+                          child: const Text(
+                            'Check Out',
+                            style: TextStyle(
                               fontFamily: 'Quicksand',
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
-                              color: Color(0xFF603B17),
+                              color: Colors.white,
                             ),
                           ),
-                        ],
-                      ),
-
-                      // Checkout
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE27D19),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
                         ),
-                        onPressed: cartList.isNotEmpty
-                            ? () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => CheckoutPage(
-                                            checkOutItems: selectedItems,
-                                          )),
-                                )
-                            : null,
-                        child: const Text(
-                          'Check Out',
-                          style: TextStyle(
-                            fontFamily: 'Quicksand',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-    );
+                ],
+              ));
   }
 }

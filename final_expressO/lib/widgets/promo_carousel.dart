@@ -39,7 +39,8 @@ class _PromoCarouselState extends State<PromoCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final promosToShow = widget.promos.isEmpty ? _fallbackPromos : widget.promos;
+    final promosToShow =
+        widget.promos.isEmpty ? _fallbackPromos : widget.promos;
 
     return Column(
       children: [
@@ -65,7 +66,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
                 child: CarouselSlider.builder(
                   itemCount: promosToShow.length,
                   options: CarouselOptions(
-                    height: 120,
+                    height: 160,
                     autoPlay: true,
                     autoPlayInterval: const Duration(seconds: 8),
                     viewportFraction: 1.0,
@@ -115,8 +116,8 @@ class _PromoCarouselState extends State<PromoCarousel> {
                               Clipboard.setData(ClipboardData(text: code));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                      'Code "$code" copied to clipboard!'),
+                                  content:
+                                      Text('Code "$code" copied to clipboard!'),
                                   backgroundColor: const Color(0xFF2c1d16),
                                   behavior: SnackBarBehavior.floating,
                                   duration: const Duration(seconds: 2),

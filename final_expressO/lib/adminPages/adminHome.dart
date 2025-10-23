@@ -623,13 +623,14 @@ class AdminDrawer extends StatelessWidget {
     required String label,
     required String route,
     bool highlight = false,
+    VoidCallback? onTap, // <-- add this
   }) {
     final bg = highlight ? const Color(0xFFFFD7AB) : Colors.transparent;
     final fg = highlight ? const Color(0xFFE27D19) : Colors.brown.shade400;
-    return InkWell(
-      // onTap: () => safeNavigate(context, route),
-      onTap: () => onNavigate(route),
 
+    return InkWell(
+      onTap: onTap ??
+          () => onNavigate(route), // <-- use custom callback if provided
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -641,15 +642,18 @@ class AdminDrawer extends StatelessWidget {
           children: [
             Icon(icon, color: fg),
             const SizedBox(width: 12),
-            Text(label,
-                style: TextStyle(
-                    color: fg,
-                    fontWeight:
-                        highlight ? FontWeight.w600 : FontWeight.normal)),
+            Text(
+              label,
+              style: TextStyle(
+                color: fg,
+                fontWeight: highlight ? FontWeight.w600 : FontWeight.normal,
+                fontFamily: 'Quicksand', // optional for consistency
+              ),
+            ),
             const Spacer(),
             if (highlight)
               const Icon(Icons.chevron_right,
-                  size: 18, color: const Color(0xFFE27D19)),
+                  size: 18, color: Color(0xFFE27D19)),
           ],
         ),
       ),
@@ -806,11 +810,55 @@ class AdminDrawer extends StatelessWidget {
                           route: '/profile',
                           highlight: selectedRoute == '/profile'),
                       _navItem(
-                          context: context,
-                          icon: Icons.logout,
-                          label: 'Logout',
-                          route: '/logout',
-                          highlight: false),
+                        context: context,
+                        icon: Icons.logout,
+                        label: 'Logout',
+                        route: '', // route unused since we provide onTap
+                        highlight: false,
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: Colors.white,
+                              title: const Text(
+                                'Logout',
+                                style: TextStyle(
+                                    fontFamily: 'Quicksand',
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              content: const Text(
+                                'Are you sure you want to logout?',
+                                style: TextStyle(fontFamily: 'Quicksand'),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: const Color(0xFFC8B099),
+                                  ),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    onNavigate(
+                                        '/logout'); // or pushReplacementNamed if needed
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE27D19),
+                                  ),
+                                  child: const Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Quicksand'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
